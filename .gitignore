@@ -1,4 +1,7 @@
 *.bak
+.gout*
+
+
 *.7z
 *.dmg
 *.gz
