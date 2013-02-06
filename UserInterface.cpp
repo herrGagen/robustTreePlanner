@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <cmath>
 /*****************************************/
@@ -65,107 +66,117 @@ void UserInterface::resetHelper()
 // The project starts excuting here, called by the main function
 void UserInterface::ProgramBegins()
 {
-	char userInput = '0';											// the user input will always be a number, deciding what to do next
-	bool startOver = false;										// when the user choose to do everything again
-	cout<<"Robust Tree Generator:\nThe software is used to generate robust trees given the demand profile and weather data information."<<endl;
-	while(1)
+  ifstream in_stream;
+  string line;
+  
+  in_stream.open("inputs.txt");
+  currentInput = 0;
+  while (!in_stream.eof() ) {
+    getline(in_stream, line);
+    allInputs[currentInput] = line;
+    ++currentInput;
+    //cout << line << endl;
+  }
+  in_stream.close();
+  currentInput = 0;
+
+
+
+
+
+
+
+
+
+
+  char userInput = '0';											// the user input will always be a number, deciding what to do next
+  bool startOver = false;										// when the user choose to do everything again
+  cout<<"Robust Tree Generator:\nThe software is used to generate robust trees given the demand profile and weather data information."<<endl;
+  while(1)
+    {
+      if(startOver)											// when doing everything again, reset everything first
 	{
-		if(startOver)											// when doing everything again, reset everything first
-		{
-			reset();
-			startOver = false;
-		}
-		cout<<"Press any key to input the demand profile directory, press 0 to exit:";
-		cin>>userInput;
-		if(userInput=='0')
-			return;												// exit the program
-		while(!readDemandProfile())								// at the start, ask for demand profile
-		{
-			cout<<"\nFailed to read in the demand profile, please provide the correct directory."<<endl;
-			cout<<"Press any key to input the demand profile again, press 0 to exit:";
-			cin>>userInput;
-			if(userInput=='0')									// if the user chooses not to input again, then just exit;
-				return;
-		}
-		cout<<"\nDemand profile successfully read in, press any key to specify weather files, press 0 to exit:";
-		cin>>userInput;
-		if(userInput=='0')										// exit the program
-			return;
-		while(!readWeatherData())
-		{
-			cout<<"\nFailed to successfully read in the weather data, please provide the correct directories."<<endl;
-			cout<<"Press any key to input the weather data files again, press 0 to exit";
-			cin>>userInput;
-			if(userInput=='0')
-				return;
-		}
-		cout<<"\nWeather files are succesfully read in!"<<endl;
-		while(1)
-		{
-			printQuadrantAndDemandInfo();		// always print the quadrant information first before getting user input
-			cout<<"\nPress 1 to generate trees using current configuration, press 2 to edit quadrant,";
-			cout<<"press 3 to edit demand, press 4 to input the demand and weather files again, press 0 to exit:";
-			cin>>userInput;
-			switch(userInput)
-			{
-				case '1':
-					cout<<"\nGenerating a tree...";
-					generateTree();
-					break;
-				case '2':
-					editQuadrant();
-					cout<<"\nThe updated quadrant and demand information:";
-					printQuadrantAndDemandInfo();
-					break;
-				case '3':
-					inputDemand();
-					cout<<"\nThe updated quadrant and demand information:";
-					printQuadrantAndDemandInfo();
-					break;
-				case '4':
-					startOver = true;									// restart everything
-					break;
-				case '0':
-					return;												// exit
-				default:
-					cout<<"\nGenerating a tree...";
-					generateTree();
-			}
-			if(startOver)											// if the user chooses to restart everything
-				break;
-			// if a tree was generated, then prompt if the user wants to tauten the tree
-			if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED && routingDAG->getStatus()==TREE_GENERATED)	
-			{
-				cout<<"\nPress 1 to generate a tautened tree, press 2 to edit the demand/quadrant and generate the bottommost tree again,";
-				cout<<"press 0 to exit:";
-				cin>>userInput;
-				if(userInput=='0')
-					return;
-				else if(userInput=='2')
-					continue;
-				else												// default case, tauten the tree
-					tautenTree();
-				if(routingDAG->getStatus()==TREE_GENERATED)			// if a tautened tree is generated
-				{
-					cout<<"\nA tautened tree is successfully generated! Now you could";
-					cout<<"\nPress any key to generate the operational flexibility pairs and output the tree information to an .xml file, ";
-					cout<<"or press 1 to edit the demand/quadrant parameters, or simply press 0 to exit:";
-					cin>>userInput;
-					if(userInput=='0')
-						return;
-					if(userInput=='1')
-						continue;
-					inputOperationalFlexibility();
-					cout<<"\nNow write the tree information into an .xml file...";
-					saveTreeInformation();
-				}
-			}
-			else													// if a tree was NOT generated successfully, then prompt to edit quadrant/demand again
-				continue;
-		}
-		if(startOver)
-			continue;												// start a new iteration to input files and generate trees
+	  reset();
+	  startOver = false;
 	}
+      if(!readDemandProfile())								// at the start, read in demand profile
+	{
+	  cout<<"\nFailed to read in the demand profile, double check the demand path listed."<<endl;
+	  return;
+	}
+      cout<<"\nDemand profile successfully read in.";
+      if(!readWeatherData())
+	{
+	  cout<<"\nFailed to successfully read in the weather data, double check the weather directories."<<endl;
+	  return;
+	}
+      cout<<"\nWeather files are succesfully read in!"<<endl;
+      while(1)
+	{
+	  printQuadrantAndDemandInfo();		// always print the quadrant information first before getting user input
+	  cout<<"\nPress 1 to generate trees using current configuration, press 2 to edit quadrant,";
+	  cout<<"press 3 to edit demand, press 4 to input the demand and weather files again, press 0 to exit:";
+	  cin>>userInput;
+	  switch(userInput)
+	    {
+	    case '1':
+	      cout<<"\nGenerating a tree...";
+	      generateTree();
+	      break;
+	    case '2':
+	      editQuadrant();
+	      cout<<"\nThe updated quadrant and demand information:";
+	      printQuadrantAndDemandInfo();
+	      break;
+	    case '3':
+	      inputDemand();
+	      cout<<"\nThe updated quadrant and demand information:";
+	      printQuadrantAndDemandInfo();
+	      break;
+	    case '4':
+	      startOver = true;									// restart everything
+	      break;
+	    case '0':
+	      return;												// exit
+	    default:
+	      cout<<"\nGenerating a tree...";
+	      generateTree();
+	    }
+	  if(startOver)											// if the user chooses to restart everything
+	    break;
+	  // if a tree was generated, then prompt if the user wants to tauten the tree
+	  if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED && routingDAG->getStatus()==TREE_GENERATED)	
+	    {
+	      cout<<"\nPress 1 to generate a tautened tree, press 2 to edit the demand/quadrant and generate the bottommost tree again,";
+	      cout<<"press 0 to exit:";
+	      cin>>userInput;
+	      if(userInput=='0')
+		return;
+	      else if(userInput=='2')
+		continue;
+	      else												// default case, tauten the tree
+		tautenTree();
+	      if(routingDAG->getStatus()==TREE_GENERATED)			// if a tautened tree is generated
+		{
+		  cout<<"\nA tautened tree is successfully generated! Now you could";
+		  cout<<"\nPress any key to generate the operational flexibility pairs and output the tree information to an .xml file, ";
+		  cout<<"or press 1 to edit the demand/quadrant parameters, or simply press 0 to exit:";
+		  cin>>userInput;
+		  if(userInput=='0')
+		    return;
+		  if(userInput=='1')
+		    continue;
+		  inputOperationalFlexibility();
+		  cout<<"\nNow write the tree information into an .xml file...";
+		  saveTreeInformation();
+		}
+	    }
+	  else													// if a tree was NOT generated successfully, then prompt to edit quadrant/demand again
+	    continue;
+	}
+      if(startOver)
+	continue;												// start a new iteration to input files and generate trees
+    }
 }
 
 // print the information of the quadrant and the demand rnps for each entry node
@@ -448,180 +459,162 @@ bool UserInterface::inputDemandValid(string &input, int numDemands)
 // read in weather data from a file
 bool UserInterface::readWeatherData()
 {
-	// only when the demand profile is set up and is read in from a file(so that lati/long per pixel are set), are we ready to read in the weather data
-	if(ctrl_QuadGenerated==QUADRANT_NOT_GENERATED || ctrl_DemandReadIn == DEMAND_NOT_READ_IN)
+  // only when the demand profile is set up and is read in from a file(so that lati/long per pixel are set), are we ready to read in the weather data
+  if(ctrl_QuadGenerated==QUADRANT_NOT_GENERATED || ctrl_DemandReadIn == DEMAND_NOT_READ_IN)
+    {
+      cerr<<"\nRead In Weather After Setting up the Demand Profile!"<<endl;
+      return false;
+    }
+  int totalNumWeather;
+  istringstream is(allInputs[currentInput++]);
+  is >> totalNumWeather;
+  //totalNumWeather = (allInputs[currentInput++]);
+  if(totalNumWeather<=0) {
+    cout<< endl << "Invalid weather count..." << endl;
+    return 0;
+  }
+  vector<string> weatherFileDirectories;
+  for(int i=0; i<totalNumWeather; i++)
+    {
+      string tempStr;
+      tempStr = allInputs[currentInput++];
+      weatherFileDirectories.push_back(tempStr);					// store the directories of each weather file into the vector
+    }
+  /***********************************************************************************************************************************/
+  // prehandling work to restore the weather data and give the weather an effective range
+  for(int i=0; i<numWeatherData; i++)	// delete all the previously read in weather data
+    delete weatherDatas[i];
+  numWeatherData = totalNumWeather;								// before reading, there is 0 weather files recorded
+  weatherDatas.clear();
+  double rangeMinLati, rangeMinLong, rangeMaxLati, rangeMaxLong;
+  // get the range of the weather data by knowing the range of the demand profile, so those unrelated weather
+  // data cells are trimed (not read into the memory of the storing vector at all)
+  demandProfile->getRange(&rangeMinLati, &rangeMinLong, &rangeMaxLati, &rangeMaxLong);
+  float minAlt, maxAlt;	minAlt = 10000;		maxAlt = 0;			// get the min and max altitude of all weather files in order to set the quadrant
+  cout<<"\nReading weather data files now, please wait..."<<endl;
+  /***********************************************************************************************************************************/
+  for(int i=0; i<totalNumWeather; i++)
+    {
+      ifstream is(weatherFileDirectories[i].c_str(), ios::in);	// read in from the weather files
+      if(is)
 	{
-		cerr<<"\nRead In Weather After Setting up the Demand Profile!"<<endl;
-		return false;
+	  is.seekg(0, ios::end);
+	  int fileSize = is.tellg();
+	  is.seekg(0, ios::beg);
+	  char* buffer = new char[fileSize];
+	  is.read(buffer, fileSize);
+	  WeatherData* tempWeather = new WeatherData();
+	  if(!tempWeather->readInFileData(buffer, fileSize, rangeMinLati-1, rangeMinLong-1, rangeMaxLati+1, rangeMaxLong+1))
+	    {
+	      cout<<"\nWeather not read in successfully..."<<endl;
+	      delete tempWeather;
+	      delete[] buffer;
+	      return false;
+	    }
+	  // convert the weather cells to screen OPENGL coordinate system (easy to convert back)
+	  tempWeather->convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel);
+	  weatherDatas.push_back(tempWeather);		// push the newly read in weather data into the storing vector
+	  delete []buffer;
+	  minAlt = min(minAlt, (float)tempWeather->getMinAlt());
+	  maxAlt = max(maxAlt, (float)tempWeather->getMaxAlt());
+	  is.close();
 	}
-	int totalNumWeather;
-	while(true)														// first input the number of weather files
+      else
 	{
-		cout<<"\nPlease enter the number of weather files:";
-		cin>>totalNumWeather;
-		if(totalNumWeather<=0)
-			cout<<"\nInvalid Input...";
-		else break;
+	  cout<<"\nWeather file directory error..."<<endl;
+	  return false;
 	}
-	vector<string> weatherFileDirectories;
-	cin.ignore(1000 ,'\n');											// clear the buffer, ignore the leftover characters
-	for(int i=0; i<totalNumWeather; i++)
-	{
-		cout<<"\nPlease input the directory of the ";
-		switch(i)
-		{
-			case 0: cout<<"first ";
-				break;
-			case 1: cout<<"second ";
-				break;
-			case 2:
-				cout<<"third ";
-				break;
-			default:
-				cout<<i+1<<"th ";
-		}
-		cout<<"weather file (.dat file):";
-		string tempStr;
-		getline(cin, tempStr);
-		weatherFileDirectories.push_back(tempStr);					// store the directories of each weather file into the vector
-	}
-	/***********************************************************************************************************************************/
-	// prehandling work to restore the weather data and give the weather an effective range
-	for(int i=0; i<numWeatherData; i++)	// delete all the previously read in weather data
-		delete weatherDatas[i];
-	numWeatherData = totalNumWeather;								// before reading, there is 0 weather files recorded
-	weatherDatas.clear();
-	double rangeMinLati, rangeMinLong, rangeMaxLati, rangeMaxLong;
-	// get the range of the weather data by knowing the range of the demand profile, so those unrelated weather
-	// data cells are trimed (not read into the memory of the storing vector at all)
-	demandProfile->getRange(&rangeMinLati, &rangeMinLong, &rangeMaxLati, &rangeMaxLong);
-	float minAlt, maxAlt;	minAlt = 10000;		maxAlt = 0;			// get the min and max altitude of all weather files in order to set the quadrant
-	cout<<"\nReading weather data files now, please wait..."<<endl;
-	/***********************************************************************************************************************************/
-	for(int i=0; i<totalNumWeather; i++)
-	{
-		ifstream is(weatherFileDirectories[i].c_str(), ios::in);	// read in from the weather files
-		if(is)
-		{
-			is.seekg(0, ios::end);
-			int fileSize = is.tellg();
-			is.seekg(0, ios::beg);
-			char* buffer = new char[fileSize];
-			is.read(buffer, fileSize);
-			WeatherData* tempWeather = new WeatherData();
-			if(!tempWeather->readInFileData(buffer, fileSize, rangeMinLati-1, rangeMinLong-1, rangeMaxLati+1, rangeMaxLong+1))
-			{
-				cout<<"\nWeather not read in successfully..."<<endl;
-				delete tempWeather;
-				delete[] buffer;
-				return false;
-			}
-			// convert the weather cells to screen OPENGL coordinate system (easy to convert back)
-			tempWeather->convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel);
-			weatherDatas.push_back(tempWeather);		// push the newly read in weather data into the storing vector
-			delete []buffer;
-			minAlt = min(minAlt, (float)tempWeather->getMinAlt());
-			maxAlt = max(maxAlt, (float)tempWeather->getMaxAlt());
-			is.close();
-		}
-		else
-		{
-			cout<<"\nWeather file directory error..."<<endl;
-			return false;
-		}
-	}
-	// weather files are read in, do some test to make sure that the files are valid
-	float totalProbabilityOfWeathers = 0;
-	for(int i=0; i<numWeatherData; i++)
-		totalProbabilityOfWeathers+=weatherDatas[i]->getProbability();
-	// the total probability of the weather files is not 1
-	if(abs(totalProbabilityOfWeathers-1.0)>0.0001)			
-	{
-		if(abs(totalProbabilityOfWeathers-1.0)>0.0001)
-			cerr<<"\nThe total probability of the weather data files is not 1."<<endl;
-		for(int i=0; i<numWeatherData; i++)
-			delete weatherDatas[i];						// nothing was read in, reset the weather data to empty
-		ctrl_WeatherReadIn = WEATHER_NOT_READ_IN;		// the weather is not read in yet
-		return false;
-	}
-	else
-	{
-		ctrl_WeatherReadIn = WEATHER_READ_IN;
-		// when demand or weather data is changed, the routingDAG must be regenerated based on the new demand/weather data
-		if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)
-			ctrl_RoutingDAGGenerated = ROUTINGDAG_NOT_GENERATED;
-		quadrant->setiHeight(minAlt);					// if read in successfully, then set the quadrant's altitude information
-		quadrant->setoHeight(maxAlt);
-	}
-	return true;
+    }
+  // weather files are read in, do some test to make sure that the files are valid
+  float totalProbabilityOfWeathers = 0;
+  for(int i=0; i<numWeatherData; i++)
+    totalProbabilityOfWeathers+=weatherDatas[i]->getProbability();
+  // the total probability of the weather files is not 1
+  if(abs(totalProbabilityOfWeathers-1.0)>0.0001)			
+    {
+      if(abs(totalProbabilityOfWeathers-1.0)>0.0001)
+	cerr<<"\nThe total probability of the weather data files is not 1."<<endl;
+      for(int i=0; i<numWeatherData; i++)
+	delete weatherDatas[i];						// nothing was read in, reset the weather data to empty
+      ctrl_WeatherReadIn = WEATHER_NOT_READ_IN;		// the weather is not read in yet
+      return false;
+    }
+  else
+    {
+      ctrl_WeatherReadIn = WEATHER_READ_IN;
+      // when demand or weather data is changed, the routingDAG must be regenerated based on the new demand/weather data
+      if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)
+	ctrl_RoutingDAGGenerated = ROUTINGDAG_NOT_GENERATED;
+      quadrant->setiHeight(minAlt);					// if read in successfully, then set the quadrant's altitude information
+      quadrant->setoHeight(maxAlt);
+    }
+  return true;
 }
 
 // read in demand profile data from a file
 bool UserInterface::readDemandProfile()
 {
-	/************************************************************************************************/
-	if(ctrl_QuadGenerated == QUADRANT_GENERATED)
+  /************************************************************************************************/
+  if(ctrl_QuadGenerated == QUADRANT_GENERATED)
+    {
+      string demandProfileDirectory;											// the directory of the demand profile
+  demandProfileDirectory = allInputs[currentInput++];
+  ifstream is(demandProfileDirectory.c_str(), ios::in);					// the file stream used to read in, provided the file directory
+  if(is)																	// if the file is successfully opened
+    {
+      is.seekg(0, ios::end);		
+      int fileSize = is.tellg();											// the file size of the input file
+      is.seekg(0, ios::beg);												// get back to the start of the file
+      char* buffer = new char[fileSize];									// read the file into the character butter
+      // read all the data from the input file into the char array buffer
+      is.read(buffer, fileSize);
+      is.close();															// after reading in, close the input stream
+      demandProfile->reset();												// a brand new demand instance
+      if(demandProfile->readInFile(buffer, fileSize))
 	{
-		string demandProfileDirectory;											// the directory of the demand profile
-		cout<<"\nPlease provide the complete directory of the demand profile .nom file:"<<endl;
-		cin.ignore(1000, '\n');													// clear the buffer, ignore the leftover characters													
-		getline(cin, demandProfileDirectory);									// user input the demand profile
-		ifstream is(demandProfileDirectory.c_str(), ios::in);					// the file stream used to read in, provided the file directory
-		if(is)																	// if the file is successfully opened
-		{
-			is.seekg(0, ios::end);		
-			int fileSize = is.tellg();											// the file size of the input file
-			is.seekg(0, ios::beg);												// get back to the start of the file
-			char* buffer = new char[fileSize];									// read the file into the character butter
-			// read all the data from the input file into the char array buffer
-			is.read(buffer, fileSize);
-			is.close();															// after reading in, close the input stream
-			demandProfile->reset();												// a brand new demand instance
-			if(demandProfile->readInFile(buffer, fileSize))
-			{
-				delete []buffer;												// after reading in the data to vectors, delete the buffer
-				ctrl_DemandReadIn = DEMAND_READ_IN;
-				// the radius 100 always corresponds to the radius of the trasition airspace quadrant, and the conversion from
-				// lati/long to screen coordinate system is done by the conversion from 100 to radius in lati/long
-				quadrant->setQuadrant(0, 0, 10*PI/180, 20, TOTAL_DEMAND_CIRCLE_RADIUS_PIXEL, 0, 0);
-				// set up the 4 global variable for drawing purpose (convertion inbetween 2 coordinate systems)
-				// the center of the lati/long is always set to be at opengl coordinate (0, 0)
-				// and getting the demand profile's starting time and ending time
-				demandProfile->getDemandInfo(&centerLati, &centerLong, &latiPerPixel, &longPerPixel, &startTime, &endTime);
-				demandRNPs.clear();
-				demandProfile->generateDemandVector(demandRNPs, quadrant->getAngle(), quadrant->getAngle()+PI/2, NMILESPERPIXEL);
-				// when demand or weather data is changed, the routingDAG must be regenerated based on the new demand/weather data
-				if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)
-					ctrl_RoutingDAGGenerated = ROUTINGDAG_NOT_GENERATED;
-				return true;
-			}
-			else														// failed to read in successfully
-				demandProfile->reset();
-		}
-		else
-			cerr<<"\nThe file provided cannot be opened..."<<endl;		// didn't successfully read in a file
+	  delete []buffer;												// after reading in the data to vectors, delete the buffer
+	  ctrl_DemandReadIn = DEMAND_READ_IN;
+	  // the radius 100 always corresponds to the radius of the trasition airspace quadrant, and the conversion from
+	  // lati/long to screen coordinate system is done by the conversion from 100 to radius in lati/long
+	  quadrant->setQuadrant(0, 0, 10*PI/180, 20, TOTAL_DEMAND_CIRCLE_RADIUS_PIXEL, 0, 0);
+	  // set up the 4 global variable for drawing purpose (convertion inbetween 2 coordinate systems)
+	  // the center of the lati/long is always set to be at opengl coordinate (0, 0)
+	  // and getting the demand profile's starting time and ending time
+	  demandProfile->getDemandInfo(&centerLati, &centerLong, &latiPerPixel, &longPerPixel, &startTime, &endTime);
+	  demandRNPs.clear();
+	  demandProfile->generateDemandVector(demandRNPs, quadrant->getAngle(), quadrant->getAngle()+PI/2, NMILESPERPIXEL);
+	  // when demand or weather data is changed, the routingDAG must be regenerated based on the new demand/weather data
+	  if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)
+	    ctrl_RoutingDAGGenerated = ROUTINGDAG_NOT_GENERATED;
+	  return true;
 	}
-	else
-		cerr<<"\nPlease generate a quadrant first!"<<endl;
-	return false;														// the file is NOT read in successfully
+      else														// failed to read in successfully
+	demandProfile->reset();
+    }
+  else
+    cerr<<"\nThe file provided cannot be opened..."<<endl;		// didn't successfully read in a file
+    }
+  else
+    cerr<<"\nPlease generate a quadrant first!"<<endl;
+  return false;														// the file is NOT read in successfully
 }
 
 // after generating the tree, export the tree information into an .xml ascii file
 void UserInterface::saveTreeInformation()
 {
-	if(ctrl_RoutingDAGGenerated == ROUTINGDAG_NOT_GENERATED || routingDAG->getStatus()==TREE_NOT_GENERATED)										
-	{
-		cerr<<"\nPlease generate the routing DAG and tree first!"<<endl;
-		return;
-	}
-	if(ctrl_OperFlexGenerated == OPER_FLEX_NOT_GENERATED)
-	{
-		cerr<<"\nPlease generate Operational Flexity Pairs First!"<<endl;
-		return;
-	}
-	routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime);
-	cout<<"\nTree Information successfully written to file.\n";
-	cout<<"\nPress any key to continue:";
-	char temp;															// accept whatever user input to comtinue
-	cin>>temp;
+  if(ctrl_RoutingDAGGenerated == ROUTINGDAG_NOT_GENERATED || routingDAG->getStatus()==TREE_NOT_GENERATED)										
+    {
+      cerr<<"\nPlease generate the routing DAG and tree first!"<<endl;
+      return;
+    }
+  if(ctrl_OperFlexGenerated == OPER_FLEX_NOT_GENERATED)
+    {
+      cerr<<"\nPlease generate Operational Flexity Pairs First!"<<endl;
+      return;
+    }
+  routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime);
+  cout<<"\nTree Information successfully written to file.\n";
+  cout<<"\nPress any key to continue:";
+  char temp;															// accept whatever user input to comtinue
+  cin>>temp;
 }
