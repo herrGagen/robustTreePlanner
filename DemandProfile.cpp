@@ -2,6 +2,8 @@
 #include <fstream>
 #include "math.h"
 #include <iostream>
+#include <cstring>
+#include <cstdlib>
 
 DemandProfile::DemandProfile(void)
 {

@@ -1,6 +1,8 @@
 // the class RoutingDAG is the graph on which we do the routing
 
 #ifndef ROUTINGDAG_H
+
+#include <string>
 #define ROUTINGDAG_H
 
 #define PI 3.14159265
@@ -44,7 +46,7 @@ public:
 	bool generateEdgeSet();
 	void generateOperFlexPairs(float *radii, int length, vector<WeatherData*> &wDatas, float effectiveThres);
 public:
-	bool outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, string &startTime, string &endTime);
+	bool outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, std::string &startTime, std::string &endTime);
 private:
 	int numLayers;
 	// the entry nodes have to be in the order aligned along the outer boundary of the quadrant, with enough RNP separating them
