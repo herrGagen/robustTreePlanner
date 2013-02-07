@@ -5,6 +5,8 @@
 #include <sstream>
 #include <string>
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
 /*****************************************/
 // header files from within the project
 #include "NodeAndEdge.h"

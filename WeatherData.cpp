@@ -4,7 +4,7 @@
 #include "RoutingDAG.h"
 #include <time.h>
 #include <iostream>
-
+#include <cstring>
 WeatherData::WeatherData(void)
 {
 	numPoints = 0;
