@@ -16,7 +16,7 @@ using namespace std;
 // the constructor sets all the control variables to their initial status
 UserInterface::UserInterface()
 {
-	resetHelper();											// initialize ctrl variables to default and generate necassary objects
+  resetHelper();											// initialize ctrl variables to default and generate necassary objects
 }
 
 // the destructor reclaims all the allocated memory to avoid memory leaks
