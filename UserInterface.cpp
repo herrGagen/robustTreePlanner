@@ -598,6 +598,7 @@ bool UserInterface::readDemandProfile()
     }
   else
     cerr<<"\nPlease generate a quadrant first!"<<endl;
+  //  cout << ctrl_QuadGenerated << endl << QUADRANT_GENERATED << endl;
   return false;														// the file is NOT read in successfully
 }
 

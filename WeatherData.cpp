@@ -143,6 +143,9 @@ bool WeatherData::handleInputData()
 			inputFormatError = true;
 			break;
 		}
+		else
+		  // debugging
+		  //		  cout << xCoors[i] << " " << yCoors[i] << endl;
 		// normalize the range into (-180, 180]
 		if(xCoors[i]>180)	xCoors[i]-=360;
 		if(yCoors[i]>180)	yCoors[i]-=360;
@@ -152,10 +155,12 @@ bool WeatherData::handleInputData()
 		if(probDeviation[i]>maxProbDev)	maxProbDev = probDeviation[i];
 	}
 	if(inputFormatError || minProbDev<0 || maxProbDev>1) 
-	{
-		cerr<<"\nWeather Data Content Error."<<endl;
-		return false;									// the probability of deviation must be between 0 and 1, a messagebox is popped up
-	}
+	  {
+	    // DEBUG
+	    //	    cout << "minProbDev: " << minProbDev << "  maxProbDev: " << maxProbDev << endl;
+	    cerr<<"\nWeather Data Content Error."<<endl;
+	    return false;									// the probability of deviation must be between 0 and 1, a messagebox is popped up
+	  }
 	return true;										// the format is good and we are ready to draw
 }
 

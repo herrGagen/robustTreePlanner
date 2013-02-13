@@ -105,60 +105,60 @@ bool DemandProfile::readInFile(char* buffer, int fileSize)
 	// the third step reads in the flight arrival infomation
 	while(readingIndex<fileSize)
 	{
-		for(int i=0; i<5; i++)											// the first 5 elements of each line are irrelavant
+	  for(int i=0; i<2; i++)											// the first 5 elements of each line are irrelavant
+	    {
+	      while(buffer[readingIndex]!=',')							// find the first 5 commas
 		{
-			while(buffer[readingIndex]!=',')							// find the first 5 commas
-			{
-				readingIndex++;
-				if(testIndex(&readingIndex, &fileSize))					// if we are going out of range
-					return false;
-			}
-			readingIndex++;
+		  readingIndex++;
+		  if(testIndex(&readingIndex, &fileSize))					// if we are going out of range
+		    return false;
 		}
-		// after the first 5 elements, it comes the rnp information that we are going to store in vector<float> rnp
-		wordStartingIndex = readingIndex;
-		while(buffer[readingIndex]!=',')
+	      readingIndex++;
+	    }
+	  // after the first 5 elements, it comes the rnp information that we are going to store in vector<float> rnp
+	  wordStartingIndex = readingIndex;
+	  while(buffer[readingIndex]!=',')
+	    {
+	      readingIndex++;
+	      if(testIndex(&readingIndex, &fileSize))
+		return false;
+	    }
+	  buffer[readingIndex] = '\0';
+	  rnp.push_back(atof(&buffer[wordStartingIndex]));
+	  wordStartingIndex = ++readingIndex;								// reading index is at the start of the next word
+	  // the 6th to the 9th elements are irrelevant, we just skip these 3 elements by skipping 3 commas
+	  for(int i=0; i<3; i++)
+	    {
+	      while(buffer[readingIndex]!=',')
 		{
-			readingIndex++;
-			if(testIndex(&readingIndex, &fileSize))
-				return false;
+		  readingIndex++;
+		  if(testIndex(&readingIndex, &fileSize))
+		    return false;
 		}
-		buffer[readingIndex] = '\0';
-		rnp.push_back(atof(&buffer[wordStartingIndex]));
-		wordStartingIndex = ++readingIndex;								// reading index is at the start of the next word
-		// the 6th to the 9th elements are irrelevant, we just skip these 3 elements by skipping 3 commas
-		for(int i=0; i<3; i++)
-		{
-			while(buffer[readingIndex]!=',')
-			{
-				readingIndex++;
-				if(testIndex(&readingIndex, &fileSize))
-					return false;
-			}
-			readingIndex++;
-		}
-		// after the first 9 elements, it comes the information that we need: the flight (x, y) coordinates
-		wordStartingIndex = readingIndex;								// the start of the next word
-		while(buffer[readingIndex]!=',')								// read in the x coordinate in to xCoors
-		{
-			readingIndex++;
-			if(testIndex(&readingIndex, &fileSize))						// if we are going out of range
-				return false;
-		}
-		buffer[readingIndex] = '\0';
-		xCoors.push_back(atof(&buffer[wordStartingIndex]));				// store in xCoors
-		wordStartingIndex = readingIndex+1;
-		while(buffer[readingIndex]!='\n')								// read in the y coordinate in to yCoors(separated by line change'\n')
-		{
-			readingIndex++;
-			if(testIndex(&readingIndex, &fileSize))						// if we are going out of range
-				return false;
-		}
-		buffer[readingIndex] = '\0';
-		yCoors.push_back(atof(&buffer[wordStartingIndex]));				// store in yCoors
-		wordStartingIndex = readingIndex+1;
-		if(buffer[wordStartingIndex] == 'E')							// if the next word is "END_FLIGHTS", then we are done reading
-			break;
+	      readingIndex++;
+	    }
+	  // after the first 9 elements, it comes the information that we need: the flight (x, y) coordinates
+	  wordStartingIndex = readingIndex;								// the start of the next word
+	  while(buffer[readingIndex]!=',')								// read in the x coordinate in to xCoors
+	    {
+	      readingIndex++;
+	      if(testIndex(&readingIndex, &fileSize))						// if we are going out of range
+		return false;
+	    }
+	  buffer[readingIndex] = '\0';
+	  xCoors.push_back(atof(&buffer[wordStartingIndex]));				// store in xCoors
+	  wordStartingIndex = readingIndex+1;
+	  while(buffer[readingIndex]!='\n')								// read in the y coordinate in to yCoors(separated by line change'\n')
+	    {
+	      readingIndex++;
+	      if(testIndex(&readingIndex, &fileSize))						// if we are going out of range
+		return false;
+	    }
+	  buffer[readingIndex] = '\0';
+	  yCoors.push_back(atof(&buffer[wordStartingIndex]));				// store in yCoors
+	  wordStartingIndex = readingIndex+1;
+	  if(buffer[wordStartingIndex] == 'E')							// if the next word is "END_FLIGHTS", then we are done reading
+	    break;
 	}
 	return handleInputData();
 }
@@ -178,6 +178,7 @@ bool DemandProfile::handleInputData()
 	{
 		if(rnp[i]<0 || xCoors[i]>360 || yCoors[i]>360)
 		{
+		  cout << rnp[i] << " " << xCoors[i] << " " << yCoors[i] << endl;
 			cerr<<"\nFile Content Error!"<<endl;				// prompt that the file has format errors
 			return false;
 		}
