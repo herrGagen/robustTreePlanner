@@ -25,4 +25,4 @@ weatherdata.o: WeatherData.cpp
 	g++ -c WeatherData.cpp
 
 clean:
-	rm -rf *o rtp
+	rm -rf *o rtp *.bak *~
