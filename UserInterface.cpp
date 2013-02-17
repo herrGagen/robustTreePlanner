@@ -113,6 +113,15 @@ void UserInterface::ProgramBegins()
 	  return;
 	}
       cout<<"\nWeather files are succesfully read in!"<<endl;
+      cout << "Generating tree." << endl;
+      generateTree();
+      cout << "Tautening tree." << endl;
+      tautenTree();
+      cout << "Doing operational Flexibility stuff." << endl;
+      inputOperationalFlexibility();
+      cout << "Saving tree information." << endl;
+      saveTreeInformation();
+      /*
       while(1)
 	{
 	  printQuadrantAndDemandInfo();		// always print the quadrant information first before getting user input
@@ -176,6 +185,7 @@ void UserInterface::ProgramBegins()
 	  else													// if a tree was NOT generated successfully, then prompt to edit quadrant/demand again
 	    continue;
 	}
+      */
       if(startOver)
 	continue;												// start a new iteration to input files and generate trees
     }
@@ -258,97 +268,107 @@ bool UserInterface::editQuadrant()
 // pop up a dialog asking about the tree information including its inner and outer height and the threshold value, the generate a tree
 bool UserInterface::generateTree()
 {
-	// only when the quadrant is generated and weather data is read in can we generate a tree
-	if(ctrl_QuadGenerated == QUADRANT_GENERATED && ctrl_WeatherReadIn == WEATHER_READ_IN && ctrl_DemandReadIn == DEMAND_READ_IN)
+  // only when the quadrant is generated and weather data is read in can we generate a tree
+  if(ctrl_QuadGenerated == QUADRANT_GENERATED && ctrl_WeatherReadIn == WEATHER_READ_IN && ctrl_DemandReadIn == DEMAND_READ_IN)
+    {
+      /*
+	cout<<"\nPlease specify the minimum distance between two merge nodes (in nm. If input invalid, default value 5nm will be used):";
+      */
+      double minDistBetweenMergeNodes;
+      minDistBetweenMergeNodes = -1; // make this read from config file
+      if(minDistBetweenMergeNodes<=0)
+	minDistBetweenMergeNodes = 5/NMILESPERPIXEL;					// used the default value
+      else minDistBetweenMergeNodes/=NMILESPERPIXEL;
+      while(true)
 	{
-		cout<<"\nPlease specify the minimum distance between two merge nodes (in nm. If input invalid, default value 5nm will be used):";
-		double minDistBetweenMergeNodes;
-		cin>>minDistBetweenMergeNodes;
-		if(minDistBetweenMergeNodes<=0)
-			minDistBetweenMergeNodes = 5/NMILESPERPIXEL;					// used the default value
-		else minDistBetweenMergeNodes/=NMILESPERPIXEL;
-		while(true)
-		{
-			cout<<"\nPlease specify the threshold value that we consider a weather cell to be hazardous:";
-			cin>>deviationThreshold;
-			if(deviationThreshold<0 || deviationThreshold>1)
-				cout<<"\nInvalid Input...";
-			else break;
-		}
-		while(true)
-		{
-			cout<<"\nPlease specify the threshold value that a tree edge is considered safe:";
-			cin>>nodeEdgeThreshold;
-			if(nodeEdgeThreshold<0 || nodeEdgeThreshold>1)
-				cout<<"\nInvalid Input...";
-			else break;
-		}
-		routingDAG->setminimumDistanceBetweenMergingNodes(minDistBetweenMergeNodes);
-		cout<<"\nWe are currently generating a bottommost merge tree, please wait...";
-		/************************************************************************************************/
-		ctrl_OperFlexGenerated = OPER_FLEX_NOT_GENERATED;				// when generating a new tree, the Oper-Flex pairs need to be generated again
-		// first, generate the entry and fix nodes, then the internal nodes
-		routingDAG->reset();											// a brand new routing instance
-		if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherDatas, routingDAG))
-		{
-			routingDAG->generateEdgeSet();								// generate the edges in the searching DAG
-			ctrl_RoutingDAGGenerated = ROUTINGDAG_GENERATED;
-			// generate the tree here
-			if(!routingDAG->generateTree(weatherDatas, demandRNPs, deviationThreshold, nodeEdgeThreshold))
-			{
-				cerr<<"\nThere Does NOT Exist A Merge Tree!"<<endl;
-				return false;
-			}
-			else 
-			{
-				cout<<"\nA bottommost routing Tree is generated!";
-				return true;
-			}
-		}	// an error message will pop up if failed to generate the DAG
+	  cout<<"\nPlease specify the threshold value that we consider a weather cell to be hazardous:";
+	  deviationThreshold = 0.8; // make this read from config file
+	  if(deviationThreshold<0 || deviationThreshold>1)
+	    cout<<"\nInvalid Input...";
+	  else break;
 	}
-	// else, then the weather data and demand profile have to be read in first
-	else cerr<<"\nPleae read in or generate the demand profile and weather data first."<<endl;
-	return false;
+      while(true)
+	{
+	  /*
+	    cout<<"\nPlease specify the threshold value that a tree edge is considered safe:";
+	    cin>>nodeEdgeThreshold;
+	  */
+	  nodeEdgeThreshold = 0.8;
+	  if(nodeEdgeThreshold<0 || nodeEdgeThreshold>1)
+	    cout<<"\nInvalid Input...";
+	  else break;
+	}
+      routingDAG->setminimumDistanceBetweenMergingNodes(minDistBetweenMergeNodes);
+      cout<<"\nGenerating a bottommost merge tree, please wait...";
+      /************************************************************************************************/
+      ctrl_OperFlexGenerated = OPER_FLEX_NOT_GENERATED;				// when generating a new tree, the Oper-Flex pairs need to be generated again
+      // first, generate the entry and fix nodes, then the internal nodes
+      routingDAG->reset();											// a brand new routing instance
+      if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherDatas, routingDAG))
+	{
+	  routingDAG->generateEdgeSet();								// generate the edges in the searching DAG
+	  ctrl_RoutingDAGGenerated = ROUTINGDAG_GENERATED;
+	  // generate the tree here
+	  if(!routingDAG->generateTree(weatherDatas, demandRNPs, deviationThreshold, nodeEdgeThreshold))
+	    {
+	      cerr<<"\nThere Does NOT Exist A Merge Tree!"<<endl;
+	      return false;
+	    }
+	  else 
+	    {
+	      cout<<"\nA bottommost routing Tree is generated!";
+	      return true;
+	    }
+	}	// an error message will pop up if failed to generate the DAG
+    }
+  // else, then the weather data and demand profile have to be read in first
+  else cerr<<"\nPlease read in or generate the demand profile and weather data first."<<endl;
+  return false;
 }
 
 // after the tree is ready, tauten the tree to make it look better
 bool UserInterface::tautenTree()
 {
-	if(!(ctrl_QuadGenerated == QUADRANT_GENERATED && ctrl_WeatherReadIn == WEATHER_READ_IN && ctrl_DemandReadIn == DEMAND_READ_IN &&
-		 ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED && routingDAG->getStatus()==TREE_GENERATED))
-	{
-		cerr<<"Please generate the bottommost tree first before tautening the tree."<<endl;
-		return false;
-	}
-	cout<<"\nWe are tautening the bottommost tree branches now, please wait...";
-	return routingDAG->generateTautenedTree(weatherDatas, demandRNPs, deviationThreshold, nodeEdgeThreshold);
+  if(!(ctrl_QuadGenerated == QUADRANT_GENERATED && ctrl_WeatherReadIn == WEATHER_READ_IN && ctrl_DemandReadIn == DEMAND_READ_IN &&
+       ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED && routingDAG->getStatus()==TREE_GENERATED))
+    {
+      cerr<<"Please generate the bottommost tree first before tautening the tree."<<endl;
+      return false;
+    }
+  cout<<"\nWe are tautening the bottommost tree branches now, please wait...";
+  return routingDAG->generateTautenedTree(weatherDatas, demandRNPs, deviationThreshold, nodeEdgeThreshold);
 }
 
 // After the tree is generated, compute the operational flexibility information for each tree node and edge
 void UserInterface::inputOperationalFlexibility()
 {
-	if(ctrl_RoutingDAGGenerated != ROUTINGDAG_GENERATED || routingDAG->getStatus()==TREE_NOT_GENERATED)
-	{
-		cerr<<"\nPlease generate the tree first!"<<endl;
-		return;
-	}
-	float r1, r2, r3;
-	while(true)
-	{
-		cout<<"\nPlease input 3 values for operational flexibility pairs(in nm) in increasing order:";
-		cin>>r1>>r2>>r3;
-		if(!(r1>0 & r2>0 &r3>0 & r1<r2 & r2<r3))	// valid values, all positive and in increasing order, then move to the next step
-			cout<<"Invalid Input...";
-		else break;									// valid input
-	}
-	float* radii = new float[3];
-	radii[0] = r1;
-	radii[1] = r2;
-	radii[2] = r3;
-	routingDAG->generateOperFlexPairs(radii, 3, weatherDatas, deviationThreshold);	// generate the pairs of operational flexibility values	
-	delete []radii;
-	ctrl_OperFlexGenerated = OPER_FLEX_GENERATED;
-	cout<<"\nOperational flexibility pairs successfully generated for the tree."<<endl;
+  if(ctrl_RoutingDAGGenerated != ROUTINGDAG_GENERATED || routingDAG->getStatus()==TREE_NOT_GENERATED)
+    {
+      cerr<<"\nPlease generate the tree first!"<<endl;
+      return;
+    }
+  float r1, r2, r3;
+  while(true)
+    {
+      /*
+	cout<<"\nPlease input 3 values for operational flexibility pairs(in nm) in increasing order:";
+	cin>>r1>>r2>>r3;
+      */
+      r1 = 1;
+      r2 = 2;
+      r3 = 3; // Input this from config file
+      if(!(r1>0 & r2>0 &r3>0 & r1<r2 & r2<r3))	// valid values, all positive and in increasing order, then move to the next step
+	cout<<"Invalid Input...";
+      else break;									// valid input
+    }
+  float* radii = new float[3];
+  radii[0] = r1;
+  radii[1] = r2;
+  radii[2] = r3;
+  routingDAG->generateOperFlexPairs(radii, 3, weatherDatas, deviationThreshold);	// generate the pairs of operational flexibility values	
+  delete []radii;
+  ctrl_OperFlexGenerated = OPER_FLEX_GENERATED;
+  cout<<"\nOperational flexibility pairs successfully generated for the tree."<<endl;
 }
 
 // generate the demand profile for testing
@@ -617,7 +637,4 @@ void UserInterface::saveTreeInformation()
     }
   routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime);
   cout<<"\nTree Information successfully written to file.\n";
-  cout<<"\nPress any key to continue:";
-  char temp;															// accept whatever user input to comtinue
-  cin>>temp;
 }
