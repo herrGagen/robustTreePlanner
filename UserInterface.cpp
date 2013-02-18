@@ -22,43 +22,43 @@ UserInterface::UserInterface()
 // the destructor reclaims all the allocated memory to avoid memory leaks
 UserInterface::~UserInterface()
 {
-	if(ctrl_QuadGenerated == QUADRANT_GENERATED)			delete quadrant;
-	if(ctrl_WeatherReadIn == WEATHER_READ_IN)				delete demandProfile;
-	if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)	delete routingDAG;
-	for(int i=0; i<numWeatherData; i++)
-		delete weatherDatas[i];			
+  if(ctrl_QuadGenerated == QUADRANT_GENERATED)			delete quadrant;
+  if(ctrl_WeatherReadIn == WEATHER_READ_IN)				delete demandProfile;
+  if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)	delete routingDAG;
+  for(int i=0; i<numWeatherData; i++)
+    delete weatherDatas[i];			
 }
 
 // used to generate a brand new tree generating instance, everything is restalled to original value
 void UserInterface::reset()
 {
-	// deleting the existing objects
-	if(ctrl_QuadGenerated == QUADRANT_GENERATED)			delete quadrant;
-	if(ctrl_WeatherReadIn == WEATHER_READ_IN)				delete demandProfile;
-	if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)	delete routingDAG;
-	for(int i=0; i<numWeatherData; i++)
-		delete weatherDatas[i];
-	weatherDatas.clear();
-	demandRNPs.clear();
-	resetHelper();											// set all the ctrl variables to default and generate new objects
+  // deleting the existing objects
+  if(ctrl_QuadGenerated == QUADRANT_GENERATED)			delete quadrant;
+  if(ctrl_WeatherReadIn == WEATHER_READ_IN)				delete demandProfile;
+  if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)	delete routingDAG;
+  for(int i=0; i<numWeatherData; i++)
+    delete weatherDatas[i];
+  weatherDatas.clear();
+  demandRNPs.clear();
+  resetHelper();											// set all the ctrl variables to default and generate new objects
 }
 
 // set the system to the starting status, including variables and object initializations
 void UserInterface::resetHelper()
 {
-	ctrl_QuadGenerated = QUADRANT_GENERATED;				// there is always a default quadrant
-	ctrl_WeatherReadIn = WEATHER_NOT_READ_IN;				// current default: no weather data is read in
-	ctrl_DemandReadIn = DEMAND_NOT_READ_IN;					// and there is no demand profile read in
-	ctrl_RoutingDAGGenerated = ROUTINGDAG_NOT_GENERATED;	// the routing dag is not generated at the beginning
-	ctrl_OperFlexGenerated = OPER_FLEX_NOT_GENERATED;		// the operational flxitibility pairs are not generated at the beginning
-	
-	// generate the set of necessary objects
-	quadrant = new Quadrant();
-	demandProfile = new DemandProfile();
-	routingDAG = new RoutingDAG();
-	deviationThreshold = 0.7;
-	nodeEdgeThreshold = 0.8;								// default values of the thresholds
-	numWeatherData = 0;										// when initializing, there is NO weather data
+  ctrl_QuadGenerated = QUADRANT_GENERATED;				// there is always a default quadrant
+  ctrl_WeatherReadIn = WEATHER_NOT_READ_IN;				// current default: no weather data is read in
+  ctrl_DemandReadIn = DEMAND_NOT_READ_IN;					// and there is no demand profile read in
+  ctrl_RoutingDAGGenerated = ROUTINGDAG_NOT_GENERATED;	// the routing dag is not generated at the beginning
+  ctrl_OperFlexGenerated = OPER_FLEX_NOT_GENERATED;		// the operational flxitibility pairs are not generated at the beginning
+  
+  // generate the set of necessary objects
+  quadrant = new Quadrant();
+  demandProfile = new DemandProfile();
+  routingDAG = new RoutingDAG();
+  deviationThreshold = 0.7;
+  nodeEdgeThreshold = 0.8;								// default values of the thresholds
+  numWeatherData = 0;										// when initializing, there is NO weather data
 }
 
 
