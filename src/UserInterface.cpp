@@ -281,7 +281,7 @@ bool UserInterface::generateTree()
       else minDistBetweenMergeNodes/=NMILESPERPIXEL;
       while(true)
 	{
-	  cout<<"\nPlease specify the threshold value that we consider a weather cell to be hazardous:";
+	  // cout<<"\nPlease specify the threshold value that we consider a weather cell to be hazardous:";
 	  deviationThreshold = 0.8; // make this read from config file
 	  if(deviationThreshold<0 || deviationThreshold>1)
 	    cout<<"\nInvalid Input...";
@@ -299,15 +299,19 @@ bool UserInterface::generateTree()
 	  else break;
 	}
       routingDAG->setminimumDistanceBetweenMergingNodes(minDistBetweenMergeNodes);
-      cout<<"\nGenerating a bottommost merge tree, please wait...";
+      cout<< endl << "Generating a bottommost merge tree, please wait...";
       /************************************************************************************************/
       ctrl_OperFlexGenerated = OPER_FLEX_NOT_GENERATED;				// when generating a new tree, the Oper-Flex pairs need to be generated again
       // first, generate the entry and fix nodes, then the internal nodes
       routingDAG->reset();											// a brand new routing instance
+      cout << endl << "Finished resetting edges.";
       if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherDatas, routingDAG))
 	{
-	  routingDAG->generateEdgeSet();								// generate the edges in the searching DAG
+	  cout << endl << "Generating edge set...";
+    routingDAG->generateEdgeSet();								// generate the edges in the searching DAG
+    cout << endl << "Edges (Routing DAG) generated.";
 	  ctrl_RoutingDAGGenerated = ROUTINGDAG_GENERATED;
+    cout << endl << "Generating Tree...";
 	  // generate the tree here
 	  if(!routingDAG->generateTree(weatherDatas, demandRNPs, deviationThreshold, nodeEdgeThreshold))
 	    {
