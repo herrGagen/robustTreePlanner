@@ -299,19 +299,19 @@ bool UserInterface::generateTree()
 	  else break;
 	}
       routingDAG->setminimumDistanceBetweenMergingNodes(minDistBetweenMergeNodes);
-      cout<< endl << "Generating a bottommost merge tree, please wait...";
+      cout<< endl << "Generating a bottommost merge tree, please wait..." << endl;
       /************************************************************************************************/
       ctrl_OperFlexGenerated = OPER_FLEX_NOT_GENERATED;				// when generating a new tree, the Oper-Flex pairs need to be generated again
       // first, generate the entry and fix nodes, then the internal nodes
       routingDAG->reset();											// a brand new routing instance
-      cout << endl << "Finished resetting edges.";
+      cout << endl << "Finished resetting edges." << endl;
       if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherDatas, routingDAG))
 	{
-	  cout << endl << "Generating edge set...";
+	  cout << endl << "Generating edge set..." << endl;
     routingDAG->generateEdgeSet();								// generate the edges in the searching DAG
-    cout << endl << "Edges (Routing DAG) generated.";
+    cout << endl << "Edges (Routing DAG) generated." << endl;
 	  ctrl_RoutingDAGGenerated = ROUTINGDAG_GENERATED;
-    cout << endl << "Generating Tree...";
+    cout << endl << "Generating Tree..." << endl;
 	  // generate the tree here
 	  if(!routingDAG->generateTree(weatherDatas, demandRNPs, deviationThreshold, nodeEdgeThreshold))
 	    {
