@@ -308,10 +308,10 @@ bool UserInterface::generateTree()
       if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherDatas, routingDAG))
 	{
 	  cout << endl << "Generating edge set..." << endl;
-    routingDAG->generateEdgeSet();								// generate the edges in the searching DAG
-    cout << endl << "Edges (Routing DAG) generated." << endl;
+          routingDAG->generateEdgeSet();								// generate the edges in the searching DAG
+          cout << endl << "Edges (Routing DAG) generated." << endl;
 	  ctrl_RoutingDAGGenerated = ROUTINGDAG_GENERATED;
-    cout << endl << "Generating Tree..." << endl;
+          cout << endl << "Generating Tree..." << endl;
 	  // generate the tree here
 	  if(!routingDAG->generateTree(weatherDatas, demandRNPs, deviationThreshold, nodeEdgeThreshold))
 	    {
@@ -324,6 +324,7 @@ bool UserInterface::generateTree()
 	      return true;
 	    }
 	}	// an error message will pop up if failed to generate the DAG
+      else cout << "Failed to generate the DAG."
     }
   // else, then the weather data and demand profile have to be read in first
   else cerr<<"\nPlease read in or generate the demand profile and weather data first."<<endl;
