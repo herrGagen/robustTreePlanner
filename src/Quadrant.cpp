@@ -6,17 +6,18 @@
 
 Quadrant::Quadrant(double cX, double cY, double ang, double iR, double oR, double iH, double oH)
 {
-	setcX(cX);
-	setcY(cY);
-	setAngle(ang);
-	setiRadius(iR);
-	setoRadius(oR);
-	setiHeight(0);
-	setoHeight(0);
-	cHeight = oHeight - (oHeight-iHeight)*oRadius/(oRadius-iRadius);		// inner variable, no setting function defined
-	liftediRadius = sqrt(iRadius*iRadius+(iHeight-cHeight)*(iHeight-cHeight));
-	liftedoRadius = sqrt(oRadius*oRadius+(oHeight-cHeight)*(oHeight-cHeight));
-	liftStatus = QUADRANT_PLANE;
+  setcX(cX);
+  setcY(cY);
+  setAngle(ang);
+  setiRadius(iR);
+  setoRadius(oR);
+  setiHeight(0);
+  setoHeight(0);
+  cHeight = oHeight - (oHeight-iHeight)*oRadius/(oRadius-iRadius);
+  // inner variable, no setting function defined
+  liftediRadius = sqrt(iRadius*iRadius+(iHeight-cHeight)*(iHeight-cHeight));
+  liftedoRadius = sqrt(oRadius*oRadius+(oHeight-cHeight)*(oHeight-cHeight));
+  liftStatus = QUADRANT_PLANE;
 }
 
 Quadrant::~Quadrant(void)
@@ -26,53 +27,54 @@ Quadrant::~Quadrant(void)
 // modify and set the quadrant to a new configuration
 void Quadrant::setQuadrant(double cX, double cY, double ang, double iR, double oR, double iH, double oH)
 {
-	setcX(cX);
-	setcY(cY);
-	setAngle(ang);
-	setiRadius(iR);
-	setoRadius(oR);
-	setiHeight(iH);
-	setoHeight(oH);
-	cHeight = oHeight - (oHeight-iHeight)*oRadius/(oRadius-iRadius);	// computed center height, inner variable of the class
-	liftediRadius = sqrt(iRadius*iRadius+(iHeight-cHeight)*(iHeight-cHeight));
-	liftedoRadius = sqrt(oRadius*oRadius+(oHeight-cHeight)*(oHeight-cHeight));
-	if(iH!=0 || oH!=0)
-		liftStatus = QUADRANT_LIFTED;
-	else liftStatus = QUADRANT_PLANE;									// both heights are 0, then its still on the plane z=0
+  setcX(cX);
+  setcY(cY);
+  setAngle(ang);
+  setiRadius(iR);
+  setoRadius(oR);
+  setiHeight(iH);
+  setoHeight(oH);
+  cHeight = oHeight - (oHeight-iHeight)*oRadius/(oRadius-iRadius);
+  // computed center height, inner variable of the class
+  liftediRadius = sqrt(iRadius*iRadius+(iHeight-cHeight)*(iHeight-cHeight));
+  liftedoRadius = sqrt(oRadius*oRadius+(oHeight-cHeight)*(oHeight-cHeight));
+  if(iH!=0 || oH!=0)
+  	liftStatus = QUADRANT_LIFTED;
+  else liftStatus = QUADRANT_PLANE; // both heights are 0, then its still on the plane z=0
 }
 
 // set the quadrant to its initial configuration
 void Quadrant::reset()
 {
-	setQuadrant(0, 0, PI/6, 10, 35, 0, 0);
+  setQuadrant(0, 0, PI/6, 10, 35, 0, 0);
 }
 
 void Quadrant::setcX(double cX)
 {
-	centerX = cX;
+  centerX = cX;
 }
 void Quadrant::setcY(double cY)
 {
-	centerY = cY;
+  centerY = cY;
 }
 
 // normalize the angle to the range of [0, 2*PI)
 void Quadrant::setAngle(double ang)
 {
-	if(ang<0)
-	{
-		int temp = 1;
-		while(ang+2*PI*temp<0)
-			temp++;
-		angle = ang + 2*PI*temp;
-	}
-	else
-	{
-		int temp = 1;
-		while(ang - 2*PI*temp > 0)
-			temp++;
-		angle = ang-2*PI*(temp-1);
-	}
+  if(ang<0)
+  {
+    int temp = 1;
+    while(ang+2*PI*temp<0)
+      temp++;
+    angle = ang + 2*PI*temp;
+  }
+  else
+  {
+    int temp = 1;
+    while(ang - 2*PI*temp > 0)
+      temp++;
+    angle = ang-2*PI*(temp-1);
+  }
 }
 
 void Quadrant::setiRadius(double iR)
@@ -197,102 +199,124 @@ bool Quadrant::generateDAG(vector<float> rnps, int n, float effectiveThres, floa
 // given a size n float array of entry points' rnps, and a weatherdata set, and the DAG structure that we are going to put the points in
 bool Quadrant::generateEntryAndFixNodes(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData*> &wDatas, RoutingDAG *rDAG)
 {
-	if(!demandFeasible(rnps))
-	{
-		cerr<<"\nThe Quadrant is NOT large enough to be used for routing!"<<endl;
-		return false;
-	}
-	/***********************************************************************************************************************************************************************/
-	// first generate a set of n entry nodes, equally distributed along the outer boundary of the quadrant
-	float maxrnp = *max_element(rnps.begin(), rnps.end());					// the maximum rnp among the input rnps
-	double startingAngle = 2*rnps[0]/oRadius;								// the starting position and ending positions of the entry points
-	double endingAngle = PI/2 - 2*rnps[n-1]/oRadius;						// defined to be a little bit off the boundary of the quadrant
-	for(int i=0; i<n; i++)
-	{
-		double tempAngle = startingAngle + i*(endingAngle-startingAngle)/(n-1);
-		Node* tempNode = new Node(centerX+oRadius*cos(angle+tempAngle), centerY+oRadius*sin(angle+tempAngle), oHeight, ENTRY_NODE);
-		tempNode->setLayer(0);
-		tempNode->setLayerIndex(i);											// Entry Nodes are at layer 0 and layer index is set too
-		rDAG->insertNode(tempNode);											// insert the new Entry node into the routing graph
-	}
-	/***********************************************************************************************************************************************************************/
-	// then generate a set of fix nodes, at least 1, at most 3
-	int numFixNodes = 0;
-	double angleIncrement = (2*maxrnp+2)/iRadius;							// when we find a fix node, the next one should be at least angleIncrement aside from both sides
-	double currentAngleLeft = PI/4+PI/18;									// iterate through boundary points on the left and right from the 45 degrees
-	double currentAngleRight = PI/4;
-	startingAngle = (maxrnp+0.5)/iRadius;									// the boundary condition
-	endingAngle = PI/2 - (maxrnp+0.5)/iRadius;
-	Node** nodeArrayToBeInsertedIntoTheDAG = new Node*[3];					// store the fix nodes first, then insert them into the DAG in order of their angles
-	double *anglesOfFixNodes = new double[3];								// store the angles of each fix nodes generated
-	while(currentAngleRight>=startingAngle || currentAngleLeft<=endingAngle)
-	{
-		if(currentAngleRight>=startingAngle)
-		{
-			Node* tempNode1 = new Node(centerX+iRadius*cos(angle+currentAngleRight), centerY+iRadius*sin(angle+currentAngleRight), iHeight, FIX_NODE);
-			if(tempNode1->testRadiusWithWeatherDataSet(maxrnp, wDatas, effectiveThres, routingThres))			// not feasible
-			{
-				delete tempNode1;
-				currentAngleRight-=PI/18;										// test the next point on the inner arc ( 5 degrees out)
-			}
-			else																// the node can serve as a fix node
-			{
-				nodeArrayToBeInsertedIntoTheDAG[numFixNodes] = tempNode1;		// store the fix nodes information in the array
-				anglesOfFixNodes[numFixNodes] = currentAngleRight;
-				currentAngleLeft = max(currentAngleLeft, currentAngleRight + angleIncrement);
-				currentAngleRight -= angleIncrement;
-				numFixNodes ++;
-				if(numFixNodes==3)												// already got enough fix nodes
-					break;
-			}
-		}
-		if(currentAngleLeft<=endingAngle)
-		{
-			Node* tempNode2 = new Node(centerX+iRadius*cos(angle+currentAngleLeft), centerY+iRadius*sin(angle+currentAngleLeft), iHeight, FIX_NODE);
-			if(tempNode2->testRadiusWithWeatherDataSet(maxrnp, wDatas, effectiveThres, routingThres))		// intersect with the weather
-			{
-				delete tempNode2;
-				currentAngleLeft+=PI/18;
-			}
-			else																// the node can serve as a fix node
-			{
-				nodeArrayToBeInsertedIntoTheDAG[numFixNodes] = tempNode2;		// store the fix nodes information in the array
-				anglesOfFixNodes[numFixNodes] = currentAngleLeft;
-				currentAngleRight = min(currentAngleRight, currentAngleLeft - angleIncrement);
-				currentAngleLeft += angleIncrement;
-				numFixNodes ++;
-				if(numFixNodes==3)												// already got enough fix nodes
-					break;
-			}
-		}
-	}
-	if(numFixNodes>=1)			// find at least 1 fix node, then insert them in order of the angle into the DAG, and set their layerIndex values
-	{
-		// we have the fix nodes stored in the nodeArrayToBeInsertedIntoTheDAG array, and their corresponding angles are stores in the anglesOfFixNodes array
-		for(int i=0; i<numFixNodes; i++)			// insert the nodes one by one
-		{
-			int minAnglePos = 0;
-			double minAngle = PI;
-			for(int j=0; j<numFixNodes; j++)
-			{
-				if(anglesOfFixNodes[j]<minAngle)
-				{
-					minAngle = anglesOfFixNodes[j];
-					minAnglePos = j;				// find the position of the current minimum angle node
-				}
-			}
-			anglesOfFixNodes[minAnglePos] = PI;				// make it impossible to be the next minimum
-			nodeArrayToBeInsertedIntoTheDAG[minAnglePos]->setLayerIndex(i);
-			rDAG->insertNode(nodeArrayToBeInsertedIntoTheDAG[minAnglePos]);			// insert into the DAG based on increasing layerIndices
-		}
-		delete []nodeArrayToBeInsertedIntoTheDAG;
-		delete []anglesOfFixNodes;
-		return true;
-	}
-	delete []nodeArrayToBeInsertedIntoTheDAG;
-	delete []anglesOfFixNodes;
-	cerr<<"\nThe Quadrant is NOT large enough to be used for routing, please edit the quadrant!"<<endl;
-	return false;
+  if(!demandFeasible(rnps))
+    {
+      cerr<<"\nThe Quadrant is NOT large enough to be used for routing!"<<endl;
+      return false;
+    }
+  /*******************************************************/
+  // first generate a set of n entry nodes, equally distributed along the outer boundary of the quadrant
+  float maxrnp = *max_element(rnps.begin(), rnps.end()); // the maximum rnp among the input rnps
+  double startingAngle = 2*rnps[0]/oRadius; // the starting position and ending positions of the entry points
+  double endingAngle = PI/2 - 2*rnps[n-1]/oRadius; // defined to be a little bit off the boundary of the quadrant
+  for(int i=0; i<n; i++)
+    {
+      double tempAngle = startingAngle + i*(endingAngle-startingAngle)/(n-1);
+      Node* tempNode = new Node(centerX+oRadius*cos(angle+tempAngle), centerY+oRadius*sin(angle+tempAngle), oHeight, ENTRY_NODE);
+      tempNode->setLayer(0); 
+      tempNode->setLayerIndex(i); // Entry Nodes are at layer 0 and layer index is set too
+      rDAG->insertNode(tempNode); // insert the new Entry node into the routing graph
+    }
+  /***************************************************************************/
+  // then generate a set of fix nodes, at least 1, at most 3
+  int numFixNodes = 0;
+  double angleIncrement = (2*maxrnp+2)/iRadius;	
+  // when we find a fix node, the next one should be at least 
+  // angleIncrement aside from both sides
+
+  double currentAngleLeft = PI/4+PI/18;									// iterate through boundary points on the left and right from the 45 degrees
+  
+  double currentAngleRight = PI/4;
+  startingAngle = (maxrnp+0.5)/iRadius; // the boundary condition
+  endingAngle = PI/2 - (maxrnp+0.5)/iRadius;
+  Node** nodeArrayToBeInsertedIntoTheDAG = new Node*[3]; 
+  // store the fix nodes first, then insert them into the DAG in order of their angles
+  
+  double *anglesOfFixNodes = new double[3]; // store the angles of each fix nodes generated
+  while(currentAngleRight >= startingAngle || currentAngleLeft <= endingAngle)
+    {
+      if(currentAngleRight >= startingAngle)
+        {
+          Node* tempNode1 = new Node(centerX+iRadius*cos(angle+currentAngleRight), 
+                                     centerY+iRadius*sin(angle+currentAngleRight), 
+                                     iHeight, 
+                                     FIX_NODE);
+
+          // if not feasible
+          if(tempNode1->testRadiusWithWeatherDataSet(maxrnp, wDatas, effectiveThres, routingThres))
+            {
+              delete tempNode1;
+              currentAngleRight -= PI / 18; // test the next point on the inner arc ( 5 degrees out)
+            }
+          else // the node can serve as a fix node
+            {
+              nodeArrayToBeInsertedIntoTheDAG[numFixNodes] = tempNode1;
+              // store the fix nodes information in the array
+              
+              anglesOfFixNodes[numFixNodes] = currentAngleRight;
+              currentAngleLeft = max(currentAngleLeft, currentAngleRight + angleIncrement);
+              currentAngleRight -= angleIncrement;
+              numFixNodes++;
+              if(numFixNodes==3)
+                {
+                // already got enough fix nodes
+                break;
+                }
+            }
+        }
+      if(currentAngleLeft<=endingAngle)
+        {
+          Node* tempNode2 = new Node(centerX+iRadius*cos(angle+currentAngleLeft), centerY+iRadius*sin(angle+currentAngleLeft), iHeight, FIX_NODE);
+          if(tempNode2->testRadiusWithWeatherDataSet(maxrnp, wDatas, effectiveThres, routingThres))		// intersect with the weather
+            {
+              delete tempNode2;
+              currentAngleLeft+=PI/18;
+            }
+          else																// the node can serve as a fix node
+            {
+              nodeArrayToBeInsertedIntoTheDAG[numFixNodes] = tempNode2;		// store the fix nodes information in the array
+              anglesOfFixNodes[numFixNodes] = currentAngleLeft;
+              currentAngleRight = min(currentAngleRight, currentAngleLeft - angleIncrement);
+              currentAngleLeft += angleIncrement;
+              numFixNodes ++;
+              if(numFixNodes==3)												// already got enough fix nodes
+                break;
+            }
+        }
+    }
+  if(numFixNodes>=1) 
+    /* find at least 1 fix node,
+     then insert them in order of the angle into the DAG,
+     and set their layerIndex values */
+    {
+      /* we have the fix nodes stored in the nodeArrayToBeInsertedIntoTheDAG array, 
+       and their corresponding angles are stores in the anglesOfFixNodes array */
+      for(int i=0; i<numFixNodes; i++)	// insert the nodes one by one
+        {
+          int minAnglePos = 0;
+          double minAngle = PI;
+          for(int j=0; j<numFixNodes; j++)
+            {
+              if(anglesOfFixNodes[j]<minAngle)
+                {
+                  minAngle = anglesOfFixNodes[j];
+                  minAnglePos = j; // find the position of the current minimum angle node
+                }
+            }
+          anglesOfFixNodes[minAnglePos] = PI; // make it impossible to be the next minimum
+          nodeArrayToBeInsertedIntoTheDAG[minAnglePos]->setLayerIndex(i);
+          rDAG->insertNode(nodeArrayToBeInsertedIntoTheDAG[minAnglePos]); 
+          // insert into the DAG based on increasing layerIndices
+        }
+      delete []nodeArrayToBeInsertedIntoTheDAG;
+      delete []anglesOfFixNodes;
+      return true;
+    }
+  delete []nodeArrayToBeInsertedIntoTheDAG;
+  delete []anglesOfFixNodes;
+  cerr << endl <<"The Quadrant is NOT large enough to be used for routing, please edit the quadrant!"<<endl;
+  cout << endl << "Failure generating entry / fix nodes.!" << endl;
+  return false;
 }
 
 // this function generated all the nodes in the DAG, but the edges are not generated, which have to be done by the generateEdgeSet() function defined in RoutingDAG.h
