@@ -24,3 +24,6 @@ Prototype\ Mac.xcodeproj/*
 *.pdb
 *.exe
 *.cache
+*.opensdf
+*.sdf
+*.suo
