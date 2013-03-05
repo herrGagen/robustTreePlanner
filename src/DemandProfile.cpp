@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include <typeinfo>
 
 DemandProfile::DemandProfile(void)
 {
@@ -24,6 +25,11 @@ bool DemandProfile::readInFile(char* buffer, int fileSize)
 	int wordStartingIndex = 0;											// record the start of a new word in the buffer
 	int readingIndex = 0;												// record the position in the file, from 1 to fileSize											
 	// the first step tries to read in the center location(airport location)
+	rnp.clear();
+	xCoors.clear();
+	yCoors.clear();
+	/* XYZ TODO WHY IS THE SIZE OF THESE VECTORS DRAMATICALLY INCREASING OVER THE NEXT 50 LINES? */
+
 	while ( readingIndex < fileSize )
 	{
 		// the 4 separators: comma, line change('\n') and space. 13 "Carriage Return" is used together with '\n'
@@ -36,7 +42,7 @@ bool DemandProfile::readInFile(char* buffer, int fileSize)
 		buffer[readingIndex] = '\0';									// the current char is a separator', mark it as the end of a string
 		if( strcmp("SIMULATION_TIME_RANGE", &buffer[wordStartingIndex])==0)
 		{
-			wordStartingIndex = readingIndex+1;
+			wordStartingIndex = readingIndex + 1;
 			while(buffer[readingIndex]!=' ')
 			{
 				readingIndex++;
@@ -58,7 +64,7 @@ bool DemandProfile::readInFile(char* buffer, int fileSize)
 			string tempEndingTime(&buffer[wordStartingIndex]);			// the current word is the starting time of the demand time range
 			timeEnd = tempEndingTime;									// store it in the timeStart string
 		}
-		if( strcmp("CENTER_LOCATION", &buffer[wordStartingIndex])==0)	// if we find the center location "CENTER_LOCATION"
+		if( strcmp("CENTER_LOCATION", &buffer[wordStartingIndex]) == 0)	// if we find the center location "CENTER_LOCATION"
 		{
 			// the center location is revealed in the next strings
 			wordStartingIndex = readingIndex+1;							// read in the x position of the center first
@@ -84,6 +90,7 @@ bool DemandProfile::readInFile(char* buffer, int fileSize)
 		}
 		wordStartingIndex = readingIndex+1;								// read the next word
 	}
+
 	// the second step tries to find the start position of the flight information
 	while (readingIndex < fileSize)
 	{
@@ -105,63 +112,68 @@ bool DemandProfile::readInFile(char* buffer, int fileSize)
 	// the third step reads in the flight arrival infomation
 	while(readingIndex<fileSize)
 	{
-	  for(int i=0; i<2; i++)											// the first 5 elements of each line are irrelavant
-	    {
-	      while(buffer[readingIndex]!=',')							// find the first 5 commas
+		for(int i=0; i<2; i++)											// the first 2 elements of each line are irrelavant
 		{
-		  readingIndex++;
-		  if(testIndex(&readingIndex, &fileSize))					// if we are going out of range
-		    return false;
+			while(buffer[readingIndex]!=',')							// find the first 2 commas
+			{
+				readingIndex++;
+				if(testIndex(&readingIndex, &fileSize))					// if we are going out of range
+					return false;
+			}
+			readingIndex++;
 		}
-	      readingIndex++;
-	    }
-	  // after the first 5 elements, it comes the rnp information that we are going to store in vector<float> rnp
-	  wordStartingIndex = readingIndex;
-	  while(buffer[readingIndex]!=',')
-	    {
-	      readingIndex++;
-	      if(testIndex(&readingIndex, &fileSize))
-		return false;
-	    }
-	  buffer[readingIndex] = '\0';
-	  rnp.push_back(atof(&buffer[wordStartingIndex]));
-	  wordStartingIndex = ++readingIndex;								// reading index is at the start of the next word
-	  // the 6th to the 9th elements are irrelevant, we just skip these 3 elements by skipping 3 commas
-	  for(int i=0; i<3; i++)
-	    {
-	      while(buffer[readingIndex]!=',')
+		// after the first 2 elements, it comes the rnp information that we are going to store in vector<float> rnp
+		wordStartingIndex = readingIndex;
+		while(buffer[readingIndex]!=',')
 		{
-		  readingIndex++;
-		  if(testIndex(&readingIndex, &fileSize))
-		    return false;
+			readingIndex++;
+			if(testIndex(&readingIndex, &fileSize))
+				return false;
 		}
-	      readingIndex++;
-	    }
-	  // after the first 9 elements, it comes the information that we need: the flight (x, y) coordinates
-	  wordStartingIndex = readingIndex;								// the start of the next word
-	  while(buffer[readingIndex]!=',')								// read in the x coordinate in to xCoors
-	    {
-	      readingIndex++;
-	      if(testIndex(&readingIndex, &fileSize))						// if we are going out of range
-		return false;
-	    }
-	  buffer[readingIndex] = '\0';
-	  xCoors.push_back(atof(&buffer[wordStartingIndex]));				// store in xCoors
-	  wordStartingIndex = readingIndex+1;
-	  while(buffer[readingIndex]!='\n')								// read in the y coordinate in to yCoors(separated by line change'\n')
-	    {
-	      readingIndex++;
-	      if(testIndex(&readingIndex, &fileSize))						// if we are going out of range
-		return false;
-	    }
-	  buffer[readingIndex] = '\0';
-	  yCoors.push_back(atof(&buffer[wordStartingIndex]));				// store in yCoors
-	  wordStartingIndex = readingIndex+1;
-	  if(buffer[wordStartingIndex] == 'E')							// if the next word is "END_FLIGHTS", then we are done reading
-	    break;
+		buffer[readingIndex] = '\0';
+
+		/* XYZ TODO I'm not sure push_back is doing what Shang thought it was doing 
+		because of the bizarre size of these vectors; see comment above */
+		rnp.push_back(atof(&buffer[wordStartingIndex]));
+		cout << typeid(atof(&buffer[wordStartingIndex])).name() << endl;
+		wordStartingIndex = ++readingIndex;								// reading index is at the start of the next word
+		// the next element is irrelevant
+
+		while(buffer[readingIndex]!=',')
+		{
+			readingIndex++;
+			if(testIndex(&readingIndex, &fileSize))
+				return false;
+		}
+		readingIndex++;
+		// after the first 4 elements, it comes the information that we need: the flight (x, y) coordinates
+		wordStartingIndex = readingIndex;								// the start of the next word
+		while(buffer[readingIndex]!=',')								// read in the x coordinate in to xCoors
+		{
+			readingIndex++;
+			if(testIndex(&readingIndex, &fileSize))						// if we are going out of range
+				return false;
+		}
+		buffer[readingIndex] = '\0';
+		xCoors.push_back(atof(&buffer[wordStartingIndex]));				// store in xCoors
+		cout << atof(&buffer[wordStartingIndex]) << endl;
+		wordStartingIndex = readingIndex+1;
+		while(buffer[readingIndex]!='\n')								// read in the y coordinate in to yCoors(separated by line change'\n')
+		{
+			readingIndex++;
+			if(testIndex(&readingIndex, &fileSize))						// if we are going out of range
+				return false;
+		}
+		buffer[readingIndex] = '\0';
+		yCoors.push_back(atof(&buffer[wordStartingIndex]));				// store in yCoors
+		cout << atof(&buffer[wordStartingIndex]) << endl;
+		wordStartingIndex = readingIndex+1;
+		if(buffer[wordStartingIndex] == 'E')							// if the next word is "END_FLIGHTS", then we are done reading
+			break;
 	}
 	return handleInputData();
 }
+
 
 bool DemandProfile::handleInputData()
 {
@@ -178,7 +190,7 @@ bool DemandProfile::handleInputData()
 	{
 		if(rnp[i]<0 || xCoors[i]>360 || yCoors[i]>360)
 		{
-		  cout << rnp[i] << " " << xCoors[i] << " " << yCoors[i] << endl;
+			cout << rnp[i] << " " << xCoors[i] << " " << yCoors[i] << endl;
 			cerr<<"\nFile Content Error!"<<endl;				// prompt that the file has format errors
 			return false;
 		}

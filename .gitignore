@@ -20,4 +20,4 @@ Prototype\ Mac.xcodeproj/*
 
 *.pdb
 *.exe
-
+*.cache

@@ -21,6 +21,7 @@ public:
 	
 public:
 	bool readInFile(char* buffer, int fileSize);
+	bool DemandProfile::readInNewFormatDemandFile();
 	void reset();
 	void getDemandInfo(double* cX, double* cY, double* laPerPixel, double* loPerPixel, string* timeStart, string* timeEnd);
 	void getRange(double* minLati, double* minLong, double* maxLati, double* maxLong);
