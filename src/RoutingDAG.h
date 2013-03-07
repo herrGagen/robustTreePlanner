@@ -33,8 +33,8 @@ public:
 	RoutingDAG();
 	~RoutingDAG();
 	// the key function, routing algorithm, used to generate a tree from a prebuilt graph
-	bool generateTree(const vector<WeatherData*> &wDatas, vector<float> rnp, float effectiveThres, float routingThres);
-	bool generateTautenedTree(const vector<WeatherData*> &wDatas, vector<float> rnp, float effectiveThres, float routingThres);
+	bool generateTree(const vector<WeatherData> &wData, vector<float> rnp, float effectiveThres, float routingThres);
+	bool generateTautenedTree(const vector<WeatherData> &wData, vector<float> rnp, float effectiveThres, float routingThres);
 	void resetTree();
 	void reset();
 	void setminimumDistanceBetweenMergingNodes(double dis);
@@ -44,7 +44,7 @@ public:
 	void setNodesReadInStatus(int status);
 	int  getStatus();
 	bool generateEdgeSet();
-	void generateOperFlexPairs(float *radii, int length, vector<WeatherData*> &wDatas, float effectiveThres);
+	void generateOperFlexPairs(float *radii, int length, vector<WeatherData> &wData, float effectiveThres);
 public:
 	bool outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, std::string &startTime, std::string &endTime);
 private:
@@ -65,8 +65,8 @@ private:
 	int treeShapeStatus;							// if its bottommost tree or tautened tree
 	double minimumDistanceBetweenMergingNodes;		// the minimum distance in between 2 merging nodes along a single branch
 private:
-	bool routeBranch(Node *start, int entryIndex, const vector<WeatherData*> &wDatas, float rnp, float effectiveThres, float routingThres);
-	bool testRemainingBranchWhileMerging(Node *start, const vector<WeatherData*> &wDatas, float rnp, float effectiveThres, float routingThres);
+	bool routeBranch(Node *start, int entryIndex, const vector<WeatherData> &wData, float rnp, float effectiveThres, float routingThres);
+	bool testRemainingBranchWhileMerging(Node *start, const vector<WeatherData> &wData, float rnp, float effectiveThres, float routingThres);
 	void setTreeBranchUp(Node* current, Node* start, float rnp);
 	void setTreeBranchUpMerging(Node* start, float rnp);
 	void treeBranchPostProcessing(Node* start, float rnp);
@@ -88,7 +88,7 @@ private:
 	// helper functions when tautening the tree branches
 	void updateLayerUsedIndexVector(int entryIndex);
 	int findFeasibleNextEntryNode(int entryIndex);
-	bool routeTautenedTreeBranch(Node *start, int entryIndex, const vector<WeatherData*> &wDatas, float rnp, 
+	bool routeTautenedTreeBranch(Node *start, int entryIndex, const vector<WeatherData> &wData, float rnp, 
 								 float effectiveThres, float routingThres, int topMostTendency);
 	bool onNextBranch(Node* current, int entryIndex);
 	bool testNextBranchNode(Node* current, float rnp, int entryIndex);

@@ -58,8 +58,7 @@ private:
 	/****************************************************************************************************************************/
 private:
 	Quadrant* quadrant;						// the quadrant in the routing context
-	vector<WeatherData*> weatherDatas;		// a set of weather data files
-	int numWeatherData;						// the number of weather data, equal to the size of the vector weatherDatas
+	vector<WeatherData> weatherData;		// a set of weather data files
 	DemandProfile* demandProfile;			// demand profile information
 	RoutingDAG* routingDAG;					// key component, the routing DAG structure
 	vector<float> demandRNPs;				// the vector storing RNP values for each entry node

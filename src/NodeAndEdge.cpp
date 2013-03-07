@@ -53,20 +53,20 @@ void Node::clearFreeRadiusVector()
 // effectiveThres means if a weather cell's deviation probability is below this value, it's going to be considered as NULL
 // routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
 // if the value < routingThres, then it is considered an obstacle 
-bool Node::testRadiusWithWeatherDataSet(double r, const vector<WeatherData*> &wDatas, float effectiveThres, float routingThres)
+bool Node::testRadiusWithWeatherDataSet(double r, const vector<WeatherData> &wData, float effectiveThres, float routingThres)
 {
 	if(getWeatherCollisionStatus(r) == WEATHER_COLLISION)			// if was tested to be colliding with the weather
 		return true;
 	if(getWeatherCollisionStatus(r) == WEATHER_FREE)				// no collision with weather
 		return false;										
-	int numWeatherData = wDatas.size();
+	int numWeatherData = wData.size();
 	if(numWeatherData==0)									// there is no weather read in
 		return false;										// the ball is considered to be clear of weather obstacle
 	double finalProbability = 0;
 	for(int i=0; i<numWeatherData; i++)						// test the weather data members one by one
 	{
-		if(!testRadiusWithWeatherData(r, wDatas[i], effectiveThres))			// if there is no intersection, means this weather data is "clear"
-			finalProbability += wDatas[i]->getProbability();					// add 1*probability of the weather data
+		if(!testRadiusWithWeatherData(r, wData[i], effectiveThres))			// if there is no intersection, means this weather data is "clear"
+			finalProbability += wData[i].getProbability();					// add 1*probability of the weather data
 	}
 	if(finalProbability < routingThres)						// the probability that the weather is clear is not large enough
 	{
@@ -79,31 +79,31 @@ bool Node::testRadiusWithWeatherDataSet(double r, const vector<WeatherData*> &wD
 
 // overloaded function which does the same but returns the value of the final probability (for probability output)
 // return the probability that the cell is clear
-double Node::testRadiusWithWeatherDataSet(double r, const vector<WeatherData*> &wDatas, float effectiveThres)
+double Node::testRadiusWithWeatherDataSet(double r, const vector<WeatherData> &wData, float effectiveThres)
 {
-	int numWeatherData = wDatas.size();
+	int numWeatherData = wData.size();
 	if(numWeatherData==0)									// there is no weather read in
 		return 1;											// there is no weather, therefore, there is 1 prabability that it's clear
 	double finalProbability = 0;
 	for(int i=0; i<numWeatherData; i++)						// test the weather data members one by one
 	{
-		if(!testRadiusWithWeatherData(r, wDatas[i], effectiveThres))			// if there is no intersection, means this weather data is "clear"
-			finalProbability += wDatas[i]->getProbability();					// add 1*probability of the weather data
+		if(!testRadiusWithWeatherData(r, wData[i], effectiveThres))			// if there is no intersection, means this weather data is "clear"
+			finalProbability += wData[i].getProbability();					// add 1*probability of the weather data
 	}
 	return finalProbability;
 }
 
 
 // test if the radius r ball centered at current node conflict with the weatherdata, actually only do 2d testing if there z coordinates collide with each other
-bool Node::testRadiusWithWeatherData(double r, WeatherData* wData, float thres)
+bool Node::testRadiusWithWeatherData(double r, const WeatherData &wData, float thres)
 {
-	if(!wData)	return false;					// if the weather data does not exist, then just return false
-	int numCells = wData->size();
+	if(wData.size() == 0)	return false;					// if the weather data does not exist, then just return false
+	int numCells = wData.size();
 	float x1, y1, z1, cellWidth, cellHeight, deviationProbability;
 	for(int i=0; i<numCells; i++)
 	{
 		// if successfully read out all the cell data, the bottomleft corner of the cell is (x1, y1, z1)
-		if(wData->getCellData(i, &x1, &y1, &z1, &deviationProbability, &cellWidth, &cellHeight))	
+		if(wData.getCellData(i, &x1, &y1, &z1, &deviationProbability, &cellWidth, &cellHeight))	
 		{
 			if(deviationProbability<=thres)		// if the cell is not severe enough, simply skip
 				continue;						// test the next one							
@@ -690,14 +690,14 @@ void Edge::insertOperFlexDeviationCandidateNode(Node *temp)
 }
 
 // test the rnp on both side of THIS edge with the weatherDataSet (a set of boxes)
-bool Edge::testRNPWithWeatherDataSet(float rnp, const vector<WeatherData*> &wDatas, float effectiveThres, float routingThres)
+bool Edge::testRNPWithWeatherDataSet(float rnp, const vector<WeatherData> &wData, float effectiveThres, float routingThres)
 {
 	if(getWeatherCollisionStatus(rnp) == WEATHER_COLLISION)			// if was tested to be colliding with the weather
 		return true;
 	if(getWeatherCollisionStatus(rnp) == WEATHER_FREE)				// no collision with weather
 		return false;
-	if(wDatas.size()==0)	return false;
-	if(collisionWithWeatherDataHelper(rnp, wDatas, effectiveThres, routingThres, 1))
+	if(wData.size()==0)	return false;
+	if(collisionWithWeatherDataHelper(rnp, wData, effectiveThres, routingThres, 1))
 	{
 		insertWeatherCollisionStatus(rnp, WEATHER_COLLISION);
 		return true;
@@ -706,52 +706,52 @@ bool Edge::testRNPWithWeatherDataSet(float rnp, const vector<WeatherData*> &wDat
 	return false;
 }
 // test the right side of THIS edge with the WeatherDataSet (a set of boxes), the width of the rectangle is passed into the function as parameter width
-bool Edge::testPathStretchWithWeatherDataSet(double width, const vector<WeatherData*> &wDatas, float effectiveThres, float routingThres)
+bool Edge::testPathStretchWithWeatherDataSet(double width, const vector<WeatherData> &wData, float effectiveThres, float routingThres)
 {
-	if(wDatas.size()==0)	return false;
-	return collisionWithWeatherDataHelper(width, wDatas, effectiveThres, routingThres, 2);
+	if(wData.size()==0)	return false;
+	return collisionWithWeatherDataHelper(width, wData, effectiveThres, routingThres, 2);
 }
 // test the left side of THIS edge with the WeatherDataSet (a set of boxes)
-bool Edge::testWiggleRoomWithWeatherDataSet(double width, const vector<WeatherData*> &wDatas, float effectiveThres, float routingThres)
+bool Edge::testWiggleRoomWithWeatherDataSet(double width, const vector<WeatherData> &wData, float effectiveThres, float routingThres)
 {
-	if(wDatas.size()==0)	return false;
-	return collisionWithWeatherDataHelper(width, wDatas, effectiveThres, routingThres, 3);
+	if(wData.size()==0)	return false;
+	return collisionWithWeatherDataHelper(width, wData, effectiveThres, routingThres, 3);
 }
 
 // overloaded function to test the probability that THIS edge is clear of obstacles
-double Edge::testRNPWithWeatherDataSet(float rnp, const vector<WeatherData*> &wDatas, float effectiveThres)
+double Edge::testRNPWithWeatherDataSet(float rnp, const vector<WeatherData> &wData, float effectiveThres)
 {
-	if(wDatas.size()==0)	return 1;
-	return collisionWithWeatherDataHelper(rnp, wDatas, effectiveThres, 1);
+	if(wData.size()==0)	return 1;
+	return collisionWithWeatherDataHelper(rnp, wData, effectiveThres, 1);
 }
 
 // overloaded function to test the probability that the right side of THIS edge is clear of obstacles
-double Edge::testPathStretchWithWeatherDataSet(double width, const vector<WeatherData*> &wDatas, float effectiveThres)
+double Edge::testPathStretchWithWeatherDataSet(double width, const vector<WeatherData> &wData, float effectiveThres)
 {
-	if(wDatas.size()==0)	return 1;
-	return collisionWithWeatherDataHelper(width, wDatas, effectiveThres, 2);
+	if(wData.size()==0)	return 1;
+	return collisionWithWeatherDataHelper(width, wData, effectiveThres, 2);
 }
 
 // overloaded function to test the probability that the left side of THIS edge is clear of obstacles
-double Edge::testWiggleRoomWithWeatherDataSet(double width, const vector<WeatherData*> &wDatas, float effectiveThres)
+double Edge::testWiggleRoomWithWeatherDataSet(double width, const vector<WeatherData> &wData, float effectiveThres)
 {
-	if(wDatas.size()==0)	return 1;
-	return collisionWithWeatherDataHelper(width, wDatas, effectiveThres, 3);
+	if(wData.size()==0)	return 1;
+	return collisionWithWeatherDataHelper(width, wData, effectiveThres, 3);
 }
 
 // test rnp, pathStretching or Wiggle airspace are basically the same, only difference is the rectangle that we try to test
 // parameter testType means the type we are testing, 1 for rnp, 2 for pathStretching, 3 for Wiggle Airspace. 
 // test the values with a set of weather data files stored in a vector of weatherdata pointers
-bool Edge::collisionWithWeatherDataHelper(float w, const vector<WeatherData*> &wDatas, float effectiveThres, float routingThres, int testType)
+bool Edge::collisionWithWeatherDataHelper(float w, const vector<WeatherData> &wData, float effectiveThres, float routingThres, int testType)
 {
-	int numWeatherData = wDatas.size();
+	int numWeatherData = wData.size();
 	if(numWeatherData==0)										// no weather data to test
 		return false;											// no intersection with weather data
 	double finalProbability = 0;								// the total probability of all the weather files
 	for(int i=0; i<numWeatherData; i++)
 	{
-		if(!collisionTestingHelper(w, wDatas[i], effectiveThres, testType))				// if there is no collision
-			finalProbability += wDatas[i]->getProbability();
+		if(!collisionTestingHelper(w, wData[i], effectiveThres, testType))				// if there is no collision
+			finalProbability += wData[i].getProbability();
 	}
 	if(finalProbability < routingThres)							// compare the probability of clear weather with the routing required probability
 		return true;											// the weather is too severe
@@ -759,30 +759,30 @@ bool Edge::collisionWithWeatherDataHelper(float w, const vector<WeatherData*> &w
 }
 
 // an overloaded function which does the same thing but returns the final probability value (used for output)
-double Edge::collisionWithWeatherDataHelper(float w, const vector<WeatherData*> &wDatas, float effectiveThres, int testType)
+double Edge::collisionWithWeatherDataHelper(float w, const vector<WeatherData> &wData, float effectiveThres, int testType)
 {
-	int numWeatherData = wDatas.size();
+	int numWeatherData = wData.size();
 	if(numWeatherData==0)										// no weather data to test
 		return 1;											// no intersection with weather data
 	double finalProbability = 0;								// the total probability of all the weather files
 	for(int i=0; i<numWeatherData; i++)
 	{
-		if(!collisionTestingHelper(w, wDatas[i], effectiveThres, testType))				// if there is no collision
-			finalProbability += wDatas[i]->getProbability();
+		if(!collisionTestingHelper(w, wData[i], effectiveThres, testType))				// if there is no collision
+			finalProbability += wData[i].getProbability();
 	}												// the weather is clear
 	return finalProbability;
 }
 
 // test rnp, pathStretching or Wiggle airspace are basically the same, only difference is the rectangle that we try to test
 // parameter testType means the type we are testing, 1 for rnp, 2 for pathStretching, 3 for Wiggle Airspace
-bool Edge::collisionTestingHelper(double width, WeatherData *wData, float thres, int testType)
+bool Edge::collisionTestingHelper(double width, const WeatherData &wData, float thres, int testType)
 {
-	int numCells = wData->size();
+	int numCells = wData.size();
 	float x, y, z, cellWidth, cellHeight, deviationProbability;
 	for(int i=0; i<numCells; i++)
 	{
 		// if successfully read out all the cell data, the bottomleft corner of the cell is (x, y, z)
-		if(wData->getCellData(i, &x, &y, &z, &deviationProbability, &cellWidth, &cellHeight))	
+		if(wData.getCellData(i, &x, &y, &z, &deviationProbability, &cellWidth, &cellHeight))	
 		{
 			if(deviationProbability<=thres)		// if the cell is not severe enough, simply skip
 				continue;						// test the next one	

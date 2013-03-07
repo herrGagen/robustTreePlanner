@@ -27,15 +27,15 @@ public:
 	~WeatherData(void);
 	bool readInFileData(std::string fileName, double rangeMinLati, double rangeMinLong, double rangeMaxLati, double rangeMaxLong);
 	void reset();
-	double getMaxDevThres();
-	double getMinDevThres();
-	int size();
+	double getMaxDevThres() const;
+	double getMinDevThres() const;
+	int size() const;
 	void setProbability(double prob);
-	double getProbability();
-	bool getCellData(int index, float* x, float* y, float* alt, float* probDeviation, float* cWidth, float* cHeight);
+	double getProbability() const;
+	bool getCellData(int index, float* x, float* y, float* alt, float* probDeviation, float* cWidth, float* cHeight) const;
 	void convertLatiLongHeightToXY(double cX, double cY, double latiPerPix, double longPerPix);
-	double getMinAlt();
-	double getMaxAlt();
+	double getMinAlt() const;
+	double getMaxAlt() const;
 private:
 	bool handleInputData();			// in case the input file has format problem
 	bool testIndex(const int* readingIndex, const int* fileSize);				// test if we are going out of the range of the file, meaning file format error

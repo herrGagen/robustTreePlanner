@@ -142,8 +142,10 @@ int RoutingDAG::getStatus()						// get the tree generated status
 // the input was in nmile unit, so we convert the length it to screen opengl coordinate system first
 void RoutingDAG::setminimumDistanceBetweenMergingNodes(double dis)
 {
-	if(dis>=0)
-		minimumDistanceBetweenMergingNodes=dis;
+	if(dis >= 0)
+	{
+		minimumDistanceBetweenMergingNodes = dis;
+	}
 }
 
 // output the tree information into a .tre ASCII file
@@ -506,7 +508,7 @@ Node* RoutingDAG::fetchNode(int n)
 // effectiveThres means if a weather cell's deviation probability is below this value, it's going to be considered as NULL
 // routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
 // if the value < routingThres, then it is considered an obstacle 
-bool RoutingDAG::generateTree(const vector<WeatherData*> &wDatas, vector<float> rnp, float effectiveThres, float routingThres)
+bool RoutingDAG::generateTree(const vector<WeatherData> &wData, vector<float> rnp, float effectiveThres, float routingThres)
 {
 	// before computing, first reset all tree related variables and tree generating status
 	resetTree();	
@@ -523,21 +525,27 @@ bool RoutingDAG::generateTree(const vector<WeatherData*> &wDatas, vector<float> 
 		return false;
 	}
 	for(int i=0; i<entries.size(); i++)						// first make sure that all the entry nodes are themselves weather obstacle free
-		if(entries[i]->testRadiusWithWeatherDataSet(rnp[i], wDatas, effectiveThres, routingThres))
+		if(entries[i]->testRadiusWithWeatherDataSet(rnp[i], wData, effectiveThres, routingThres))
+		{
 			return false;	
+		}
 	// then start testing branches coming out of each entry node
 	for(int i=0; i<entries.size(); i++)
 	{
 		// test if the entry node is feasible, then route a branch for each entry node
 		for(int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
+		{
 			fetchNode(j)->setVisited(NOT_VISITED);					// when starting a new graph search from a new entry node, set every node unvisited
+		}
 		// first update the layerUsedIndex vector by walking thru the previous branches
 		updateLayerUsedIndexVector(i);
 		entries[i]->setDrawingRNP(rnp[i]);							// set the rnp information and treeNode status of the entry node
 		entries[i]->setTreeNode();
 		for(int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
+		{
 			fetchNode(j)->setVisited(NOT_VISITED);					// when starting a new search, all the nodes within the search DAG are set to be unvisited
-		if(!routeBranch(entries[i], i, wDatas, rnp[i], effectiveThres, routingThres))		
+		}
+		if(!routeBranch(entries[i], i, wData, rnp[i], effectiveThres, routingThres))		
 		{
 			resetTree();											// tree routing failed, then no tree is generated, reset
 			return false;
@@ -556,7 +564,7 @@ bool RoutingDAG::generateTree(const vector<WeatherData*> &wDatas, vector<float> 
 // effectiveThres means if a weather cell's deviation probability is below this value, it's going to be considered as NULL
 // routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
 // if the value < routingThres, then it is considered an obstacle 
-bool RoutingDAG::routeBranch(Node *start, int entryIndex, const vector<WeatherData*> &wDatas, float rnp, float effectiveThres, float routingThres)
+bool RoutingDAG::routeBranch(Node *start, int entryIndex, const vector<WeatherData> &wData, float rnp, float effectiveThres, float routingThres)
 {
 	// if there is no entry demand at all from this entry node, then simply return true
 	if(rnp==0)	return true;
@@ -566,6 +574,7 @@ bool RoutingDAG::routeBranch(Node *start, int entryIndex, const vector<WeatherDa
 	// do the loop while the stack is not empty, doing a Depth First Search
 	while(!tempStack.empty())
 	{
+		std::cout << ".";		
 		Node* temp = tempStack.top();								// pop the first node out and store it as Node* temp
 		tempStack.pop();
 		for(int i=0; i<=temp->getOutSize()-1; i++)					// test each of its outgoing edges (from top(right) to bottommost(left))
@@ -573,8 +582,8 @@ bool RoutingDAG::routeBranch(Node *start, int entryIndex, const vector<WeatherDa
 			Edge* tempEdge = temp->getOutEdge(i);					// the pointers to the current outer edge and outer node
 			Node* tempNode = temp->getOutNode(i);
 			// if the new outgoing node/edge pair conflict with weather, then just ignore
-			if(tempEdge->testRNPWithWeatherDataSet(rnp, wDatas, effectiveThres, routingThres) ||
-			   tempNode->testRadiusWithWeatherDataSet(rnp, wDatas, effectiveThres, routingThres))
+			if(tempEdge->testRNPWithWeatherDataSet(rnp, wData, effectiveThres, routingThres) ||
+			   tempNode->testRadiusWithWeatherDataSet(rnp, wData, effectiveThres, routingThres))
 				continue;
 			// we explore the node only if it's on the right side of the existing tree(bottommost filling, so cannot cross previous branches)
 			if(tempNode->getLayerIndex()>layerUsedIndex[tempNode->getLayer()])
@@ -633,7 +642,7 @@ bool RoutingDAG::routeBranch(Node *start, int entryIndex, const vector<WeatherDa
 				if(testDistanceTooCloseToMergingNodesOnPreviousBranch(tempNode, entryIndex))
 					continue;
 				// meaning that the remaining part of the tree would work, then just finish building the tree
-				if(testRemainingBranchWhileMerging(tempNode, wDatas, rnp, effectiveThres, routingThres))		
+				if(testRemainingBranchWhileMerging(tempNode, wData, rnp, effectiveThres, routingThres))		
 				{
 					setTreeBranchUpMerging(tempNode, rnp);									// set the drawingRNP values from the fix node to the node that we start
 					tempNode->setPrevTreeNode(temp);									// mark the prevNode and prevEdge in the tree structure
@@ -667,7 +676,7 @@ bool RoutingDAG::routeBranch(Node *start, int entryIndex, const vector<WeatherDa
 }
 
 // test a branch of the tree starting from a given Node, and see if the remaining part of the branch is good to be merged in by another branch
-bool RoutingDAG::testRemainingBranchWhileMerging(Node *start, const vector<WeatherData*> &wDatas, float rnp, float effectiveThres, float routingThres)
+bool RoutingDAG::testRemainingBranchWhileMerging(Node *start, const vector<WeatherData> &wData, float rnp, float effectiveThres, float routingThres)
 {
 	if(start->getInDegree()>=2)										// if a node is already fully occupied, then return fail
 		return false;
@@ -676,14 +685,14 @@ bool RoutingDAG::testRemainingBranchWhileMerging(Node *start, const vector<Weath
 	{
 		// getDrawingRNP is used to denote if the previous RNP is alreayd larger, then no need to test again
 		// test if the current node is clear of weather obstacle with the new rnp				
-		if(temp->getDrawingRNP()<rnp && temp->testRadiusWithWeatherDataSet(rnp, wDatas, effectiveThres, routingThres))	
+		if(temp->getDrawingRNP()<rnp && temp->testRadiusWithWeatherDataSet(rnp, wData, effectiveThres, routingThres))	
 			return false;
 		if(temp->getNodeType()==FIX_NODE)							// if we are getting to a fix node, then we suceessfully prove that the branch is safe to be merged in
 			break;													
 		Edge* tempEdge = temp->getOutEdge(temp->getTreeOutEdgeIndex());
 		if(tempEdge)		// if we find a tree edge (each node has at MOST one outgoing edge that is a tree edge), and its NOT clear of weather with the new rnp value
 		{
-			if(tempEdge->getDrawingRNP()<rnp && tempEdge->testRNPWithWeatherDataSet(rnp, wDatas, effectiveThres, routingThres))
+			if(tempEdge->getDrawingRNP()<rnp && tempEdge->testRNPWithWeatherDataSet(rnp, wData, effectiveThres, routingThres))
 				return false;									// NOT clear of weather, report false
 		}
 		else				// means no outgoing tree edge is found, means there is tree error in the previous branch
@@ -781,7 +790,7 @@ void RoutingDAG::updateLayerUsedIndexVector(int entryIndex)
 // after the bottommost tree is generated, tauten its branches so that it looks much better using Dijkstra algorithm on DAG
 // in the front of this function, no feasibility needs to be tested (other than if the bottommost tree was generated already) 
 // because the function is only called after the bottommost tree is generated
-bool RoutingDAG::generateTautenedTree(const vector<WeatherData*> &wDatas, vector<float> rnp, float effectiveThres, float routingThres)
+bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<float> rnp, float effectiveThres, float routingThres)
 {
 	if(status == TREE_NOT_GENERATED)		// this is not actually going to happen because the same test was always conducted before calling this function
 	{
@@ -792,13 +801,16 @@ bool RoutingDAG::generateTautenedTree(const vector<WeatherData*> &wDatas, vector
 		return false;
 	// save the original bottommost tree information, in case there are multiple rounds of tautened tree generating
 	for(int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
+	{
 		fetchNode(i)->storeTreeOutEdgeIndexInformation();
+	}
 	// when topMostTendency is 1, nothing unusual happens. Then next round, every 2nd branches will try to merge into its next branch
 	// next round, then every 3rd and 2nd branches will try to merge into their corresponding 1st branch. until topMostTendency is entry.size(), where
 	// each branch will try to merge into the first branch. This is used to deal with the bottleneck cases and urge branches to merge early
 	// the tree will look more like a topmost tree if every branch tries to merge into the first branch. Hence it's called topMostTendency
 	for(int topMostTendency=1; topMostTendency<=entries.size(); topMostTendency++)
 	{
+		cout << ".";
 		//preparation for the new tree: clear the unuseful(useful for the new tree) data structure related to the previous tree for nodes and edges
 		for(int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
 		{
@@ -829,7 +841,7 @@ bool RoutingDAG::generateTautenedTree(const vector<WeatherData*> &wDatas, vector
 			entries[i]->setTreeNode();
 			// if tautening fails, reason is that maybe there is bottleneck place that branch (i+1) takes too much freedom of branch (i), such as
 			// a merging node is taken, or the min distance between merging nodes requirement cannot be fulfilled, etc...
-			if(!routeTautenedTreeBranch(entries[i], i, wDatas, rnp[i], effectiveThres, routingThres, topMostTendency))	
+			if(!routeTautenedTreeBranch(entries[i], i, wData, rnp[i], effectiveThres, routingThres, topMostTendency))	
 			{
 				if(topMostTendency==entries.size())			// if the last try also failed, then there is no tautening
 				{
@@ -862,7 +874,7 @@ bool compareNodes(Node* n1, Node* n2)
 
 // this function route a branch of the tautened tree starting from an entry node, the topMostTendency parameter denotes if the tree will more like a 
 // topmost tree or not(sometimes the only way to do this is a topmost tree), topMostTendency is from 1 to entries.size() 
-bool RoutingDAG::routeTautenedTreeBranch(Node *start, int entryIndex, const vector<WeatherData*> &wDatas, float rnp, 
+bool RoutingDAG::routeTautenedTreeBranch(Node *start, int entryIndex, const vector<WeatherData> &wData, float rnp, 
 										 float effectiveThres, float routingThres, int topMostTendency)
 {
 	if(start->getDrawingRNP()==0)			// if there is no demand from the current entry node, then no branch is coming out of it, return
@@ -895,8 +907,8 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, int entryIndex, const vect
 			Node* tempNode = temp->getOutNode(i);
 			Edge* tempEdge = temp->getOutEdge(i);
 			// first test if the new pair of nodes and edges collide with the weather data, if so, then just ignore this pair
-			if(tempNode->testRadiusWithWeatherDataSet(rnp, wDatas, effectiveThres, routingThres) ||
-			   tempEdge->testRNPWithWeatherDataSet(rnp, wDatas, effectiveThres, routingThres))
+			if(tempNode->testRadiusWithWeatherDataSet(rnp, wData, effectiveThres, routingThres) ||
+			   tempEdge->testRNPWithWeatherDataSet(rnp, wData, effectiveThres, routingThres))
 				continue;							// the node is infeasible, look at the next node
 			// then test if this new edge obviously goes across the previous or next branch, then ignore as well
 			if(tempNode->getLayerIndex()>layerUsedIndexReverseDirection[tempNode->getLayer()] || 
@@ -913,7 +925,7 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, int entryIndex, const vect
 				if(testDistanceTooCloseToMergingNodesOnNextBranch(tempNode, entryIndex))	// if it does NOT satisfy the min distane between merging nodes constraint
 					continue;
 				// if the new rnp is too large when merging, then we cannot used this node as a merging node(once merged, cannot depart later)
-				if(!testRemainingBranchWhileMerging(tempNode, wDatas, rnp, effectiveThres, routingThres))	
+				if(!testRemainingBranchWhileMerging(tempNode, wData, rnp, effectiveThres, routingThres))	
 					continue;
 			}
 			// if the start of the current edge is already a part of the previous branch, then the new node must also be a node in the previous branch
@@ -1338,7 +1350,7 @@ bool RoutingDAG::testDistanceTooCloseToMergingNodesOnCurrentBranch(Node* toBeDec
 
 /***************************************************************************************************************************************************************/
 // after the tree is generated, for each node and edge in the tree, calculate their operational flxibilities
-void RoutingDAG::generateOperFlexPairs(float* radii, int length, vector<WeatherData*> &wDatas, float effectiveThres)
+void RoutingDAG::generateOperFlexPairs(float* radii, int length, vector<WeatherData> &wData, float effectiveThres)
 {
 	if(status==TREE_NOT_GENERATED)
 	{
@@ -1360,13 +1372,13 @@ void RoutingDAG::generateOperFlexPairs(float* radii, int length, vector<WeatherD
 			// insert operational flexibility pairs of the node and its outgoing tree edge
 			for(int j=0; j<length; j++)
 			{
-				double tempProb = tempNode->testRadiusWithWeatherDataSet(radii[j], wDatas, effectiveThres);
+				double tempProb = tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres);
 				tempNode->insertFreeRadiusVec(radii[j], tempProb);
-				tempProb = tempEdge->testRNPWithWeatherDataSet(radii[j], wDatas, effectiveThres);
+				tempProb = tempEdge->testRNPWithWeatherDataSet(radii[j], wData, effectiveThres);
 				tempEdge->insertOperFlex(radii[j], tempProb, 1);		// insert in to the rnp vector
-				tempProb = tempEdge->testPathStretchWithWeatherDataSet(radii[j], wDatas, effectiveThres);
+				tempProb = tempEdge->testPathStretchWithWeatherDataSet(radii[j], wData, effectiveThres);
 				tempEdge->insertOperFlex(radii[j], tempProb, 2);		// insert in to the path stretching vector
-				tempProb = tempEdge->testWiggleRoomWithWeatherDataSet(radii[j], wDatas, effectiveThres);
+				tempProb = tempEdge->testWiggleRoomWithWeatherDataSet(radii[j], wData, effectiveThres);
 				tempEdge->insertOperFlex(radii[j], tempProb, 3);		// insert in to the wiggle room vector
 			}
 			/***************************************************************************************************************/
@@ -1380,7 +1392,7 @@ void RoutingDAG::generateOperFlexPairs(float* radii, int length, vector<WeatherD
 									  (tempEdge->getHead()->getZ()*3+tempEdge->getTail()->getZ())/4);
 				// compute the operational flxibility pairs of each generated deviation node
 				for(int j=0; j<length; j++)
-					temp->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wDatas, effectiveThres));
+					temp->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres));
 				tempEdge->insertOperFlexDeviationCandidateNode(temp);
 			}
 			if(edgeLength>4*currentRNP)										// generate the nodes at 1/2 position from head to tail
@@ -1389,7 +1401,7 @@ void RoutingDAG::generateOperFlexPairs(float* radii, int length, vector<WeatherD
 									  (tempEdge->getHead()->getZ()+tempEdge->getTail()->getZ())/2);
 				// compute the operational flxibility pairs of each generated deviation node
 				for(int j=0; j<length; j++)
-					temp->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wDatas, effectiveThres));
+					temp->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres));
 				tempEdge->insertOperFlexDeviationCandidateNode(temp);
 			}
 			if(edgeLength>=8*currentRNP)										// generate the nodes at 3/4 position from head to tail
@@ -1398,7 +1410,7 @@ void RoutingDAG::generateOperFlexPairs(float* radii, int length, vector<WeatherD
 									  (tempEdge->getHead()->getZ()+3*tempEdge->getTail()->getZ())/4);
 				// compute the operational flxibility pairs of each generated deviation node
 				for(int j=0; j<length; j++)
-					temp->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wDatas, effectiveThres));
+					temp->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres));
 				tempEdge->insertOperFlexDeviationCandidateNode(temp);
 			}
 			/***************************************************************************************************************/
@@ -1410,6 +1422,6 @@ void RoutingDAG::generateOperFlexPairs(float* radii, int length, vector<WeatherD
 	{
 		Node* tempNode = fixes[i];
 		for(int j=0; j<length; j++)
-			tempNode->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wDatas, effectiveThres));
+			tempNode->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres));
 	}
 }

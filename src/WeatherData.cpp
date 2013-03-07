@@ -54,7 +54,7 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
   reset();											// first reset the vectors to empty, then read in
 
   ifstream dataStream(fileName.c_str(), ifstream::in );
-  unsigned long fileSize = 0;
+  size_t fileSize = 0;
   dataStream.seekg(0, ios_base::end);
   fileSize = dataStream.tellg();
   dataStream.seekg(0, ios_base::beg);
@@ -66,13 +66,14 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
   for(int i = 0; i<5; i++) // Try and find the "Probability" line in the first 5 lines of the file.
     {
       std::getline(dataStream, thisLine);
-      unsigned long found = thisLine.find("Probability");
+      size_t found = thisLine.find("Probability");
       if(found != std::string::npos)
         {
           unsigned beginNumber = thisLine.find_first_of("-.0123456789",found);
           unsigned endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
           endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
-          probability = ::atof( (thisLine.substr(beginNumber, endNumber)).c_str() );
+		  std::string tempString = thisLine.substr(beginNumber, endNumber);
+          probability = ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() );
           break; // leave the for loop once probability has been found.
         }
       if(i==4)
@@ -93,25 +94,26 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
     {
       std::getline(dataStream, thisLine);
       float values[4]; // Storage for tempX, tempY, tempAltitude, tempProbability		
-      unsigned long beginNumber = thisLine.find_first_of("-.0123456789",0);
+      size_t beginNumber = thisLine.find_first_of("-.0123456789",0);
       // Just a double check to ensure we aren't feeding the parser garbage lines.
       if(beginNumber == string::npos)
         {
           break;
         }
-      unsigned long endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
+      size_t endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
       for(int i = 0; i<4; i++)
         {
-          values[i] = ::atof( (thisLine.substr(beginNumber, endNumber)).c_str() );
+		  std::string tempString = thisLine.substr(beginNumber, endNumber-beginNumber);
+          values[i] = (float)::atof( tempString.c_str() );
           // Move the search window for a number in the current line.
           beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
-          beginNumber = (beginNumber < thisLine.length() ) ? beginNumber : thisLine.length();
           endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
-          endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length();
-          // Possible bug: these might have to be length()
         }
 
-      if(values[0]>rangeMinLati && values[0]<rangeMaxLati && values[1]>rangeMinLong && values[1]<rangeMaxLong)
+      if(values[0]>rangeMinLati && 
+		 values[0]<rangeMaxLati && 
+		 values[1]>rangeMinLong && 
+		 values[1]<rangeMaxLong)
         {
           xCoors.push_back(values[0]);	
           yCoors.push_back(values[1]);
@@ -152,7 +154,7 @@ bool WeatherData::handleInputData()
         // debugging
         //		  cout << xCoors[i] << " " << yCoors[i] << endl;
         // normalize the range into (-180, 180]
-        if(xCoors[i]>180)	xCoors[i]-=360;
+      if(xCoors[i]>180)	xCoors[i]-=360;
       if(yCoors[i]>180)	yCoors[i]-=360;
       if(altitudes[i]<minAlt)	minAlt = altitudes[i];
       if(altitudes[i]>maxAlt)	maxAlt = altitudes[i];
@@ -198,18 +200,18 @@ void WeatherData::convertLatiLongHeightToXY(double cX, double cY, double latiPer
 }
 
 // functions to return the deviation threshold values
-double WeatherData::getMaxDevThres()
+double WeatherData::getMaxDevThres() const
 {
   return maxProbDev;
 }
 
-double WeatherData::getMinDevThres()
+double WeatherData::getMinDevThres() const
 {
   return minProbDev;
 }
 
 // the number of weather cells in the weather data
-int WeatherData::size()
+int WeatherData::size() const
 {
   return numPoints;
 }
@@ -221,25 +223,25 @@ void WeatherData::setProbability(double prob)
     probability = prob;
 }
 
-double WeatherData::getProbability()
+double WeatherData::getProbability() const
 {
   return probability;
 }
 
 // return the minimum altitude of the current weather data: the z coordinate in screen coordinate system
-double WeatherData::getMinAlt()
+double WeatherData::getMinAlt() const
 {
   return (minAlt-ALTITUDE_AT_BASE_PLANE) / ALTITUDE_PER_PIXEL;
 }
 
-double WeatherData::getMaxAlt()
+double WeatherData::getMaxAlt() const
 {
   return (maxAlt-ALTITUDE_AT_BASE_PLANE) / ALTITUDE_PER_PIXEL;
 }
 
 // given an index, return the corresponding weather cell's data, including its (x, y, z) and probability of deviation 
 // as well as the cell's width and height(these 2 parameters are fixed among all cells)
-bool WeatherData::getCellData(int index, float* x, float* y, float* alt, float* probDev, float* cWidth, float* cHeight)
+bool WeatherData::getCellData(int index, float* x, float* y, float* alt, float* probDev, float* cWidth, float* cHeight) const
 {
   if(index>=numPoints || index<0)
     return false;
