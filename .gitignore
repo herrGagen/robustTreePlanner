@@ -17,8 +17,9 @@ rtp
 *.tar
 *.zip
 build/*
-Data/results_start_0_offset_15/*
+Data/results*
 Release/*
+CWAMEnsembles/*
 Prototype\ Mac.xcodeproj/*
 
 *.pdb

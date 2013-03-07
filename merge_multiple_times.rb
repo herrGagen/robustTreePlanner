@@ -18,7 +18,9 @@ def parse_time_from_filename(filename)
   DateTime.parse(filename.basename.to_s.gsub(/[^0-9]/, "")).to_time
 end
 
-results = "results_start_" + starting_time.to_s + "_offset_" + offset_in_minutes.to_s
+results_string = "results_start_" + starting_time.to_s + "_offset_" + offset_in_minutes.to_s
+results = Pathname.new(Dir.pwd) + "Data" + results_string
+puts results
 FileUtils.remove_dir(results, force = true)
 # exit(0)
 FileUtils.mkdir(results)
@@ -75,4 +77,4 @@ path.each_child do |folder|
   end
 end
 
-puts sum, test_sum
+puts "Total Probability: " + sum.to_s
