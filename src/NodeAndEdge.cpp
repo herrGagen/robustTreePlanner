@@ -59,11 +59,10 @@ bool Node::testRadiusWithWeatherDataSet(double r, const vector<WeatherData> &wDa
 		return true;
 	if(getWeatherCollisionStatus(r) == WEATHER_FREE)				// no collision with weather
 		return false;										
-	int numWeatherData = wData.size();
-	if(numWeatherData==0)									// there is no weather read in
+	if(wData.size()==0)									// there is no weather read in
 		return false;										// the ball is considered to be clear of weather obstacle
 	double finalProbability = 0;
-	for(int i=0; i<numWeatherData; i++)						// test the weather data members one by one
+	for(int i=0; i<wData.size(); i++)						// test the weather data members one by one
 	{
 		if(!testRadiusWithWeatherData(r, wData[i], effectiveThres))			// if there is no intersection, means this weather data is "clear"
 			finalProbability += wData[i].getProbability();					// add 1*probability of the weather data
@@ -81,11 +80,10 @@ bool Node::testRadiusWithWeatherDataSet(double r, const vector<WeatherData> &wDa
 // return the probability that the cell is clear
 double Node::testRadiusWithWeatherDataSet(double r, const vector<WeatherData> &wData, float effectiveThres)
 {
-	int numWeatherData = wData.size();
-	if(numWeatherData==0)									// there is no weather read in
+	if(wData.size()==0)									// there is no weather read in
 		return 1;											// there is no weather, therefore, there is 1 prabability that it's clear
 	double finalProbability = 0;
-	for(int i=0; i<numWeatherData; i++)						// test the weather data members one by one
+	for(int i=0; i<wData.size(); i++)						// test the weather data members one by one
 	{
 		if(!testRadiusWithWeatherData(r, wData[i], effectiveThres))			// if there is no intersection, means this weather data is "clear"
 			finalProbability += wData[i].getProbability();					// add 1*probability of the weather data
@@ -744,11 +742,10 @@ double Edge::testWiggleRoomWithWeatherDataSet(double width, const vector<Weather
 // test the values with a set of weather data files stored in a vector of weatherdata pointers
 bool Edge::collisionWithWeatherDataHelper(float w, const vector<WeatherData> &wData, float effectiveThres, float routingThres, int testType)
 {
-	int numWeatherData = wData.size();
-	if(numWeatherData==0)										// no weather data to test
+	if(wData.size()==0)										// no weather data to test
 		return false;											// no intersection with weather data
 	double finalProbability = 0;								// the total probability of all the weather files
-	for(int i=0; i<numWeatherData; i++)
+	for(int i=0; i<wData.size(); i++)
 	{
 		if(!collisionTestingHelper(w, wData[i], effectiveThres, testType))				// if there is no collision
 			finalProbability += wData[i].getProbability();
@@ -761,11 +758,10 @@ bool Edge::collisionWithWeatherDataHelper(float w, const vector<WeatherData> &wD
 // an overloaded function which does the same thing but returns the final probability value (used for output)
 double Edge::collisionWithWeatherDataHelper(float w, const vector<WeatherData> &wData, float effectiveThres, int testType)
 {
-	int numWeatherData = wData.size();
-	if(numWeatherData==0)										// no weather data to test
+	if(wData.size()==0)										// no weather data to test
 		return 1;											// no intersection with weather data
 	double finalProbability = 0;								// the total probability of all the weather files
-	for(int i=0; i<numWeatherData; i++)
+	for(int i=0; i<wData.size(); i++)
 	{
 		if(!collisionTestingHelper(w, wData[i], effectiveThres, testType))				// if there is no collision
 			finalProbability += wData[i].getProbability();
