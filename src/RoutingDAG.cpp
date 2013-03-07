@@ -154,51 +154,70 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 {
 	if(status==TREE_NOT_GENERATED)
 	{
-		cerr<<"\nPlease generate the tree first before outputting the tree information!"<<endl;
+		cerr << "\nPlease generate the tree first before outputting the tree information!" << endl;
 		return false;
 	}
-	string XMLDirectory;										// the directory of the output .xml file
-	cout<<"\nPlease provide the complete directory of the output file:";
-	cin.ignore(1000 ,'\n');										// clear the buffer, ignore the leftover characters
-	getline(cin, XMLDirectory);
-	ofstream os(XMLDirectory.c_str(), ios::out);
-	if(os)
+	string XMLFileName("out.xml");
+        ofstream os;
+        do
+          {
+            string tempFileName;
+            cout<<"\nPlease provide a name for the output file:\n";
+            std::getline(cin,tempFileName);
+            if( tempFileName.length() > 0 )
+              {
+                os.open(tempFileName.c_str(), ios::out);
+                if(os.is_open())
+                  {
+                    XMLFileName = tempFileName;
+                  }
+              }
+            else
+              {
+                os.open(XMLFileName.c_str(), ios::out);
+              }
+          } while( !os.is_open() );
+
+        cout << "Outputting to file: " << XMLFileName << std::endl;
+
+          // Output our XML file.  Yes this should use a library, don't shoot the maintenance coder.
+          if( os.is_open() )
 	{	/****************************************************************************************************************************/
 		// start printing to the file according the the file format
-		os<<"<Routing_Trees start_time=\""<<startTime.c_str()<<"\" end_time=\""<<endTime.c_str()<<"\" units=\"unix_time_ms\"><Nodes>";
-		// start printing the tree nodes information here
+		os << "<Routing_Trees start_time=\"" << startTime.c_str() << "\" end_time=\"" << endTime.c_str() << "\" units=\"unix_time_ms\">\n\t<Nodes>";		
+                // start printing the tree nodes information here
 		vector<int>	indexToFetchNodeIndexVec;							// for each node in the tree, it will have an index value used for outputing
 		int treeNodeIndex = 0;											// record all the tree nodes one by one starting from 1
 		for(int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
 		{
 			Node* temp = fetchNode(i);
-			if(temp->treeNodeOrNot())									// if we have a tree node
+			if(temp->treeNodeOrNot()) // if we have a tree node
 			{
 				// the position in indexToFetchNodeIndexVec is the index value of the node, the stored value is the one used in fetchNode(int i) function
 				indexToFetchNodeIndexVec.push_back(i);
 				treeNodeIndex++;
-				os<<"<Node index=\""<<treeNodeIndex<<"\" latitude=\""<<centerLati+temp->getX()*latiPerPixel<<"\" longitude=\""
-				<<centerLong+temp->getY()*longPerPixel<<"\" altitude=\""<<ALTITUDE_AT_BASE_PLANE+ALTITUDE_PER_PIXEL*temp->getZ()<<"\" alt_unit=\"ft\" ";
+				os << "\n\t\t<Node index=\"" << treeNodeIndex << "\" latitude=\"" << centerLati+temp->getX()*latiPerPixel << "\" longitude=\""
+				 << centerLong+temp->getY()*longPerPixel << "\" altitude=\"" << ALTITUDE_AT_BASE_PLANE+ALTITUDE_PER_PIXEL*temp->getZ() << "\" alt_unit=\"ft\" ";
 				switch(temp->getNodeType())								// print the node type
 				{
 					case ENTRY_NODE:
-						os<<"type=\"source\">";
+						os << "type=\"source\">";
 						break;
 					case INTERNAL_NODE:
-						os<<"type=\"internal\">";
+						os << "type=\"internal\">";
 						break;
 					case FIX_NODE:
-						os<<"type=\"sink\">";
+						os << "type=\"sink\">";
 						break;
 				}
-				os<<"<Operational_Flexibility_Discs>";					// print the operational flexity pairs
+				os << "\n\t\t\t<Operational_Flexibility_Discs>";					// print the operational flexity pairs
 				for(int j=0; j<temp->getFreeRadiusVecSize(); j++)
 				{
 					double radius, prob;
 					temp->getFreeRadiusResults(j, &radius, &prob);
-					os<<"<Disc index=\""<<j+1<<"\" radius=\""<<radius*NMILESPERPIXEL<<"\" units=\"nm\" probability=\""<<prob<<"\"/>";
+					os << "\n\t\t\t\t<Disc index=\"" << j+1 << "\" radius=\"" << radius*NMILESPERPIXEL << "\" units=\"nm\" probability=\"" << prob << "\"/>";
 				}
-				os<<"</Operational_Flexibility_Discs></Node>";		
+				os << "\n\t\t\t</Operational_Flexibility_Discs>\n\t\t</Node>";		
 			}
 		}
 		// output the information for deviation nodes of edges. the deviationNodeIndex variable is for edges' deviation nodes
@@ -212,27 +231,27 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 				{
 					Node* temp = edges[i]->getDeviationNode(j);
 					deviationNodeIndex++;
-					os<<"<Node index=\""<<deviationNodeIndex<<"\" latitude=\""<<centerLati+temp->getX()*latiPerPixel;
-					os<<"\" longitude=\""<<centerLong+temp->getY()*longPerPixel<<"\" altitude=\""<<ALTITUDE_AT_BASE_PLANE+ALTITUDE_PER_PIXEL*temp->getZ();
-					os<<"\" alt_unit=\"ft\" ";
-					os<<"type=\"deviation\">";
-					os<<"<Operational_Flexibility_Discs>";		// print the operational flexity pairs
+					os << "\n\t\t<Node index=\"" << deviationNodeIndex << "\" latitude=\"" << centerLati+temp->getX()*latiPerPixel;
+					os << "\" longitude=\"" << centerLong+temp->getY()*longPerPixel << "\" altitude=\"" << ALTITUDE_AT_BASE_PLANE+ALTITUDE_PER_PIXEL*temp->getZ();
+					os << "\" alt_unit=\"ft\" ";
+					os << "type=\"deviation\">";
+					os << "\n\t\t\t<Operational_Flexibility_Discs>";		// print the operational flexity pairs
 					for(int j=0; j<temp->getFreeRadiusVecSize(); j++)
 					{
 						double radius, prob;
 						temp->getFreeRadiusResults(j, &radius, &prob);
-						os<<"<Disc index=\""<<j+1<<"\" radius=\""<<radius*NMILESPERPIXEL<<"\" units=\"nm\" probability=\""<<prob<<"\"/>";
+						os << "\n\t\t\t\t<Disc index=\"" << j+1 << "\" radius=\"" << radius*NMILESPERPIXEL << "\" units=\"nm\" probability=\"" << prob << "\"/>";
 					}
-					os<<"</Operational_Flexibility_Discs></Node>";	
+					os << "\n\t\t\t</Operational_Flexibility_Discs>\n\t\t</Node>";	
 				}
 			}
 		}
-		os<<"</Nodes>";
+		os << "\n\t</Nodes>";
 		// now after the nodes, outputting the edges information
 		vector<int>	indexToTreeEdgeIndexVec;								// for each edge in the tree, it will have an index value used for outputing
 		int treeEdgeIndex = 0;												// record all the tree nodes one by one starting from 1
 		deviationNodeIndex = treeNodeIndex;									// the last output index of tree nodes
-		os<<"<Arcs>";
+		os << "\n\t<Arcs>";
 		for(int i=0; i<edges.size(); i++)
 		{
 			if(edges[i]->treeEdgeOrNot())
@@ -244,95 +263,95 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 				int tempIndexTail = find(indexToFetchNodeIndexVec.begin(), indexToFetchNodeIndexVec.end(), unifiedIndexTail)-indexToFetchNodeIndexVec.begin()+1;
 				indexToTreeEdgeIndexVec.push_back(i);						// the position in the edges vector to its printed index
 				treeEdgeIndex++;
-				os<<"<Arc index=\"1"<<treeEdgeIndex<<"\" start_node=\""<<tempIndexHead<<"\" end_node=\""<<tempIndexTail<<"\" cost=\"";
-				os<<edges[i]->getLength()*NMILESPERPIXEL<<"\" cost_unit=\"nm\">";
+				os << "\n\t\t<Arc index=\"1" << treeEdgeIndex << "\" start_node=\"" << tempIndexHead << "\" end_node=\"" << tempIndexTail << "\" cost=\"";
+				os << edges[i]->getLength()*NMILESPERPIXEL << "\" cost_unit=\"nm\">";
 				// print rnp operational flexity pairs
-				os<<"<RNP_Levels>";
+				os << "\n\t\t\t<RNP_Levels>";
 				for(int j=0; j<edges[i]->getRNPVecSize(); j++)
 				{
 					double radius, prob;
 					edges[i]->getRNPResults(j, &radius, &prob);
-					os<<"<RNP_Level RNP=\""<<radius*NMILESPERPIXEL<<"\" probability=\""<<prob<<"\"/>";
+					os << "\n\t\t\t\t<RNP_Level RNP=\"" << radius*NMILESPERPIXEL << "\" probability=\"" << prob << "\"/>";
 				}
-				os<<"</RNP_Levels>";
+				os << "\n\t\t\t</RNP_Levels>";
 				// print path streching information on the right side of the edge
 				for(int j=0; j<edges[i]->getPathStretchingVecSize(); j++)
 				{
 					double radius, prob;
 					edges[i]->getPathStretchingResults(j, &radius, &prob);
-					os<<"<Operational_Flexibility_Rectangle index=\""<<j+1<<"\" width=\""<<radius*NMILESPERPIXEL<<"\" units=\"nm\" ";
-					os<<"probability=\""<<prob<<"\""; 
-					os<<" position=\"right\" type=\"path_stretch\"/><Rectangle_Coord direction=\"clockwise\">";
+					os << "\n\t\t\t<Operational_Flexibility_Rectangle index=\"" << j+1 << "\" width=\"" << radius*NMILESPERPIXEL << "\" units=\"nm\" ";
+					os << "probability=\"" << prob << "\""; 
+					os << " position=\"right\" type=\"path_stretch\"/>\n\t\t\t<Rectangle_Coord direction=\"clockwise\">";
 					/****************************************************************/
 					// print the rectangle information here in clock wise order
 					double x1, y1, x2, y2;									// compute the vertices on the right of the current edge
 					edges[i]->computeRightSideRectangleVertices(radius, &x1, &y1, &x2, &y2);
-					os<<"<Coord index=\"1\" lat=\""<<centerLati+latiPerPixel*edges[i]->getHead()->getX()<<"\" lon=\"";
-					os<<centerLong+longPerPixel*edges[i]->getHead()->getY()<<"\"/>";
-					os<<"<Coord index=\"2\" lat=\""<<centerLati+latiPerPixel*edges[i]->getTail()->getX()<<"\" lon=\"";
-					os<<centerLong+longPerPixel*edges[i]->getTail()->getY()<<"\"/>";
-					os<<"<Coord index=\"3\" lat=\""<<centerLati+latiPerPixel*x1<<"\" lon=\""<<centerLong+longPerPixel*y1<<"\"/>";
-					os<<"<Coord index=\"4\" lat=\""<<centerLati+latiPerPixel*x2<<"\" lon=\""<<centerLong+longPerPixel*y2<<"\"/>";
+					os << "\n\t\t\t\t\t<Coord index=\"1\" lat=\"" << centerLati+latiPerPixel*edges[i]->getHead()->getX() << "\" lon=\"";
+					os << centerLong+longPerPixel*edges[i]->getHead()->getY() << "\"/>";
+					os << "\n\t\t\t\t\t<Coord index=\"2\" lat=\"" << centerLati+latiPerPixel*edges[i]->getTail()->getX() << "\" lon=\"";
+					os << centerLong+longPerPixel*edges[i]->getTail()->getY() << "\"/>";
+					os << "\n\t\t\t\t\t<Coord index=\"3\" lat=\"" << centerLati+latiPerPixel*x1 << "\" lon=\"" << centerLong+longPerPixel*y1 << "\"/>";
+					os << "\n\t\t\t\t\t<Coord index=\"4\" lat=\"" << centerLati+latiPerPixel*x2 << "\" lon=\"" << centerLong+longPerPixel*y2 << "\"/>";
 					/****************************************************************/
-					os<<"</Rectangle_Coord>";
+					os << "\n\t\t\t</Rectangle_Coord>";
 				}
 				// print wiggle room information on the left side of the edge
 				for(int j=0; j<edges[i]->getWiggleRoomVecSize(); j++)
 				{
 					double radius, prob;
 					edges[i]->getWiggleRoomResults(j, &radius, &prob);
-					os<<"<Operational_Flexibility_Rectangle index=\""<<j+1<<"\" width=\""<<radius*NMILESPERPIXEL<<"\" units=\"nm\" probability=\""<<prob<<"\""; 
-					os<<" position=\"left\" type=\"holding\"/><Rectangle_Coord direction=\"clockwise\">";
+					os << "\n\t\t\t<Operational_Flexibility_Rectangle index=\"" << j+1 << "\" width=\"" << radius*NMILESPERPIXEL << "\" units=\"nm\" probability=\"" << prob << "\""; 
+					os << " position=\"left\" type=\"holding\"/>\n\t\t\t<Rectangle_Coord direction=\"clockwise\">";
 					/****************************************************************/
 					// print the rectangle information here in clock wise order
 					double x1, y1, x2, y2;									// compute the vertices on the left of the current edge
 					edges[i]->computeLeftSideRectangleVertices(radius, &x1, &y1, &x2, &y2);
-					os<<"<Coord index=\"1\" lat=\""<<centerLati+latiPerPixel*x1<<"\" lon=\""<<centerLong+longPerPixel*y1<<"\"/>";
-					os<<"<Coord index=\"2\" lat=\""<<centerLati+latiPerPixel*x2<<"\" lon=\""<<centerLong+longPerPixel*y2<<"\"/>";
-					os<<"<Coord index=\"3\" lat=\""<<centerLati+latiPerPixel*edges[i]->getTail()->getX()<<"\" lon=\"";
-					os<<centerLong+longPerPixel*edges[i]->getTail()->getY()<<"\"/>";
-					os<<"<Coord index=\"4\" lat=\""<<centerLati+latiPerPixel*edges[i]->getHead()->getX()<<"\" lon=\"";
-					os<<centerLong+longPerPixel*edges[i]->getHead()->getY()<<"\"/>";
+					os << "\n\t\t\t\t\t<Coord index=\"1\" lat=\"" << centerLati+latiPerPixel*x1 << "\" lon=\"" << centerLong+longPerPixel*y1 << "\"/>";
+					os << "\n\t\t\t\t\t<Coord index=\"2\" lat=\"" << centerLati+latiPerPixel*x2 << "\" lon=\"" << centerLong+longPerPixel*y2 << "\"/>";
+					os << "\n\t\t\t\t\t<Coord index=\"3\" lat=\"" << centerLati+latiPerPixel*edges[i]->getTail()->getX() << "\" lon=\"";
+					os << centerLong+longPerPixel*edges[i]->getTail()->getY() << "\"/>";
+					os << "\n\t\t\t\t\t<Coord index=\"4\" lat=\"" << centerLati+latiPerPixel*edges[i]->getHead()->getX() << "\" lon=\"";
+					os << centerLong+longPerPixel*edges[i]->getHead()->getY() << "\"/>";
 					/****************************************************************/
-					os<<"</Rectangle_Coord>";
+					os << "\n\t\t\t</Rectangle_Coord>";
 				}
 				// print the deviation nodes along an edge
-				os<<"<Off_Nominal_Exit_Points>";
+				os << "\n\t\t\t<Off_Nominal_Exit_Points>";
 				for(int j=0; j<edges[i]->getDeviationNodesSize(); j++)
 				{
 					deviationNodeIndex++;
-					os<<"<Off_Nominal_Exit_Point index=\""<<deviationNodeIndex<<"\"/>";
+					os << "\n\t\t\t\t<Off_Nominal_Exit_Point index=\"" << deviationNodeIndex << "\"/>";
 				}
-				os<<"</Off_Nominal_Exit_Points></Arc>";
+				os << "\n\t\t\t</Off_Nominal_Exit_Points>\n\t\t</Arc>";
 			}
 		}
-		os<<"</Arcs>";
+		os << "\n\t</Arcs>";
 		// output tree branch information here. For each tree branch, output its edge lists
-		os<<"<Branches>";
+		os << "\n\t<Branches>";
 		for(int i=0; i<entries.size(); i++)
 		{
 			if(entries[i]->getDrawingRNP()==0)					// make sure that the branch has actual demand
 				continue;
 			Node* temp = entries[i];
-			os<<"<Branch index=\""<<100+i<<"\" rnp_equipage=\""<<temp->getDrawingRNP()*NMILESPERPIXEL<<"\">";
+			os << "\n\t\t<Branch index=\"" << 100+i << "\" rnp_equipage=\"" << temp->getDrawingRNP()*NMILESPERPIXEL << "\">";
 			while(temp->getNodeType()!=FIX_NODE)
 			{
 				Edge* tempEdge = temp->getOutEdge(temp->getTreeOutEdgeIndex());
 				// the original index of the edge in the original edge vector
 				int edgeOriginalIndex = find(edges.begin(), edges.end(), tempEdge)-edges.begin();
 				int printingIndex = find(indexToTreeEdgeIndexVec.begin(), indexToTreeEdgeIndexVec.end(), edgeOriginalIndex)-indexToTreeEdgeIndexVec.begin()+1;
-				os<<"<Branch_arc index=\"1"<<printingIndex<<"\"/>";
+				os << "\n\t\t\t<Branch_arc index=\"1" << printingIndex << "\"/>";
 				temp = temp->getOutNode(temp->getTreeOutEdgeIndex());
 			}
-			os<<"</Branch>";
+			os << "\n\t\t</Branch>";
 		}
-		os<<"</Branches></Routing_Trees>";
+		os << "\n\t</Branches>\n</Routing_Trees>\n";
 		// finish printing, close the file stream and return file generated successfully
 		/****************************************************************************************************************************/
 		os.close();
 		return true;
 	}
-	cerr<<"\nCannot successfully create the file..."<<endl;
+	cerr << "\nCannot successfully create the file..." << endl;
 	return false;
 }
 
@@ -358,7 +377,7 @@ bool RoutingDAG::generateEdgeSet()
 {
 	if(nodesReadIn == NODES_NOT_READ_IN)
 	{
-		cerr<<"\nThe Nodes have to be read in before generating the edges."<<endl;
+		cerr << "\nThe Nodes have to be read in before generating the edges." << endl;
 		return false;
 	}
 	/***************************************************************************************************/
@@ -446,7 +465,7 @@ bool RoutingDAG::generateLayerStartingIndexVector()
 {
 	if(nodesReadIn == NODES_NOT_READ_IN)
 	{
-		cerr<<"\nThe Nodes have to be read in before generating the edges."<<endl;
+		cerr << "\nThe Nodes have to be read in before generating the edges." << endl;
 		return false;
 	}
 	layerStartingIndex.push_back(0);						// the starting position of the entry nodes is firstly pushed in the vector
@@ -516,12 +535,12 @@ bool RoutingDAG::generateTree(const vector<WeatherData> &wData, vector<float> rn
 	treeShapeStatus = BOTTOM_TREE;
 	if(nodesReadIn == NODES_NOT_READ_IN || edgesGenerated == EDGES_NOT_GENERATED)
 	{
-		cerr<<"\nNodes or Edges are not ready yet to generate a tree."<<endl;
+		cerr << "\nNodes or Edges are not ready yet to generate a tree." << endl;
 		return false;
 	}
 	if(rnp.size()!=entries.size())							// input error, there is supposed to be an rnp value related to each entry point
 	{														// format error, then prompt the problem
-		cerr<<"\nNumber of RNP values does not match the number of entry points."<<endl;
+		cerr << "\nNumber of RNP values does not match the number of entry points." << endl;
 		return false;
 	}
 	for(int i=0; i<entries.size(); i++)						// first make sure that all the entry nodes are themselves weather obstacle free
@@ -574,7 +593,7 @@ bool RoutingDAG::routeBranch(Node *start, int entryIndex, const vector<WeatherDa
 	// do the loop while the stack is not empty, doing a Depth First Search
 	while(!tempStack.empty())
 	{
-		std::cout << ".";		
+          std::cout  <<  "."  <<  std::flush;		
 		Node* temp = tempStack.top();								// pop the first node out and store it as Node* temp
 		tempStack.pop();
 		for(int i=0; i<=temp->getOutSize()-1; i++)					// test each of its outgoing edges (from top(right) to bottommost(left))
@@ -697,7 +716,7 @@ bool RoutingDAG::testRemainingBranchWhileMerging(Node *start, const vector<Weath
 		}
 		else				// means no outgoing tree edge is found, means there is tree error in the previous branch
 		{
-			cerr<<"\nWhen merging, detected that the previous branch of the tree is incomplete"<<endl;
+			cerr << "\nWhen merging, detected that the previous branch of the tree is incomplete" << endl;
 			resetTree();
 			return false;
 		}
@@ -794,7 +813,7 @@ bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<f
 {
 	if(status == TREE_NOT_GENERATED)		// this is not actually going to happen because the same test was always conducted before calling this function
 	{
-		cerr<<"\nPlease generate the bottommost tree before tautening its branches!"<<endl;
+		cerr << "\nPlease generate the bottommost tree before tautening its branches!" << endl;
 		return false;
 	}
 	else if(treeShapeStatus == TAUTENED_TREE)	// if the tree was generated already, then just return, no need to generate again
@@ -810,7 +829,7 @@ bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<f
 	// the tree will look more like a topmost tree if every branch tries to merge into the first branch. Hence it's called topMostTendency
 	for(int topMostTendency=1; topMostTendency<=entries.size(); topMostTendency++)
 	{
-		cout << ".";
+		cout  <<  ".";
 		//preparation for the new tree: clear the unuseful(useful for the new tree) data structure related to the previous tree for nodes and edges
 		for(int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
 		{
@@ -845,7 +864,7 @@ bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<f
 			{
 				if(topMostTendency==entries.size())			// if the last try also failed, then there is no tautening
 				{
-					cerr<<"Tautening algorithm Error! Cannot tauten the tree!"<<endl;
+					cerr << "Tautening algorithm Error! Cannot tauten the tree!" << endl;
 					resetTree();	
 					return false;
 				}
@@ -1354,7 +1373,7 @@ void RoutingDAG::generateOperFlexPairs(float* radii, int length, vector<WeatherD
 {
 	if(status==TREE_NOT_GENERATED)
 	{
-		cerr<<"\nThe Tree Was Not Generated Yet."<<endl;
+		cerr << "\nThe Tree Was Not Generated Yet." << endl;
 		return;
 	}
 	// generate the pairs for each branch of the tree
