@@ -5,6 +5,9 @@ rtp
 *.bak
 .gout*
 
+*.sln
+*.vcxproj
+
 *.7z
 *.dmg
 *.gz
@@ -14,7 +17,7 @@ rtp
 *.tar
 *.zip
 build/*
-Data/*
+Data/results_start_0_offset_15/*
 Release/*
 Prototype\ Mac.xcodeproj/*
 
