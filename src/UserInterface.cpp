@@ -71,9 +71,19 @@ void UserInterface::ProgramBegins()
   currentInput = 0;
   while (!in_stream.eof() ) {
     getline(in_stream, line);
+    for(int j = line.length()-1; j>=0; j--)
+      {
+        if(line[j] == '\n' || line[j] == '\r')
+          {
+            line[j] = '\0';
+          }
+        else
+          {
+            break;
+          }
+      }
     allInputs[currentInput] = line;
     ++currentInput;
-    //cout << line << endl;
   }
   in_stream.close();
   currentInput = 0;
@@ -81,101 +91,33 @@ void UserInterface::ProgramBegins()
   char userInput = '0';	     // the user input will always be a number, deciding what to do next
   bool startOver = false;    // when the user choose to do everything again
   cout<<"Robust Tree Generator:\nThe software is used to generate robust trees given the demand profile and weather data information."<<endl;
-  while(1)
+
+  if(startOver) // when doing everything again, reset everything first
     {
-      if(startOver) // when doing everything again, reset everything first
-        {
-          reset();
-          startOver = false;
-        }
-      if(!readDemandProfile()) // at the start, read in demand profile
-        {
-          cout<<"\nFailed to read in the demand profile, double check the demand path listed."<<endl;
-          return;
-        }
-      cout<<"\nDemand profile successfully read in.";
-      if(!readWeatherData())
-        {
-          cout<<"\nFailed to successfully read in the weather data, double check the weather directories."<<endl;
-          return;
-        }
-      cout<<"\nWeather files are succesfully read in!"<<endl;
-      cout << "Generating tree." << endl;
-      generateTree();
-      cout << "Tautening tree." << endl;
-      tautenTree();
-      cout << "Doing operational Flexibility stuff." << endl;
-      inputOperationalFlexibility();
-      cout << "Saving tree information." << endl;
-      saveTreeInformation();
-      /*
-        while(1)
-        {
-        printQuadrantAndDemandInfo();		// always print the quadrant information first before getting user input
-        cout<<"\nPress 1 to generate trees using current configuration, press 2 to edit quadrant,";
-        cout<<"press 3 to edit demand, press 4 to input the demand and weather files again, press 0 to exit:";
-        cin>>userInput;
-        switch(userInput)
-        {
-        case '1':
-        cout<<"\nGenerating a tree...";
-        generateTree();
-        break;
-        case '2':
-        editQuadrant();
-        cout<<"\nThe updated quadrant and demand information:";
-        printQuadrantAndDemandInfo();
-        break;
-        case '3':
-        inputDemand();
-        cout<<"\nThe updated quadrant and demand information:";
-        printQuadrantAndDemandInfo();
-        break;
-        case '4':
-        startOver = true;									// restart everything
-        break;
-        case '0':
-        return;												// exit
-        default:
-        cout<<"\nGenerating a tree...";
-        generateTree();
-        }
-        if(startOver)											// if the user chooses to restart everything
-        break;
-        // if a tree was generated, then prompt if the user wants to tauten the tree
-        if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED && routingDAG->getStatus()==TREE_GENERATED)	
-        {
-        cout<<"\nPress 1 to generate a tautened tree, press 2 to edit the demand/quadrant and generate the bottommost tree again,";
-        cout<<"press 0 to exit:";
-        cin>>userInput;
-        if(userInput=='0')
-        return;
-        else if(userInput=='2')
-        continue;
-        else												// default case, tauten the tree
-        tautenTree();
-        if(routingDAG->getStatus()==TREE_GENERATED)			// if a tautened tree is generated
-        {
-        cout<<"\nA tautened tree is successfully generated! Now you could";
-        cout<<"\nPress any key to generate the operational flexibility pairs and output the tree information to an .xml file, ";
-        cout<<"or press 1 to edit the demand/quadrant parameters, or simply press 0 to exit:";
-        cin>>userInput;
-        if(userInput=='0')
-        return;
-        if(userInput=='1')
-        continue;
-        inputOperationalFlexibility();
-        cout<<"\nNow write the tree information into an .xml file...";
-        saveTreeInformation();
-        }
-        }
-        else													// if a tree was NOT generated successfully, then prompt to edit quadrant/demand again
-        continue;
-        }
-      */
-      if(startOver)
-        continue;												// start a new iteration to input files and generate trees
+      reset();
+      startOver = false;
     }
+  if(!readDemandProfile()) // at the start, read in demand profile
+    {
+      cout<<"\nFailed to read in the demand profile, double check the demand path listed."<<endl;
+      return;
+    }
+  cout<<"\nDemand profile successfully read in.";
+  if(!readWeatherData())
+    {
+      cout<<"\nFailed to successfully read in the weather data, double check the weather directories."<<endl;
+      return;
+    }
+  cout<<"\nWeather files are succesfully read in!"<<endl;
+  cout << "Generating tree." << endl;
+  generateTree();
+  cout << "Tautening tree." << endl;
+  tautenTree();
+  cout << "Doing operational Flexibility stuff." << endl;
+  inputOperationalFlexibility();
+  cout << "Saving tree information." << endl;
+  saveTreeInformation();
+
 }
 
 // print the information of the quadrant and the demand rnps for each entry node
@@ -485,7 +427,7 @@ bool UserInterface::readWeatherData()
     {
       std::cout << "Parsing weather file: " << weatherFileDirectories[i] << std::endl;
       ifstream is(weatherFileDirectories[i].c_str(), ios::in);	// read in from the weather files
-      if(is.is_open())
+      if(true) //is.is_open())
         {
           is.close();
           std::string currentFile = weatherFileDirectories[i];

@@ -53,7 +53,8 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
   /******************************************************************************************************/
   reset();											// first reset the vectors to empty, then read in
 
-  ifstream dataStream(fileName.c_str(), ifstream::in );
+  const char *fname = fileName.c_str();
+  ifstream dataStream(fname, ifstream::in );
   size_t fileSize = 0;
   dataStream.seekg(0, ios_base::end);
   fileSize = dataStream.tellg();

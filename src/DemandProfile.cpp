@@ -3,6 +3,7 @@
 #include "math.h"
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <cstdlib>
 #include <typeinfo>
 
@@ -23,8 +24,8 @@ DemandProfile::~DemandProfile(void)
 bool DemandProfile::readInFile(std::string fileName)			
 {
 
-  ifstream dataStream(fileName.c_str() );
-  // ifstream dataStream("Data/demand.nom", ifstream::in );
+  std::cout << "Parsing demand file: " << fileName << std::endl;
+  ifstream dataStream( fileName.c_str(), ifstream::in );
   unsigned long fileSize = 0;
   dataStream.seekg(0, ios_base::end);
   fileSize = dataStream.tellg();
