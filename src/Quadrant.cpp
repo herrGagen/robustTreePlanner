@@ -342,8 +342,10 @@ void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, vector<float> r
 	{
 		numLayers = 1;
 		while((liftedoRadius - liftediRadius) / numLayers > minrnp * 3)
+		{
 			// compute the number of layers until the interval in between layer is less than maxrnp*3
 			numLayers++;
+		}
 		numLayers--;
 		// the actual number of layers was the number of divisions (which is 1 more)
 	}
