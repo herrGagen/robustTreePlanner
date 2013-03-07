@@ -166,6 +166,28 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
             std::getline(cin,tempFileName);
             if( tempFileName.length() > 0 )
               {
+				size_t xmlLocation;
+
+				// Append extension if required
+				xmlLocation = tempFileName.find(".xml");
+
+				// Not found, try all caps
+				if(xmlLocation == std::string::npos)
+				{
+					xmlLocation = tempFileName.find(".XML");
+				}
+
+				// Not found, try this one mixed case extension
+				if(xmlLocation == std::string::npos)
+				{
+					xmlLocation = tempFileName.find(".Xml");
+				}
+
+				// Finally, we have never found a .xml extension, so add one
+				if( xmlLocation == std::string::npos )
+				{
+					tempFileName+= ".xml";
+				}
                 os.open(tempFileName.c_str(), ios::out);
                 if(os.is_open())
                   {
