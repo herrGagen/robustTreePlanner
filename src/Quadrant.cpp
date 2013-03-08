@@ -331,7 +331,6 @@ void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, vector<float> r
 	float minrnp = *max_element(rnps.begin(), rnps.end());
 	cout << "minrnp initialized: " << minrnp << endl;
 	for (int i=0; i<n; i++)
-		cout << rnps[i] << endl;
 	for(int i=0; i<n; i++)
 	{
 		if(rnps[i]!=0)

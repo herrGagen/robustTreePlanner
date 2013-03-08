@@ -21,7 +21,9 @@ Data/results*
 Release/*
 CWAMEnsembles/*
 Prototype\ Mac.xcodeproj/*
+old_outputs/*
 
+*.xml
 *.pdb
 *.exe
 *.cache

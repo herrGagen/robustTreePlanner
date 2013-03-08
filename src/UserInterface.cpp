@@ -102,7 +102,7 @@ void UserInterface::ProgramBegins()
       cout<<"\nFailed to read in the demand profile, double check the demand path listed."<<endl;
       return;
     }
-  cout<<"\nDemand profile successfully read in.";
+  cout<<"Demand profile successfully read in." << endl;
   if(!readWeatherData())
     {
       cout<<"\nFailed to successfully read in the weather data, double check the weather directories."<<endl;
@@ -203,8 +203,12 @@ bool UserInterface::generateTree()
   if(ctrl_QuadGenerated == QUADRANT_GENERATED && ctrl_WeatherReadIn == WEATHER_READ_IN && ctrl_DemandReadIn == DEMAND_READ_IN)
     {
       double minDistBetweenMergeNodes = 5/NMILESPERPIXEL; // make this read from config file
-      deviationThreshold = (float)0.8; // make this read from config file
-      nodeEdgeThreshold = (float) 0.8;  // make this read from config file
+      // deviationThreshold = (float)0.8; // make this read from config file
+      cout << "Reading in deviation threshold." << endl;
+      deviationThreshold = ::atof(allInputs[currentInput++].c_str);
+      // nodeEdgeThreshold = (float)0.8;  // make this read from config file
+      cout << "Reading in nodeEdgeThreshold." << endl;
+      nodeEdgeThreshold = ::atof(allInputs[currentInput++].c_str);
       routingDAG->setminimumDistanceBetweenMergingNodes(minDistBetweenMergeNodes);
       cout<< endl << "Generating a bottommost merge tree, please wait..." << endl;
       /************************************************************************************************/
@@ -223,12 +227,12 @@ bool UserInterface::generateTree()
           // generate the tree here
           if(!routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold))
             {
-              cerr<<"\nThere Does NOT Exist A Merge Tree!"<<endl;
+              cerr<< endl << "There Does NOT Exist A Merge Tree!"<<endl;
               return false;
             }
           else 
             {
-              cout<<"\nA bottommost routing Tree is generated!";
+              cout<< endl << "A bottommost routing Tree is generated!" << endl;
               return true;
             }
         }	// an error message will pop up if failed to generate the DAG
@@ -460,14 +464,13 @@ bool UserInterface::readWeatherData()
   for(int i=0; i<weatherData.size(); i++)
     {
       totalProbabilityOfWeatherFiles += weatherData[i].getProbability();
+      cout << i << "   " << weatherData[i].getProbability() << endl;
     }
   // the total probability of the weather files is not 1
-  if(abs(totalProbabilityOfWeatherFiles-1.0)>0.0001)			
+  if(abs(totalProbabilityOfWeatherFiles-1.0)>0.1)			
     {
-      if(abs(totalProbabilityOfWeatherFiles-1.0)>0.0001)
-        {
-          cerr<<"\nThe total probability of the weather data files is not 1."<<endl;
-        }
+      cerr<< "\nThe total probability of the weather data files is not 1."<<endl;
+      cout << "Current Probability: " << totalProbabilityOfWeatherFiles << endl;
       weatherData.clear();
       ctrl_WeatherReadIn = WEATHER_NOT_READ_IN;		// the weather is not read in yet
       return false;
