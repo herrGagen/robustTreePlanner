@@ -150,7 +150,7 @@ void RoutingDAG::setminimumDistanceBetweenMergingNodes(double dis)
 
 // output the tree information into a .tre ASCII file
 // parametres are used to convert screen coordinates to lati/longs, and the time range of testing is also passed in as parameters
-bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, string &startTime, string &endTime)
+bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, string &startTime, string &endTime, string &outputName)
 {
 	if(status==TREE_NOT_GENERATED)
 	{
@@ -162,8 +162,10 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
         do
           {
             string tempFileName;
-            cout<<"\nPlease provide a name for the output file:\n";
-            std::getline(cin,tempFileName);
+            tempFileName = outputName.c_str();
+            std::cout << outputName.c_str() << endl;
+            // cout<<"\nPlease provide a name for the output file:\n";
+            // std::getline(cin,tempFileName);
             if( tempFileName.length() > 0 )
               {
 				size_t xmlLocation;
@@ -200,7 +202,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
               }
           } while( !os.is_open() );
 
-        cout << "Outputting to file: " << XMLFileName << std::endl;
+        std::cout << "Outputting to file: " << XMLFileName << std::endl;
 
           // Output our XML file.  Yes this should use a library, don't shoot the maintenance coder.
           if( os.is_open() )
@@ -851,7 +853,7 @@ bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<f
 	// the tree will look more like a topmost tree if every branch tries to merge into the first branch. Hence it's called topMostTendency
 	for(int topMostTendency=1; topMostTendency<=entries.size(); topMostTendency++)
 	{
-		cout  <<  ".";
+		std::cout  <<  ".";
 		//preparation for the new tree: clear the unuseful(useful for the new tree) data structure related to the previous tree for nodes and edges
 		for(int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
 		{

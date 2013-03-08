@@ -46,7 +46,7 @@ public:
 	bool generateEdgeSet();
 	void generateOperFlexPairs(float *radii, int length, vector<WeatherData> &wData, float effectiveThres);
 public:
-	bool outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, std::string &startTime, std::string &endTime);
+	bool outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, std::string &startTime, std::string &endTime, std::string &outputName);
 private:
 	int numLayers;
 	// the entry nodes have to be in the order aligned along the outer boundary of the quadrant, with enough RNP separating them

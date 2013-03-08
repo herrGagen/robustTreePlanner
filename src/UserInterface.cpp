@@ -205,10 +205,10 @@ bool UserInterface::generateTree()
       double minDistBetweenMergeNodes = 5/NMILESPERPIXEL; // make this read from config file
       // deviationThreshold = (float)0.8; // make this read from config file
       cout << "Reading in deviation threshold." << endl;
-      deviationThreshold = ::atof(allInputs[currentInput++].c_str);
+      deviationThreshold = ::atof(allInputs[currentInput++].c_str());
       // nodeEdgeThreshold = (float)0.8;  // make this read from config file
       cout << "Reading in nodeEdgeThreshold." << endl;
-      nodeEdgeThreshold = ::atof(allInputs[currentInput++].c_str);
+      nodeEdgeThreshold = ::atof(allInputs[currentInput++].c_str());
       routingDAG->setminimumDistanceBetweenMergingNodes(minDistBetweenMergeNodes);
       cout<< endl << "Generating a bottommost merge tree, please wait..." << endl;
       /************************************************************************************************/
@@ -539,6 +539,6 @@ void UserInterface::saveTreeInformation()
       cerr<<"\nPlease generate Operational Flexity Pairs First!"<<endl;
       return;
     }
-  routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime);
+  routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime, allInputs[currentInput++]);
   cout<< "\nTree Information successfully written to file.\n";
 }

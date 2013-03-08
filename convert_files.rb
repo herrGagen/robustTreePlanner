@@ -23,6 +23,9 @@ def main(starting_time, offset_in_minutes)
   results = Pathname.new(Dir.pwd) + "Data" + results_string
   puts results
   
+  offset_in_minutes = offset_in_minutes.to_i
+  starting_time = starting_time.to_i
+  
   # Delete existing directory -- make sure nothing valuable is stored here
   FileUtils.remove_dir(results, force = true)
   FileUtils.mkdir(results)
@@ -91,6 +94,7 @@ if __FILE__ == $0
     o = false
     deviation_threshold = false
     node_edge_threshold = false
+    output_name = false
     ARGV.each do |arg|
       # The next two lines need ``== true`` because they are being used
       # as flags for themselves! Any non false / nil var will be true-like in an if statement.
@@ -98,6 +102,7 @@ if __FILE__ == $0
       o = arg if o == true
       deviation_threshold = arg if deviation_threshold == true
       node_edge_threshold = arg if node_edge_threshold == true
+      output_name = arg if output_name == true
       if arg == "-s"
         s = true
       elsif arg == "-o"
@@ -106,9 +111,11 @@ if __FILE__ == $0
         deviation_threshold = true
       elsif arg == "-nethresh"
         node_edge_threshold = true
+      elsif arg == "-oname"
+        output_name = true
       end
     end
     main(s, o)
-    create_input(deviation_threshold, node_edge_threshold)
+    create_input(deviation_threshold, node_edge_threshold, output_name)
   end
 end

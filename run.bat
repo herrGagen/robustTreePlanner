@@ -1,7 +1,5 @@
-:: Compile using "MSBuild", then call the necessary commands to generate a tree.
+:: This file is identical to "compile_and_run.bat" except it skips the compile step.
 
-:: Compile
-MSBuild.exe RobustTree.sln
 
 :: Convert weather to a format useable by RTP, pass it all the command line parameters
 :: This also calls ``create_input.rb`` to create the "inputs.txt" file
