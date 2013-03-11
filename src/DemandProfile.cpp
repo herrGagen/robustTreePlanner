@@ -220,9 +220,10 @@ bool DemandProfile::handleInputData()
         }
     }
   // find the latitude diffference
-  // the demand circle has total diameter of 200 pixels(a given value, best value chosen for display purpose) 
-  latiPerPixel = (maxX - minX)/(2*TOTAL_DEMAND_CIRCLE_RADIUS_PIXEL);						
-  longPerPixel = (maxY - minY)/(2*TOTAL_DEMAND_CIRCLE_RADIUS_PIXEL);
+	// the demand circle has total diameter of 200 pixels(a given value, best value chosen for display purpose) 
+	// Joe changed the next 2 lines, March 6, 2013, units are degrees per pixel, assuming 200nm outer radius, 3438nm radius of earth
+	latiPerPixel =  (200*(180/PI)/3438)/TOTAL_DEMAND_CIRCLE_RADIUS_PIXEL;   //   (maxX - minX)/(2*TOTAL_DEMAND_CIRCLE_RADIUS_PIXEL);						
+	longPerPixel =  (200*(180/PI)/(3438*cos(centerX*(PI/180))))/TOTAL_DEMAND_CIRCLE_RADIUS_PIXEL;   //   (maxY - minY)/(2*TOTAL_DEMAND_CIRCLE_RADIUS_PIXEL);
   return true;
 }
 
