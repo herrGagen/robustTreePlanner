@@ -34,53 +34,83 @@ def main(starting_time, offset_in_minutes)
   # path = Pathname.new(Dir.pwd) # gives current directory
   puts Dir.pwd
   path = Pathname.new(Dir.pwd) + "CWAMEnsembles"
+
+  min_time = Time.new(Float::MAX)
+  max_time = Time.new(Float::MIN)
+
+  # First pass determines the range of times files can have
+  # Could make this more efficient by only checking files from one Ensemble (all Member1's, for instance)
+  path.each_child do |file_name|
+    name_ary = file_name.to_s.split("_")
+    time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
+    min_time = time if time < min_time
+    max_time = time if time > max_time
+  end
   
-  id = 0
-  sum = 0
-  test_sum = 0
-  path.each_child do |folder|
-    current_dir = path + folder
-    puts current_dir
-    children = current_dir.children
-    time_upper_bound = parse_time_from_filename(children.first) + offset_in_minutes * SECONDS_PER_MINUTE + starting_time * SECONDS_PER_MINUTE
-    time_lower_bound = parse_time_from_filename(children.first) + starting_time * SECONDS_PER_MINUTE
-    children_in_offset = 0
-    children.each do |child|
-      time = parse_time_from_filename(child)
-      break unless time <= time_upper_bound
-      children_in_offset += 1 unless time < time_lower_bound
-    end
-    current_dir.each_child do |file_name|
-      time = parse_time_from_filename(file_name)
-      if time_lower_bound <= time and time <= time_upper_bound
-        writeable_name = Pathname.new(results) + (id.to_s + ".dat")
-        print time, "  ", writeable_name, "\n"
-        w = File.new(writeable_name, 'a')
-        temp = File.new(file_name, 'r')
-        e = temp.each_line
-        w.write(e.next)
-        line = e.next.split
-        w.write(line[0] + " ")
-        n = line[1].to_f / children_in_offset
-        test_sum += line[1].to_f
-        sum += n
-        #puts line[1].to_f, n
-        w.write(n.to_s + "\n")
-        begin
-          loop do 
-            w.write(e.next)
-          end
-        rescue StopIteration
-          break
-        ensure
-          w.close
-          temp.close
-        end
-        
-        id += 1
+  raise "Files not in expected location or the filenames do not conform to ``DevProb_time1_time2_MemberX.dat``" if min_time == Time.new(Float::MAX) or max_time == Time.new(Float::MIN)
+  time_upper_bound = min_time + offset_in_minutes * SECONDS_PER_MINUTE + starting_time * SECONDS_PER_MINUTE
+  time_lower_bound = min_time + starting_time * SECONDS_PER_MINUTE
+
+  
+  # Second pass determines how many members of each Ensemble are within the time constraints.
+  children_in_offset = 0
+  member_name = path.children.first.to_s.split("_")[3]
+  path.each_child do |file_name|
+    name_ary = file_name.to_s.split("_")
+    if name_ary[3] == member_name
+      time = DateTime.parse(name_ary[2]).to_time
+      if time <= time_upper_bound and time >= time_lower_bound
+        children_in_offset += 1
       end
     end
   end
+
+  print "Children in offset: ", children_in_offset, "\n" # I'm worried this value is incorrect  
+
+  # Third pass writes files to a format readable by the C code
+  sum = 0
+  id = 0
+  path.each_child do |file_name|
+    name_ary = file_name.to_s.split("_")
+#     print file_name
+    time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
+    if time <= time_upper_bound and time >= time_lower_bound
+      writeable_name = Pathname.new(results) + (id.to_s + ".dat")
+#       print time, "  ", writeable_name, "\n"
+      w = File.new(writeable_name, 'a')
+      temp = File.new(file_name, 'r')
+      e = temp.each_line
+      
+      # Need to find the Ensemble member number and  probability to write out
+      4.times { e.next } # Burn through first 4 rows of the ensemble file (we don't need them)
+      line = e.next
+      line.slice!(0, 2)
+      # print "LINE: ", line, "\n"
+      w.write("Ensemble " + line)
+      line = e.next.split.last.to_f / children_in_offset
+      sum += line
+      w.write("Probability " + line.to_s + "\r\n") 
+
+      line = e.next
+      while line.split.first == "#"
+        line = e.next
+      end
+
+      begin
+        loop do 
+          w.write(e.next)
+        end
+      rescue StopIteration
+        break
+      ensure
+        w.close
+        temp.close
+      end
+      
+      id += 1
+    end
+  end  
+
   puts "Total Probability (should be close to 1): " + sum.to_s
 end
 
