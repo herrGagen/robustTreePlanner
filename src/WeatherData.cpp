@@ -48,8 +48,8 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
   /******************************************************************************************************/
   // test file read in time
   /*LARGE_INTEGER m_lpFrequency, lpPerformanceCount2,lpPerformanceCount1;  //variables for time counting
-    QueryPerformanceFrequency(&m_lpFrequency);
-    QueryPerformanceCounter(&lpPerformanceCount1);*/
+  QueryPerformanceFrequency(&m_lpFrequency);
+  QueryPerformanceCounter(&lpPerformanceCount1);*/
   /******************************************************************************************************/
   reset();											// first reset the vectors to empty, then read in
 
@@ -65,68 +65,83 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 
   std::string thisLine;
   for(int i = 0; i<5; i++) // Try and find the "Probability" line in the first 5 lines of the file.
+  {
+    std::getline(dataStream, thisLine);
+    size_t found = thisLine.find("Probability");
+    if(found != std::string::npos)
     {
-      std::getline(dataStream, thisLine);
-      size_t found = thisLine.find("Probability");
-      if(found != std::string::npos)
-        {
-          unsigned beginNumber = thisLine.find_first_of("-.0123456789",found);
-          unsigned endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
-          endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
-		  std::string tempString = thisLine.substr(beginNumber, endNumber);
-          probability = ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() );
-          break; // leave the for loop once probability has been found.
-        }
-      if(i==4)
-        {
-          std::cerr << "The input file had no probability associated with it." << std::endl;
-          return( handleInputData() );
-        }
+      unsigned beginNumber = thisLine.find_first_of("-.0123456789",found);
+      unsigned endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
+      endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
+      std::string tempString = thisLine.substr(beginNumber, endNumber);
+      probability = ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() );
+      break; // leave the for loop once probability has been found.
     }
-	
+    if(i==4)
+    {
+      std::cerr << "The input file had no probability associated with it." << std::endl;
+      return( handleInputData() );
+    }
+  }
 
-  // Each line of this file, after this point, contains 4 numbers:
-  // xCoors, yCoors, altitudes, probDeviation
+
+
+  // // Each line of this file, after this point, contains 4 numbers:
+  // // xCoors, yCoors, altitudes, probDeviation
+  // // The Coordinates have to be checked with:
+  // // (tempX>rangeMinLati && tempX<rangeMaxLati && tempY>rangeMinLong && tempY<rangeMaxLong)
+  // // to ensure that we should push this element into the arrays.
+
+  // New format (2013-03-14):
+  // Each line of this file after this point contains 7 numbers:
+  // someNum, anotherNum, anotherNum, xCoors, yCoors, altitudes, probDeviation
   // The Coordinates have to be checked with:
   // (tempX>rangeMinLati && tempX<rangeMaxLati && tempY>rangeMinLong && tempY<rangeMaxLong)
   // to ensure that we should push this element into the arrays.
-
   while(!dataStream.eof() )
+  {
+    std::getline(dataStream, thisLine);
+    float values[4]; // Storage for tempX, tempY, tempAltitude, tempProbability		
+    size_t beginNumber = thisLine.find_first_of("-.0123456789",0);
+    // Just a double check to ensure we aren't feeding the parser garbage lines.
+    if(beginNumber == string::npos)
     {
-      std::getline(dataStream, thisLine);
-      float values[4]; // Storage for tempX, tempY, tempAltitude, tempProbability		
-      size_t beginNumber = thisLine.find_first_of("-.0123456789",0);
-      // Just a double check to ensure we aren't feeding the parser garbage lines.
-      if(beginNumber == string::npos)
-        {
-          break;
-        }
-      size_t endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
-      for(int i = 0; i<4; i++)
-        {
-		  std::string tempString = thisLine.substr(beginNumber, endNumber-beginNumber);
-          values[i] = (float)::atof( tempString.c_str() );
-          // Move the search window for a number in the current line.
-          beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
-          endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
-        }
-
-      if(values[0]>rangeMinLati && 
-		 values[0]<rangeMaxLati && 
-		 values[1]>rangeMinLong && 
-		 values[1]<rangeMaxLong)
-        {
-          xCoors.push_back(values[0]);	
-          yCoors.push_back(values[1]);
-          altitudes.push_back(values[2]);
-          probDeviation.push_back(values[3]);
-        }
+      break;
     }
+    size_t endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
+
+    // Ignore the first three values of each line, since they are not used by this program.
+    for(int i = 0; i < 3; i++)
+    {
+      beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
+      endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
+    }
+
+    for(int i = 0; i<4; i++)
+    {
+      std::string tempString = thisLine.substr(beginNumber, endNumber-beginNumber);
+      values[i] = (float)::atof( tempString.c_str() );
+      // Move the search window for a number in the current line.
+      beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
+      endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
+    }
+    
+    if(values[0]>rangeMinLati && 
+      values[0]<rangeMaxLati && 
+      values[1]>rangeMinLong && 
+      values[1]<rangeMaxLong)
+    {
+      xCoors.push_back(values[0]);	
+      yCoors.push_back(values[1]);
+      altitudes.push_back(values[2]);
+      probDeviation.push_back(values[3]);
+    }
+  }
   /******************************************************************************************************/
   // end of testing file read in time
   /*QueryPerformanceCounter(&lpPerformanceCount2);                                // time query
-    double time = (double)(lpPerformanceCount2.LowPart - lpPerformanceCount1.LowPart)/m_lpFrequency.LowPart;
-    TRACE("The Time Needed is %g\n", time);*/
+  double time = (double)(lpPerformanceCount2.LowPart - lpPerformanceCount1.LowPart)/m_lpFrequency.LowPart;
+  TRACE("The Time Needed is %g\n", time);*/
   /******************************************************************************************************/
   return handleInputData();	
 }
@@ -145,30 +160,30 @@ bool WeatherData::handleInputData()
   // get the range of each data components from the vectors
   bool inputFormatError = false;				// no error supposedly
   for(int i=0; i<numPoints; i++)
+  {
+    if(xCoors[i]>360 || xCoors[i]<-360 || yCoors[i]>360 || yCoors[i]<-360)
     {
-      if(xCoors[i]>360 || xCoors[i]<-360 || yCoors[i]>360 || yCoors[i]<-360)
-        {
-          inputFormatError = true;
-          break;
-        }
-      else
-        // debugging
-        //		  cout << xCoors[i] << " " << yCoors[i] << endl;
-        // normalize the range into (-180, 180]
+      inputFormatError = true;
+      break;
+    }
+    else
+      // debugging
+      //		  cout << xCoors[i] << " " << yCoors[i] << endl;
+      // normalize the range into (-180, 180]
       if(xCoors[i]>180)	xCoors[i]-=360;
-      if(yCoors[i]>180)	yCoors[i]-=360;
-      if(altitudes[i]<minAlt)	minAlt = altitudes[i];
-      if(altitudes[i]>maxAlt)	maxAlt = altitudes[i];
-      if(probDeviation[i]<minProbDev)	minProbDev = probDeviation[i];
-      if(probDeviation[i]>maxProbDev)	maxProbDev = probDeviation[i];
-    }
+    if(yCoors[i]>180)	yCoors[i]-=360;
+    if(altitudes[i]<minAlt)	minAlt = altitudes[i];
+    if(altitudes[i]>maxAlt)	maxAlt = altitudes[i];
+    if(probDeviation[i]<minProbDev)	minProbDev = probDeviation[i];
+    if(probDeviation[i]>maxProbDev)	maxProbDev = probDeviation[i];
+  }
   if(inputFormatError || minProbDev<0 || maxProbDev>1) 
-    {
-      // DEBUG
-      //	    cout << "minProbDev: " << minProbDev << "  maxProbDev: " << maxProbDev << endl;
-      cerr<<"\nWeather Data Content Error."<<endl;
-      return false;									// the probability of deviation must be between 0 and 1, a messagebox is popped up
-    }
+  {
+    // DEBUG
+    //	    cout << "minProbDev: " << minProbDev << "  maxProbDev: " << maxProbDev << endl;
+    cerr<<"\nWeather Data Content Error."<<endl;
+    return false;									// the probability of deviation must be between 0 and 1, a messagebox is popped up
+  }
   return true;										// the format is good and we are ready to draw
 }
 
@@ -189,13 +204,13 @@ bool WeatherData::testIndex(const int* readingIndex, const int *fileSize)
 void WeatherData::convertLatiLongHeightToXY(double cX, double cY, double latiPerPix, double longPerPix)
 {
   for(int i=0; i<numPoints; i++)
-    {
-      xCoors[i] = (xCoors[i]-cX)/latiPerPix;
-      yCoors[i] = (yCoors[i]-cY)/longPerPix;
-      // altitude values usually vary from 10000 to 30000, difference is 5000
-      // 0 is drawn on z=ALTITUDE_AT_BASE_PLANE; 15000 is at z=(15000-ALTITUDE_AT_BASE_PLANE)/ALTITUDE_PER_PIXEL, etc.
-      altitudes[i] = (altitudes[i]-ALTITUDE_AT_BASE_PLANE)/ALTITUDE_PER_PIXEL;
-    }
+  {
+    xCoors[i] = (xCoors[i]-cX)/latiPerPix;
+    yCoors[i] = (yCoors[i]-cY)/longPerPix;
+    // altitude values usually vary from 10000 to 30000, difference is 5000
+    // 0 is drawn on z=ALTITUDE_AT_BASE_PLANE; 15000 is at z=(15000-ALTITUDE_AT_BASE_PLANE)/ALTITUDE_PER_PIXEL, etc.
+    altitudes[i] = (altitudes[i]-ALTITUDE_AT_BASE_PLANE)/ALTITUDE_PER_PIXEL;
+  }
   cellHeight = (maxAlt - minAlt)/ALTITUDE_PER_PIXEL/4;// 10 pixels for 5000 feet altitude difference, suppose there are always 4 levels of weather data
   cellWidth = 1.25;									// a temporary value set for the width of each weather cell
 }
