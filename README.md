@@ -34,8 +34,21 @@ Again, higher is more restrictive.
 
 These default to 0.8 (and you should write the 0 in front of a decimal, so 0.7, not .7)
 
-Finally, there is
+For file management, there are the following:
 -oname
 This is just the name for your output file. It defaults to a timestamp from some point while the program is running if you don't specify anything.
 The default will look like this:
 2013-03-08_01-49-22.xml, indicating year-month-day_hour-minutes-seconds.xml
+
+-iname
+WARNING: IF YOU USE THIS PARAMETER, THE DIRECTORY MUST EXIST AND CONTAIN WEATHER DATA OR THE CODE WILL HAVE AN ERROR
+This parameter allows you to select what directory contains the weather data.
+The default value would be equivalent to calling
+> \run.bat -iname CWAMEnsembles
+
+-twname
+This allows you to rename the directory where the temporary weather is stored. By default it gives a string indicating range of times (of weather) it includes.
+
+-cinput
+This allows you to specify the name of the file used for the C++ code for its input. The value defaults to "inputs.txt"
+(for future maintainers, that value, "inputs.txt" is hardcoded in two places: once in create_input.rb:9, and once in src/main.cpp:5)
