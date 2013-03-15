@@ -1,9 +1,21 @@
 #include "UserInterface.h"
 
-int main()
+int main(int argc, char* argv[])
 {
+  string inputFile = "inputs.txt";
+  if (argc > 1)
+  {
+    for (int i = 0; i < argc; i++)
+    {
+      if (argv[i] == "-cinput")
+      {
+        inputFile = argv[i+1];
+      }
+    }
+  }
+  
 	UserInterface* userInterface = new UserInterface();
-	userInterface->ProgramBegins();
+	userInterface->ProgramBegins(inputFile);
 	delete userInterface;
 	return 0;
 }

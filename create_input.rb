@@ -2,19 +2,22 @@ require 'fileutils'
 require 'pathname'
 require 'date'
 
-def create_input(dthresh, nethresh, oname)
+def create_input(dthresh, nethresh, oname, temp_weather_name, c_input_file)
   deviation_threshold = dthresh ? dthresh : 0.8
   node_edge_threshold = nethresh ? nethresh : 0.8
   output_name = oname ? oname : Time.now.to_s.slice(0, 19).gsub(" ", "_").gsub(":", "-")
+  c_input_file = c_input_file ? c_input_file : "inputs.txt"
   
   current_dir = Pathname.new(Dir.pwd)
   data_path = current_dir + "Data"
   weather_path = nil
   dp_children = data_path.children
   creation_times = dp_children.map { |e| File.ctime(e).to_i }
-  weather_path = data_path.children[creation_times.index(creation_times.max)]
+  weather_path = temp_weather_name ? data_path + temp_weather_name : data_path.children[creation_times.index(creation_times.max)]
+  print "Temp weather dir: ", weather_path # This may be redundant, but it indicates which one it selected
+                                           # If there is no option set, it should use the most recently created folder
   
-  input_file_path = current_dir + "inputs.txt"
+  input_file_path = current_dir + c_input_file
   input = File.new(input_file_path, 'w')
   
   input.write("Data/demand.nom\n")

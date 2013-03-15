@@ -62,12 +62,12 @@ void UserInterface::resetHelper()
 // RTPrototype Functions
 
 // The project starts excuting here, called by the main function
-void UserInterface::ProgramBegins()
+void UserInterface::ProgramBegins(string inputFile)
 {
   ifstream in_stream;
   string line;
 
-  in_stream.open("inputs.txt");
+  in_stream.open(inputFile);
   currentInput = 0;
   while (!in_stream.eof() ) {
     getline(in_stream, line);
