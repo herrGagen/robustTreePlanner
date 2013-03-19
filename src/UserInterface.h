@@ -35,7 +35,7 @@ public:
 	// general purpose functions
 public:
 	void reset();							// reset the status to a brand new routing instance
-	void ProgramBegins(string inputFile);					// the project starts excuting from this function
+	void ProgramBegins(std::string inputFile);					// the project starts excuting from this function
 private:
 	void resetHelper();
 	/****************************************************************************************************************************/

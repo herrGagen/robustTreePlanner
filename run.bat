@@ -8,6 +8,6 @@
 ruby convert_files.rb %*
 
 :: Run the main program
-.\RobustTree.exe
+.\RobustTree.exe %*
 
 @echo %time%
