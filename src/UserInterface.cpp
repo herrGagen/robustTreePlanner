@@ -110,6 +110,16 @@ void UserInterface::ProgramBegins(std::string inputFile)
       return;
     }
   cout<<"\nWeather files are succesfully read in!"<<endl;
+  /*  (*quadrant).setQuadrant( quadrant->getcX(),
+                        quadrant->getcY(),
+                        ::atof(allInputs[currentInput++].c_str()),
+                        quadrant->getiRadius(),
+                        quadrant->getoRadius(),
+                        quadrant->getiHeight(),
+                        quadrant->getoHeight() ); */
+  (*quadrant).setAngle( ::atof(allInputs[currentInput++].c_str() ) );
+  //   cout << "Current LINE FOR allInputs: " << currentInput << "  " << allInputs[currentInput] << endl;
+  cout << "Current angle: " << quadrant->getAngle() << endl;
   cout << "Generating tree." << endl;
   generateTree();
   cout << "Tautening tree." << endl;

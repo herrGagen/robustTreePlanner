@@ -124,6 +124,7 @@ if __FILE__ == $0
   else
     s = false
     o = false
+    angle = false
     deviation_threshold = false
     node_edge_threshold = false
     output_name = false
@@ -135,6 +136,7 @@ if __FILE__ == $0
       # as flags for themselves! Any non false / nil var will be true-like in an if statement.
       s = arg if s == true
       o = arg if o == true
+      angle               = arg if angle                == true
       deviation_threshold = arg if deviation_threshold  == true
       node_edge_threshold = arg if node_edge_threshold  == true
       output_name         = arg if output_name          == true
@@ -145,6 +147,8 @@ if __FILE__ == $0
         s = true
       elsif arg == "-o"
         o = true
+      elsif arg == "-angle"
+        angle = true
       elsif arg == "-dthresh"
         deviation_threshold = true
       elsif arg == "-nethresh"
@@ -159,6 +163,7 @@ if __FILE__ == $0
         c_input_file = true
       end
     end
+    print "Angle:               ", angle,               "\n" if angle
     print "Deviation threshold: ", deviation_threshold, "\n" if deviation_threshold
     print "Node edge threshold: ", node_edge_threshold, "\n" if node_edge_threshold    
     print "Output file name:    ", output_name,         "\n" if output_name    
@@ -166,6 +171,6 @@ if __FILE__ == $0
     print "Input weather dir:   ", weather_dir,         "\n" if weather_dir    
     
     main(s, o, temp_weather_name, weather_dir)
-    create_input(deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file)
+    create_input(angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file)
   end
 end

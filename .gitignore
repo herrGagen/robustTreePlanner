@@ -17,7 +17,7 @@ rtp
 *.tar
 *.zip
 build/*
-Data/results*
+Data/*
 Release/*
 CWAMEnsembles/*
 Prototype\ Mac.xcodeproj/*
