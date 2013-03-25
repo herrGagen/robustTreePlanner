@@ -35,6 +35,7 @@ Again, higher is more restrictive.
 These default to 0.8 (and you should write the 0 in front of a decimal, so 0.7, not .7)
 
 For file management, there are the following:
+
 -oname
 This is just the name for your output file. It defaults to a timestamp from some point while the program is running if you don't specify anything.
 The default will look like this:
