@@ -27,8 +27,8 @@ def create_input(a, dthresh, nethresh, oname, temp_weather_name, c_input_file, w
   weather_path.each_child do |child|
     input.write((child.dirname.dirname.basename + child.dirname.basename + child.basename).to_s + "\n")
   end
-  input.write(angle.to_s + "\n")
   input.write(cell_width.to_s + "\n")
+  input.write(angle.to_s + "\n")
   input.write(deviation_threshold.to_s + "\n")
   input.write(node_edge_threshold.to_s + "\n")
   input.write(output_name.to_s + "\n")
