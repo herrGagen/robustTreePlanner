@@ -438,6 +438,8 @@ bool UserInterface::readWeatherData()
   float minAlt, maxAlt;	minAlt = 10000;		maxAlt = 0;			// get the min and max altitude of all weather files in order to set the quadrant
   cout<<"\nReading weather data files now, please wait..."<<endl;
   /***********************************************************************************************************************************/
+
+  double weatherCellWidth = ::atof(allInputs[currentInput++].c_str());
   for(int i=0; i<totalNumWeatherFiles; i++)
     {
       std::cout << "Parsing weather file: " << weatherFileDirectories[i] << std::endl;
@@ -458,8 +460,8 @@ bool UserInterface::readWeatherData()
             }
 
           // You had something about onverting lat long to pixel values, but used uninitialized values.
-          tempWeather.convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel);
-
+          tempWeather.convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
+  
           weatherData.push_back(tempWeather);		// push the newly read in weather data into the storing vector
           minAlt = min(minAlt, (float)tempWeather.getMinAlt());
           maxAlt = max(maxAlt, (float)tempWeather.getMaxAlt());

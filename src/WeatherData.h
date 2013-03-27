@@ -33,7 +33,7 @@ public:
 	void setProbability(double prob);
 	double getProbability() const;
 	bool getCellData(int index, float* x, float* y, float* alt, float* probDeviation, float* cWidth, float* cHeight) const;
-	void convertLatiLongHeightToXY(double cX, double cY, double latiPerPix, double longPerPix);
+	void convertLatiLongHeightToXY(double cX, double cY, double latiPerPix, double longPerPix, double weatherCellWidth);
 	double getMinAlt() const;
 	double getMaxAlt() const;
 private:
