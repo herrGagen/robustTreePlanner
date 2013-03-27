@@ -227,8 +227,10 @@ bool UserInterface::generateTree()
       // first, generate the entry and fix nodes, then the internal nodes
       routingDAG->reset();											// a brand new routing instance
       cout << endl << "Finished resetting edges." << endl;
-
-      if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherData, routingDAG))
+      // WILLXYZ ADD quadrantAngleOffset here
+      cout << "Current Input value: " << allInputs[currentInput] << endl;
+      double quadrantAngleOffset = ::atof(allInputs[currentInput++].c_str());
+      if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherData, routingDAG, quadrantAngleOffset))
         {
           cout << endl << "Generating edge set..." << endl;
           routingDAG->generateEdgeSet();								// generate the edges in the searching DAG
