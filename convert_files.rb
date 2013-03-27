@@ -171,7 +171,7 @@ if __FILE__ == $0
         quadrant_size = true
       end
     end
-    angle = (angle.to_f * Math::PI / 180).to_s
+    angle = (angle.to_f * Math::PI / 180).to_s if angle
     print "Angle (converted to radians):  ", angle,               "\n" if angle
     print "Quadrant Size (angle offset):  ", quadrant_size,       "\n" if quadrant_size
     print "Deviation threshold:           ", deviation_threshold, "\n" if deviation_threshold
