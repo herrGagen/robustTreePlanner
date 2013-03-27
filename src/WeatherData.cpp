@@ -201,7 +201,7 @@ bool WeatherData::testIndex(const int* readingIndex, const int *fileSize)
 // convert weather cell lati/long values to screen coordinates x/y values. 
 // lati/long pair (cX, cY) is at x, y position (0, 0), latiPerPix, longPerPix are the lati/long units that a pixel represents
 // after the conversion, compute the cellWidth/cellHeight value
-void WeatherData::convertLatiLongHeightToXY(double cX, double cY, double latiPerPix, double longPerPix)
+void WeatherData::convertLatiLongHeightToXY(double cX, double cY, double latiPerPix, double longPerPix, double weatherCellWidth)
 {
   for(int i=0; i<numPoints; i++)
   {
@@ -212,7 +212,8 @@ void WeatherData::convertLatiLongHeightToXY(double cX, double cY, double latiPer
     altitudes[i] = (altitudes[i]-ALTITUDE_AT_BASE_PLANE)/ALTITUDE_PER_PIXEL;
   }
   cellHeight = (maxAlt - minAlt)/ALTITUDE_PER_PIXEL/4;// 10 pixels for 5000 feet altitude difference, suppose there are always 4 levels of weather data
-  cellWidth = 1.25;									// a temporary value set for the width of each weather cell
+  cellWidth = weatherCellWidth;									// a temporary value set for the width of each weather cell
+  // std::cout << "Cell Width spot, index of allInputs: " << allInputs[currentInput] << endl;
 }
 
 // functions to return the deviation threshold values

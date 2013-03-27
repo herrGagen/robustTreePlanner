@@ -122,14 +122,15 @@ if __FILE__ == $0
     puts "Must provide one flag for each of the two possible parameters."
     puts "eg: ruby convert_files.rb -s 15 -o 30 -dthresh 0.8 -nethresh 0.8"
   else
-    s = false
-    o = false
+    s                   = false
+    o                   = false
     deviation_threshold = false
     node_edge_threshold = false
-    output_name = false
-    temp_weather_name = false
-    weather_dir = false
-    c_input_file = false
+    output_name         = false
+    temp_weather_name   = false
+    weather_dir         = false
+    c_input_file        = false
+    weather_cell_width  = false
     ARGV.each do |arg|
       # The next two lines need ``== true`` because they are being used
       # as flags for themselves! Any non false / nil var will be true-like in an if statement.
@@ -141,6 +142,7 @@ if __FILE__ == $0
       temp_weather_name   = arg if temp_weather_name    == true
       weather_dir         = arg if weather_dir          == true
       c_input_file        = arg if c_input_file         == true
+      weather_cell_width  = arg if weather_cell_width   == true
       if arg == "-s"
         s = true
       elsif arg == "-o"
@@ -157,15 +159,18 @@ if __FILE__ == $0
         weather_dir = true
       elsif arg == "-cinput"
         c_input_file = true
+      elsif arg == "-cellwidth"
+        weather_cell_width = true
       end
     end
     print "Deviation threshold: ", deviation_threshold, "\n" if deviation_threshold
     print "Node edge threshold: ", node_edge_threshold, "\n" if node_edge_threshold    
     print "Output file name:    ", output_name,         "\n" if output_name    
     print "Temp weather dir:    ", temp_weather_name,   "\n" if temp_weather_name    
-    print "Input weather dir:   ", weather_dir,         "\n" if weather_dir    
+    print "Input weather dir:   ", weather_dir,         "\n" if weather_dir
+    print "Weather cell width:  ", weather_cell_width,  "\n" if weather_cell_width
     
     main(s, o, temp_weather_name, weather_dir)
-    create_input(deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file)
+    create_input(deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width)
   end
 end
