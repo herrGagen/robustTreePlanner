@@ -283,6 +283,7 @@ void UserInterface::inputOperationalFlexibility()
       /*
         cout<<"\nPlease input 3 values for operational flexibility pairs(in nm) in increasing order:";
         cin>>r1>>r2>>r3;
+        WILLXYZ make this a command line parameter
       */
       r1 = 1;
       r2 = 2;

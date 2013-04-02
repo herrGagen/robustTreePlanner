@@ -85,8 +85,12 @@ double Node::testRadiusWithWeatherDataSet(double r, const vector<WeatherData> &w
 	double finalProbability = 0;
 	for(int i=0; i<wData.size(); i++)						// test the weather data members one by one
 	{
-		if(!testRadiusWithWeatherData(r, wData[i], effectiveThres))			// if there is no intersection, means this weather data is "clear"
+
+    // if there is no intersection, means this weather data is "clear"
+		if(!testRadiusWithWeatherData(r, wData[i], effectiveThres))
+    {
 			finalProbability += wData[i].getProbability();					// add 1*probability of the weather data
+    }
 	}
 	return finalProbability;
 }
