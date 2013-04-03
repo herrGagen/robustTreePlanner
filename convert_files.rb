@@ -133,6 +133,10 @@ if __FILE__ == $0
     c_input_file        = false
     weather_cell_width  = false
     quadrant_size       = false
+    lane_width 	        = false
+    of1                 = false
+    of2                 = false
+    of3                 = false
     ARGV.each do |arg|
       # The following lines need ``== true`` because they are being used
       # as flags for themselves! Any non false / nil var will be true-like in an if statement.
@@ -147,6 +151,10 @@ if __FILE__ == $0
       c_input_file        = arg if c_input_file         == true
       weather_cell_width  = arg if weather_cell_width   == true
       quadrant_size       = arg if quadrant_size        == true # this is called angle_offset in "create_input.rb"
+      lane_width	  = arg if lane_width		== true
+      of1                 = arg if of1                  == true
+      of2                 = arg if of2                  == true
+      of3                 = arg if of3                  == true
       if arg == "-s"
         s = true
       elsif arg == "-o"
@@ -169,20 +177,30 @@ if __FILE__ == $0
         weather_cell_width = true
       elsif arg == "-quadrantsize"
         quadrant_size = true
+      elsif arg == "-lanewidth"
+        lane_width = true
+      elsif arg == "-of1"
+        of1 = true
+      elsif arg == "-of2"
+        of2 = true
+      elsif arg == "-of3"
+        of3 = true
       end
     end
     angle = (angle.to_f * Math::PI / 180).to_s if angle
     quadrant_size = (quadrant_size.to_f * Math::PI / 180).to_s if quadrant_size
-    print "Angle (converted to radians):  ", angle,               "\n" if angle
-    print "Quadrant Size (angle offset):  ", quadrant_size,       "\n" if quadrant_size
-    print "Deviation threshold:           ", deviation_threshold, "\n" if deviation_threshold
-    print "Node edge threshold:           ", node_edge_threshold, "\n" if node_edge_threshold    
-    print "Output file name:              ", output_name,         "\n" if output_name    
-    print "Temp weather dir:              ", temp_weather_name,   "\n" if temp_weather_name    
-    print "Input weather dir:             ", weather_dir,         "\n" if weather_dir
-    print "Weather cell width:            ", weather_cell_width,  "\n" if weather_cell_width
+    print "Angle (converted to radians):  ", angle,                   "\n" if angle
+    print "Quadrant Size (angle offset):  ", quadrant_size,           "\n" if quadrant_size
+    print "Deviation threshold:           ", deviation_threshold,     "\n" if deviation_threshold
+    print "Node edge threshold:           ", node_edge_threshold,     "\n" if node_edge_threshold    
+    print "Output file name:              ", output_name,             "\n" if output_name    
+    print "Temp weather dir:              ", temp_weather_name,       "\n" if temp_weather_name    
+    print "Input weather dir:             ", weather_dir,             "\n" if weather_dir
+    print "Weather cell width:            ", weather_cell_width,      "\n" if weather_cell_width
+    print "Lane width:                    ", lane_width,              "\n" if lane_width
+    print "Operational Flexibility:       ", of1, " ", of2, " ", of3, "\n" if (of1 or of2 or of3)
     
     main(s, o, temp_weather_name, weather_dir)
-    create_input(angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size)
+    create_input(angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, of1, of2, of3)
   end
 end

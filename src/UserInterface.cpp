@@ -227,9 +227,23 @@ bool UserInterface::generateTree()
       // first, generate the entry and fix nodes, then the internal nodes
       routingDAG->reset();											// a brand new routing instance
       cout << endl << "Finished resetting edges." << endl;
-      // WILLXYZ ADD quadrantAngleOffset here
+
       cout << "Current Input value: " << allInputs[currentInput] << endl;
       double quadrantAngleOffset = ::atof(allInputs[currentInput++].c_str());
+      double lane_width = ::atof(allInputs[currentInput++].c_str());
+      if (lane_width > 0) {
+	for (int i = 0; i < demandRNPs.size(); i++) {
+	  if (demandRNPs[i] > 0) {
+	    demandRNPs[i] = lane_width;
+	  }
+	}
+      }
+      cout << "Demand RNPS: ";
+      for(int i = 0; i < demandRNPs.size(); i++) {
+	cout << demandRNPs[i] << " ";
+      }
+
+      cout << endl;
       if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherData, routingDAG, quadrantAngleOffset))
         {
           cout << endl << "Generating edge set..." << endl;
@@ -281,15 +295,19 @@ void UserInterface::inputOperationalFlexibility()
   while(true)
     {
       /*
+	This method ought to be cleaned up -- there is no reason for the while loop 
+	since we're no longer accepting interactive user input.
+
         cout<<"\nPlease input 3 values for operational flexibility pairs(in nm) in increasing order:";
         cin>>r1>>r2>>r3;
-        WILLXYZ make this a command line parameter
       */
-      r1 = 1;
-      r2 = 2;
-      r3 = 3; // Input this from config file
-      if(!(r1>0 & r2>0 &r3>0 & r1<r2 & r2<r3))	// valid values, all positive and in increasing order, then move to the next step
-        cout<<"Invalid Input...";
+      r1 = ::atof(allInputs[currentInput++].c_str());
+      r2 = ::atof(allInputs[currentInput++].c_str());
+      r3 = ::atof(allInputs[currentInput++].c_str());
+      if(!(r1>0 & r2>0 &r3>0 & r1<r2 & r2<r3)) { // valid values, all positive and in increasing order, then move to the next step
+        cout<<"Operational flexbility values are invalid: Verify that r1 < r2 < r3.";
+	exit(0);
+      }
       else break;									// valid input
     }
   float* radii = new float[3];
