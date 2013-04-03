@@ -213,11 +213,11 @@ bool UserInterface::generateTree()
   // only when the quadrant is generated and weather data is read in can we generate a tree
   if(ctrl_QuadGenerated == QUADRANT_GENERATED && ctrl_WeatherReadIn == WEATHER_READ_IN && ctrl_DemandReadIn == DEMAND_READ_IN)
     {
-      double minDistBetweenMergeNodes = 5/NMILESPERPIXEL; // make this read from config file
-      // deviationThreshold = (float)0.8; // make this read from config file
+      double minDistBetweenMergeNodes = 5/NMILESPERPIXEL; // WILLXYZ make this read from config file
+
       cout << "Reading in deviation threshold." << endl;
       deviationThreshold = ::atof(allInputs[currentInput++].c_str());
-      // nodeEdgeThreshold = (float)0.8;  // make this read from config file
+
       cout << "Reading in nodeEdgeThreshold." << endl;
       nodeEdgeThreshold = ::atof(allInputs[currentInput++].c_str());
       routingDAG->setminimumDistanceBetweenMergingNodes(minDistBetweenMergeNodes);
