@@ -1,4 +1,5 @@
 #include "UserInterface.h"
+#include <iostream>
 
 int main(int argc, char* argv[])
 {
@@ -7,7 +8,9 @@ int main(int argc, char* argv[])
   {
     for (int i = 0; i < argc; i++)
     {
-      if (argv[i] == "-cinput")
+      std::string argvi = argv[i];
+      std::cout << argvi << "  " << (argvi == "-cinput") << endl;
+      if (argvi == "-cinput")
       {
         inputFile = argv[i+1];
       }
