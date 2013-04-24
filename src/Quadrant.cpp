@@ -202,8 +202,9 @@ bool Quadrant::generateDAG(vector<float> rnps, int n, float effectiveThres, floa
 }
 
 // given a size n float array of entry points' rnps, and a weatherdata set, and the DAG structure that we are going to put the points in
-bool Quadrant::generateEntryAndFixNodes(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData> &wData, RoutingDAG *rDAG, double quadAngleOffset, int numFixNodes)
+bool Quadrant::generateEntryAndFixNodes(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData> &wData, RoutingDAG *rDAG, double quadAngleOffset, int maxFixNodes)
 {
+  cout << "Max Number of Fix Nodes: " << maxFixNodes << endl;
 	if(!demandFeasible(rnps))
 	{
 		cerr<<"\nThe Quadrant is NOT large enough to be used for routing!"<<endl;
@@ -237,9 +238,8 @@ bool Quadrant::generateEntryAndFixNodes(vector<float> rnps, int n, float effecti
 	// store the fix nodes first, then insert them into the DAG in order of their angles
 
 	double *anglesOfFixNodes = new double[3]; // store the angles of each fix nodes generated
-	int maxFixNodes = 3;
-	cout << "THIS IS WHERE WE ADD FIX NODES." << endl;
 
+	int numFixNodes = 0;
 	while(currentAngleRight >= startingAngle || currentAngleLeft <= endingAngle)
 	{
 		if(currentAngleRight >= startingAngle)
