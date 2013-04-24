@@ -244,10 +244,12 @@ bool UserInterface::generateTree()
     }
     cout << endl;
 
+    cout << "Max Fix Nodes: " << allInputs[currentInput] << endl;
+    int maxFixNodes = ::atof(allInputs[currentInput++].c_str());
     cout << "START GENERATING DAG" << endl;
 
 
-    if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherData, routingDAG, quadrantAngleOffset))
+    if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherData, routingDAG, quadrantAngleOffset, maxFixNodes))
     {
       cout << "FINISHED DAG" << endl;
       cout << endl << "Generating edge set..." << endl;

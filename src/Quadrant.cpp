@@ -189,10 +189,10 @@ bool Quadrant::demandFeasible(vector<float> &rnps)
 // effectiveThres means if a weather cell's deviation probability is below this value, it's going to be considered as NULL
 // routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
 // if the value < routingThres, then it is considered an obstacle 
-bool Quadrant::generateDAG(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData> &wData, RoutingDAG* rDAG, double qAngleOffset)
+bool Quadrant::generateDAG(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData> &wData, RoutingDAG* rDAG, double qAngleOffset, int numFixNodes)
 {
 	cout << "Generating DAG..." << endl;
-	if(!generateEntryAndFixNodes(rnps, n, effectiveThres, routingThres, wData, rDAG, qAngleOffset))
+	if(!generateEntryAndFixNodes(rnps, n, effectiveThres, routingThres, wData, rDAG, qAngleOffset, numFixNodes))
 		return false;
 	cout << "Generating internal nodes..." << endl;
 
@@ -202,7 +202,7 @@ bool Quadrant::generateDAG(vector<float> rnps, int n, float effectiveThres, floa
 }
 
 // given a size n float array of entry points' rnps, and a weatherdata set, and the DAG structure that we are going to put the points in
-bool Quadrant::generateEntryAndFixNodes(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData> &wData, RoutingDAG *rDAG, double quadAngleOffset)
+bool Quadrant::generateEntryAndFixNodes(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData> &wData, RoutingDAG *rDAG, double quadAngleOffset, int numFixNodes)
 {
 	if(!demandFeasible(rnps))
 	{
@@ -224,7 +224,6 @@ bool Quadrant::generateEntryAndFixNodes(vector<float> rnps, int n, float effecti
 	}
 	/***************************************************************************/
 	// then generate a set of fix nodes, at least 1, at most 3
-	int numFixNodes = 0;
 	double angleIncrement = (2*maxrnp+2)/iRadius;	
 	// when we find a fix node, the next one should be at least 
 	// angleIncrement aside from both sides
@@ -238,6 +237,9 @@ bool Quadrant::generateEntryAndFixNodes(vector<float> rnps, int n, float effecti
 	// store the fix nodes first, then insert them into the DAG in order of their angles
 
 	double *anglesOfFixNodes = new double[3]; // store the angles of each fix nodes generated
+	int maxFixNodes = 3;
+	cout << "THIS IS WHERE WE ADD FIX NODES." << endl;
+
 	while(currentAngleRight >= startingAngle || currentAngleLeft <= endingAngle)
 	{
 		if(currentAngleRight >= startingAngle)
@@ -262,7 +264,7 @@ bool Quadrant::generateEntryAndFixNodes(vector<float> rnps, int n, float effecti
 				currentAngleLeft = max(currentAngleLeft, currentAngleRight + angleIncrement);
 				currentAngleRight -= angleIncrement;
 				numFixNodes++;
-				if(numFixNodes==3)
+				if(numFixNodes>=maxFixNodes)
 				{
 					// already got enough fix nodes
 					break;
