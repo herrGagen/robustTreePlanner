@@ -134,6 +134,7 @@ if __FILE__ == $0
     weather_cell_width  = false
     quadrant_size       = false
     lane_width 	        = false
+    max_fix_nodes       = false
     of1                 = false
     of2                 = false
     of3                 = false
@@ -152,6 +153,7 @@ if __FILE__ == $0
       weather_cell_width  = arg if weather_cell_width   == true
       quadrant_size       = arg if quadrant_size        == true # this is called angle_offset in "create_input.rb"
       lane_width          = arg if lane_width	          == true
+      max_fix_nodes       = arg if max_fix_nodes        == true # called num_fix_nodes
       of1                 = arg if of1                  == true
       of2                 = arg if of2                  == true
       of3                 = arg if of3                  == true
@@ -179,6 +181,8 @@ if __FILE__ == $0
         quadrant_size = true
       elsif arg == "-lanewidth"
         lane_width = true
+      elsif arg == "-fixnodes"
+        max_fix_nodes = true
       elsif arg == "-of1"
         of1 = true
       elsif arg == "-of2"
@@ -198,9 +202,10 @@ if __FILE__ == $0
     print "Input weather dir:             ", weather_dir,             "\n" if weather_dir
     print "Weather cell width:            ", weather_cell_width,      "\n" if weather_cell_width
     print "Lane width:                    ", lane_width,              "\n" if lane_width
+    print "Max Number of Fix Nodes:       ", max_fix_nodes,           "\n" if max_fix_nodes
     print "Operational Flexibility:       ", of1, " ", of2, " ", of3, "\n" if (of1 or of2 or of3)
     
     main(s, o, temp_weather_name, weather_dir)
-    create_input(angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, of1, of2, of3)
+    create_input(angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, of1, of2, of3)
   end
 end
