@@ -151,7 +151,7 @@ if __FILE__ == $0
       c_input_file        = arg if c_input_file         == true
       weather_cell_width  = arg if weather_cell_width   == true
       quadrant_size       = arg if quadrant_size        == true # this is called angle_offset in "create_input.rb"
-      lane_width	  = arg if lane_width		== true
+      lane_width          = arg if lane_width	          == true
       of1                 = arg if of1                  == true
       of2                 = arg if of2                  == true
       of3                 = arg if of3                  == true
