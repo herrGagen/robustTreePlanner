@@ -258,18 +258,62 @@ bool UserInterface::generateTree()
       ctrl_RoutingDAGGenerated = ROUTINGDAG_GENERATED;
       cout << endl << "Generating Tree..." << endl;
       // generate the tree here
-      cout << "START GENERATING TREE" << endl;
+      cout << "START GENERATING TREE" << endl << "Demand RNPs: ";
+      for (int i = 0; i < demandRNPs.size(); i++) {
+        cout << demandRNPs[i] << "  ";
+      }
+      cout << endl;
+      
       if(!routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold))
       {
-        cerr<< endl << "There Does NOT Exist A Merge Tree!"<<endl;
-        return false;
+        // Will added some code 04/2013 to add a demand shifting scheme to hopefully reduce tree generation failure
+        cout << "Beginning demand shifting." << endl;
+        int demand_shift_index = 0;
+        while (demand_shift_index < demandRNPs.size() ) {
+          float temp;
+          if (demand_shift_index > 0 && demandRNPs[demand_shift_index - 1] == 0) {
+            // Swap the values of demandRNPs at the current index and the one below
+            demandRNPs[demand_shift_index - 1] = demandRNPs[demand_shift_index];
+            demandRNPs[demand_shift_index] = 0;
+
+            // If the tree is generated successfully, exit this block gracefully
+            if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
+              // setting demand_shift_index to demandRNPs.size() is one way of indicating the tree is generated successfully
+              demand_shift_index = demandRNPs.size();
+              cout << "A downward swap generated a tree on the following index: " << demand_shift_index << endl;
+            }
+
+            // Swap them back
+            demandRNPs[demand_shift_index] = demandRNPs[demand_shift_index - 1];
+            demandRNPs[demand_shift_index - 1] = 0;
+
+          }
+          if (demand_shift_index + 1 < demandRNPs.size() && demandRNPs[demand_shift_index + 1] == 0) {
+            // Swap the values of demandRNPs at the current index and the one above
+            demandRNPs[demand_shift_index + 1] = demandRNPs[demand_shift_index];
+            demandRNPs[demand_shift_index] = 0;
+
+            // If the tree is generated successfully, exit this block gracefully
+            if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
+              // setting demand_shift_index to demandRNPs.size() is one way of indicating the tree is generated successfully
+              demand_shift_index = demandRNPs.size();
+              cout << "An upward swap generated a tree on the following index: " << demand_shift_index << endl;
+            }
+
+            // Swap them back
+            demandRNPs[demand_shift_index] = demandRNPs[demand_shift_index + 1];
+            demandRNPs[demand_shift_index + 1] = 0;
+          }
+        }
+
+        if (demand_shift_index >= demandRNPs.size() ) {
+          cerr<< endl << "There Does NOT Exist A Merge Tree!"<<endl;
+          return false;
+        }
       }
-      else 
-      {
-        cout << endl << "FINISHED BOTTOMMOST FILL TREE" << endl;
-        cout<< endl << "A bottommost routing Tree is generated!" << endl;
-        return true;
-      }
+      cout << endl << "FINISHED BOTTOMMOST FILL TREE" << endl;
+      cout<< endl << "A bottommost routing Tree is generated!" << endl;
+      return true;
     }	// an error message will pop up if failed to generate the DAG
     else { cout << "Failed to generate the DAG."; }
   }
