@@ -124,6 +124,8 @@ if __FILE__ == $0
   else
     s                   = false
     o                   = false
+    dshift              = false
+    ddrop               = false
     angle               = false
     deviation_threshold = false
     node_edge_threshold = false
@@ -212,6 +214,6 @@ if __FILE__ == $0
     print "Operational Flexibility:       ", of1, " ", of2, " ", of3, "\n" if (of1 or of2 or of3)
     
     main(s, o, temp_weather_name, weather_dir)
-    create_input(angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, of1, of2, of3)
+    create_input(dshift, ddrop, angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, of1, of2, of3)
   end
 end
