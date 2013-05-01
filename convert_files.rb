@@ -124,6 +124,8 @@ if __FILE__ == $0
   else
     s                   = false
     o                   = false
+    dshift              = false
+    ddrop               = false
     angle               = false
     deviation_threshold = false
     node_edge_threshold = false
@@ -141,6 +143,8 @@ if __FILE__ == $0
       # as flags for themselves! Any non false / nil var will be true-like in an if statement.
       s = arg if s == true
       o = arg if o == true
+      dshift = arg if dshift == true #just boolean 0 or 1, whether or not we want to use demand shifting
+      ddrop = arg if ddrop == true # same as demand shifting, 0 or 1 to indicate whether or not we do it
       angle               = arg if angle                == true
       deviation_threshold = arg if deviation_threshold  == true
       node_edge_threshold = arg if node_edge_threshold  == true
@@ -159,6 +163,10 @@ if __FILE__ == $0
         o = true
       elsif arg == "-angle"
         angle = true
+      elsif arg == "-demandshift"
+        dshift = true
+      elsif arg == "-demanddrop"
+        ddrop = true
       elsif arg == "-dthresh"
         deviation_threshold = true
       elsif arg == "-nethresh"
@@ -210,6 +218,6 @@ if __FILE__ == $0
     print "Operational Flexibility:       ", oper_flex,               "\n" if oper_flex != []
     
     main(s, o, temp_weather_name, weather_dir)
-    create_input(angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, oper_flex)
+    create_input(dshift, ddrop, angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, oper_flex)
   end
 end

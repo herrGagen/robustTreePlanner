@@ -2,7 +2,9 @@ require 'fileutils'
 require 'pathname'
 require 'date'
 
-def create_input(a, dthresh, nethresh, oname, temp_weather_name, c_input_file, weather_cell_width, aoffset, lw, number_of_fix_nodes,  oper_flex)
+def create_input(dshift, ddrop, a, dthresh, nethresh, oname, temp_weather_name, c_input_file, weather_cell_width, aoffset, lw, number_of_fix_nodes,  oper_flex)
+  demand_shift = dshift ? dshift : 1
+  demand_drop = ddrop ? ddrop : 1
   angle               = a                   ? a                   : 0.0
   deviation_threshold = dthresh             ? dthresh             : 0.8
   node_edge_threshold = nethresh            ? nethresh            : 0.8
@@ -38,6 +40,8 @@ def create_input(a, dthresh, nethresh, oname, temp_weather_name, c_input_file, w
   input.write(angle_offset.to_s + "\n")
   input.write(lane_width.to_s + "\n")
   input.write(num_fix_nodes.to_s + "\n")
+  input.write(demand_shift.to_s + "\n")
+  input.write(demand_drop.to_s + "\n")
   input.write(oper_flex.length.to_s + "\n")
   oper_flex.each do |elt|
     input.write(elt + "\n")

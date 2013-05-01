@@ -190,7 +190,7 @@ bool DemandProfile::handleInputData()
     {
       if(rnp[i]<0 || xCoors[i]>360 || yCoors[i]>360)
         {
-          cout << rnp[i] << " " << xCoors[i] << " " << yCoors[i] << endl;
+          std::cout << rnp[i] << " " << xCoors[i] << " " << yCoors[i] << endl;
           cerr<<"\nFile Content Error!"<<endl;				// prompt that the file has format errors
           return false;
         }

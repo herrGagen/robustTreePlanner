@@ -168,7 +168,7 @@ bool WeatherData::handleInputData()
     }
     else
       // debugging
-      //		  cout << xCoors[i] << " " << yCoors[i] << endl;
+      //		  std::cout << xCoors[i] << " " << yCoors[i] << endl;
       // normalize the range into (-180, 180]
       if(xCoors[i]>180)	xCoors[i]-=360;
     if(yCoors[i]>180)	yCoors[i]-=360;
@@ -180,7 +180,7 @@ bool WeatherData::handleInputData()
   if(inputFormatError || minProbDev<0 || maxProbDev>1) 
   {
     // DEBUG
-    //	    cout << "minProbDev: " << minProbDev << "  maxProbDev: " << maxProbDev << endl;
+    //	    std::cout << "minProbDev: " << minProbDev << "  maxProbDev: " << maxProbDev << endl;
     cerr<<"\nWeather Data Content Error."<<endl;
     return false;									// the probability of deviation must be between 0 and 1, a messagebox is popped up
   }
