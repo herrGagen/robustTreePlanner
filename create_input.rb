@@ -2,7 +2,7 @@ require 'fileutils'
 require 'pathname'
 require 'date'
 
-def create_input(a, dthresh, nethresh, oname, temp_weather_name, c_input_file, weather_cell_width, aoffset, lw, number_of_fix_nodes,  of1, of2, of3)
+def create_input(a, dthresh, nethresh, oname, temp_weather_name, c_input_file, weather_cell_width, aoffset, lw, number_of_fix_nodes,  oper_flex)
   angle               = a                   ? a                   : 0.0
   deviation_threshold = dthresh             ? dthresh             : 0.8
   node_edge_threshold = nethresh            ? nethresh            : 0.8
@@ -12,9 +12,7 @@ def create_input(a, dthresh, nethresh, oname, temp_weather_name, c_input_file, w
   angle_offset        = aoffset             ? aoffset             : Math::PI / 2 # 90 degrees for a standard quadrant size
   lane_width          = lw                  ? lw                  : -1.0
   num_fix_nodes       = number_of_fix_nodes ? number_of_fix_nodes : 3
-  operflex1           = of1 ? of1 : 1
-  operflex2           = of2 ? of2 : 2
-  operflex3           = of3 ? of3 : 3
+  oper_flex           = oper_flex           ? oper_flex : ["1", "2", "3"] 
   
   current_dir = Pathname.new(Dir.pwd)
   data_path = current_dir + "Data"
@@ -40,8 +38,9 @@ def create_input(a, dthresh, nethresh, oname, temp_weather_name, c_input_file, w
   input.write(angle_offset.to_s + "\n")
   input.write(lane_width.to_s + "\n")
   input.write(num_fix_nodes.to_s + "\n")
-  input.write(operflex1.to_s + "\n")
-  input.write(operflex2.to_s + "\n")
-  input.write(operflex3.to_s + "\n")
+  input.write(oper_flex.length.to_s + "\n")
+  oper_flex.each do |elt|
+    input.write(elt + "\n")
+  end
   input.write(output_name.to_s + "\n")
 end

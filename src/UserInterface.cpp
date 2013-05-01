@@ -299,30 +299,16 @@ void UserInterface::inputOperationalFlexibility()
     cerr<<"\nPlease generate the tree first!"<<endl;
     return;
   }
-  float r1, r2, r3;
-  while(true)
-  {
-    /*
-    This method ought to be cleaned up -- there is no reason for the while loop 
-    since we're no longer accepting interactive user input.
 
-    cout<<"\nPlease input 3 values for operational flexibility pairs(in nm) in increasing order:";
-    cin>>r1>>r2>>r3;
-    */
-    r1 = ::atof(allInputs[currentInput++].c_str());
-    r2 = ::atof(allInputs[currentInput++].c_str());
-    r3 = ::atof(allInputs[currentInput++].c_str());
-    if(!(r1>0 & r2>0 &r3>0 & r1<r2 & r2<r3)) { // valid values, all positive and in increasing order, then move to the next step
-      cout<<"Operational flexbility values are invalid: Verify that r1 < r2 < r3.";
-      exit(0);
-    }
-    else break;									// valid input
+  // XYZ WILL changed this on 2013-04-30
+  // Cleaning code up and making the number of operational flexibility parameters variable
+  int numOperFlexParams = ::atoi(allInputs[currentInput++].c_str());
+
+  float* radii = new float[numOperFlexParams];
+  for (int i = 0; i < numOperFlexParams; ++i) {
+    radii[i] = ::atof(allInputs[currentInput++].c_str());
   }
-  float* radii = new float[3];
-  radii[0] = r1;
-  radii[1] = r2;
-  radii[2] = r3;
-  routingDAG->generateOperFlexPairs(radii, 3, weatherData, deviationThreshold);	// generate the pairs of operational flexibility values	
+  routingDAG->generateOperFlexPairs(radii, numOperFlexParams, weatherData, deviationThreshold);	// generate the pairs of operational flexibility values	
   delete []radii;
   ctrl_OperFlexGenerated = OPER_FLEX_GENERATED;
   cout<<"\nOperational flexibility pairs successfully generated for the tree."<<endl;
