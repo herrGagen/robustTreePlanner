@@ -143,6 +143,8 @@ if __FILE__ == $0
       # as flags for themselves! Any non false / nil var will be true-like in an if statement.
       s = arg if s == true
       o = arg if o == true
+      dshift = arg if dshift == true #just boolean 0 or 1, whether or not we want to use demand shifting
+      ddrop = arg if ddrop == true # same as demand shifting, 0 or 1 to indicate whether or not we do it
       angle               = arg if angle                == true
       deviation_threshold = arg if deviation_threshold  == true
       node_edge_threshold = arg if node_edge_threshold  == true
@@ -163,6 +165,10 @@ if __FILE__ == $0
         o = true
       elsif arg == "-angle"
         angle = true
+      elsif arg == "-demandshift"
+        dshift = true
+      elsif arg == "-demanddrop"
+        ddrop = true
       elsif arg == "-dthresh"
         deviation_threshold = true
       elsif arg == "-nethresh"

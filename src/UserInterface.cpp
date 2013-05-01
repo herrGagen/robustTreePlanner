@@ -91,7 +91,7 @@ void UserInterface::ProgramBegins(std::string inputFile)
 
   char userInput = '0';	     // the user input will always be a number, deciding what to do next
   bool startOver = false;    // when the user choose to do everything again
-  cout<<"Robust Tree Generator:\nThe software is used to generate robust trees given the demand profile and weather data information."<<endl;
+  std::cout<<"Robust Tree Generator:\nThe software is used to generate robust trees given the demand profile and weather data information."<<endl;
 
   if(startOver) // when doing everything again, reset everything first
   {
@@ -100,16 +100,16 @@ void UserInterface::ProgramBegins(std::string inputFile)
   }
   if(!readDemandProfile()) // at the start, read in demand profile
   {
-    cout<<"\nFailed to read in the demand profile, double check the demand path listed."<<endl;
+    std::cout<<"\nFailed to read in the demand profile, double check the demand path listed."<<endl;
     return;
   }
-  cout<<"Demand profile successfully read in." << endl;
+  std::cout<<"Demand profile successfully read in." << endl;
   if(!readWeatherData())
   {
-    cout<<"\nFailed to successfully read in the weather data, double check the weather directories."<<endl;
+    std::cout<<"\nFailed to successfully read in the weather data, double check the weather directories."<<endl;
     return;
   }
-  cout<<"\nWeather files are succesfully read in!"<<endl;
+  std::cout<<"\nWeather files are succesfully read in!"<<endl;
   /*  (*quadrant).setQuadrant( quadrant->getcX(),
   quadrant->getcY(),
   ::atof(allInputs[currentInput++].c_str()),
@@ -118,15 +118,15 @@ void UserInterface::ProgramBegins(std::string inputFile)
   quadrant->getiHeight(),
   quadrant->getoHeight() ); */
   (*quadrant).setAngle( ::atof(allInputs[currentInput++].c_str() ) );
-  //   cout << "Current LINE FOR allInputs: " << currentInput << "  " << allInputs[currentInput] << endl;
-  cout << "Current angle: " << quadrant->getAngle() << endl;
-  cout << "Generating tree." << endl;
+  //   std::cout << "Current LINE FOR allInputs: " << currentInput << "  " << allInputs[currentInput] << endl;
+  std::cout << "Current angle: " << quadrant->getAngle() << endl;
+  std::cout << "Generating tree." << endl;
   generateTree();
-  cout << "Tautening tree." << endl;
+  std::cout << "Tautening tree." << endl;
   tautenTree();
-  cout << "Doing operational Flexibility stuff." << endl;
+  std::cout << "Doing operational Flexibility stuff." << endl;
   inputOperationalFlexibility();
-  cout << "Saving tree information." << endl;
+  std::cout << "Saving tree information." << endl;
   saveTreeInformation();
 
 }
@@ -137,24 +137,24 @@ void UserInterface::printQuadrantAndDemandInfo()
   if(ctrl_QuadGenerated == QUADRANT_GENERATED)  
   {
     // first print the current quadrant information and demand information
-    cout<<"\nThe center of the quadrant is currently at lati/long ("<<setprecision(5)<<centerLati+quadrant->getcX()*latiPerPixel<<", ";
-    cout<<setprecision(5)<<centerLong+quadrant->getcY()*longPerPixel<<").";
-    cout<<"\nThe inner radius (in nm) is "<<setprecision(5)<<quadrant->getiRadius()*NMILESPERPIXEL<<", the outer radius is ";
-    cout<<setprecision(5)<<quadrant->getoRadius()*NMILESPERPIXEL<<".";
-    cout<<"\nThe inner altitude (in feet) is "<<setprecision(5)<<ALTITUDE_AT_BASE_PLANE+quadrant->getiHeight()*ALTITUDE_PER_PIXEL<<", ";
-    cout<<"the outer altitude is "<<setprecision(5)<<ALTITUDE_AT_BASE_PLANE+quadrant->getoHeight()*ALTITUDE_PER_PIXEL<<".";
-    cout<<"\nThe angle of the right boundary of the quadrant is (relative to +x axis) "<<setprecision(5)<<quadrant->getAngle()*180/PI<<" degrees."<<endl;
+    std::cout<<"\nThe center of the quadrant is currently at lati/long ("<<setprecision(5)<<centerLati+quadrant->getcX()*latiPerPixel<<", ";
+    std::cout<<setprecision(5)<<centerLong+quadrant->getcY()*longPerPixel<<").";
+    std::cout<<"\nThe inner radius (in nm) is "<<setprecision(5)<<quadrant->getiRadius()*NMILESPERPIXEL<<", the outer radius is ";
+    std::cout<<setprecision(5)<<quadrant->getoRadius()*NMILESPERPIXEL<<".";
+    std::cout<<"\nThe inner altitude (in feet) is "<<setprecision(5)<<ALTITUDE_AT_BASE_PLANE+quadrant->getiHeight()*ALTITUDE_PER_PIXEL<<", ";
+    std::cout<<"the outer altitude is "<<setprecision(5)<<ALTITUDE_AT_BASE_PLANE+quadrant->getoHeight()*ALTITUDE_PER_PIXEL<<".";
+    std::cout<<"\nThe angle of the right boundary of the quadrant is (relative to +x axis) "<<setprecision(5)<<quadrant->getAngle()*180/PI<<" degrees."<<endl;
     // then print the demand information
-    cout<<"\nCurrently there are "<<demandRNPs.size()<<" entry points evenly spaced on the outer boundary of the quadrant.";
+    std::cout<<"\nCurrently there are "<<demandRNPs.size()<<" entry points evenly spaced on the outer boundary of the quadrant.";
     if(!demandRNPs.empty())
     {
-      cout<<"\nthe rnp requirements are (in nm, from right to left) ";
+      std::cout<<"\nthe rnp requirements are (in nm, from right to left) ";
       for(unsigned i=0; i<demandRNPs.size(); i++)
-        cout<<setprecision(5)<<demandRNPs[i]*NMILESPERPIXEL<<"  ";
+        std::cout<<setprecision(5)<<demandRNPs[i]*NMILESPERPIXEL<<"  ";
     }
   }
   else
-    cout<<"\nThe quadrant is not generated yet!"<<endl;
+    std::cout<<"\nThe quadrant is not generated yet!"<<endl;
 }
 
 // display the quadrant infomation and prompt the users if they want to edit the information
@@ -162,27 +162,27 @@ bool UserInterface::editQuadrant()
 {
   if(ctrl_QuadGenerated == QUADRANT_GENERATED)  
   {
-    cout<<"Please input the new quadrant information";
+    std::cout<<"Please input the new quadrant information";
     double cx, cy, angle, ir, ora, ih, oh;
-    cout<<"\nThe latitude of the center of the quadrant is (enter 0 to skip):";
+    std::cout<<"\nThe latitude of the center of the quadrant is (enter 0 to skip):";
     cin>>cx;
     if(cx!=0)	cx = (cx-centerLati) / latiPerPixel;
-    cout<<"\nThe longitude of the center of the quadrant is (enter 0 to skip):";
+    std::cout<<"\nThe longitude of the center of the quadrant is (enter 0 to skip):";
     cin>>cy;
     if(cy!=0)	cy = (cy-centerLong) / longPerPixel;
-    cout<<"\nThe angle of the right side of the quadrant is (0 to 360 degrees, relative to the positive x axis, enter 0 to skip):";
+    std::cout<<"\nThe angle of the right side of the quadrant is (0 to 360 degrees, relative to the positive x axis, enter 0 to skip):";
     cin>> angle;
     if(angle!=0) angle = angle*PI/180;
-    cout<<"\nThe inner radius of the quadrant is (in nm, enter 0 to skip):";
+    std::cout<<"\nThe inner radius of the quadrant is (in nm, enter 0 to skip):";
     cin>>ir;
     if(ir!=0)	ir = abs(ir)/NMILESPERPIXEL;
-    cout<<"\nThe outer radius of the quadrant is (in nm, enter 0 to skip):";
+    std::cout<<"\nThe outer radius of the quadrant is (in nm, enter 0 to skip):";
     cin>>ora;
     if(ora!=0)	ora = abs(ora)/NMILESPERPIXEL;
-    cout<<"\nThe inner altitude of the quadrant is (in feet, enter 0 to skip):";
+    std::cout<<"\nThe inner altitude of the quadrant is (in feet, enter 0 to skip):";
     cin>>ih;
     if(ih!=0)	ih = (ih-ALTITUDE_AT_BASE_PLANE)/ALTITUDE_PER_PIXEL;
-    cout<<"\nThe outer altitude of the quadrant is (in feet, enter 0 to skip):";
+    std::cout<<"\nThe outer altitude of the quadrant is (in feet, enter 0 to skip):";
     cin>>oh;
     if(oh!=0)	oh = (oh-ALTITUDE_AT_BASE_PLANE)/ALTITUDE_PER_PIXEL;
     // set the new information gotten from the dialog to the quadrant object
@@ -192,14 +192,14 @@ bool UserInterface::editQuadrant()
     {
       demandRNPs.clear();
       ctrl_DemandReadIn = DEMAND_NOT_READ_IN;	// if the new quadrant cannot accomodate the demands, then set demand NOT read in
-      cout<<"\nThe new quadrant cannot accommondate the rnp requirements of the entry nodes, the demand info are therefore restored."<<endl;
+      std::cout<<"\nThe new quadrant cannot accommondate the rnp requirements of the entry nodes, the demand info are therefore restored."<<endl;
       return false;
     }
     // quadrant is changed, then if a tree or routing DAG was generated, they are considered outdated
     ctrl_RoutingDAGGenerated = !ROUTINGDAG_GENERATED;	
   }
   else
-    cout<<"\nThe quadrant is not generated yet!"<<endl;
+    std::cout<<"\nThe quadrant is not generated yet!"<<endl;
   return true;
 }
 
@@ -215,20 +215,20 @@ bool UserInterface::generateTree()
   {
     double minDistBetweenMergeNodes = 5/NMILESPERPIXEL; // WILLXYZ make this read from config file
 
-    cout << "Reading in deviation threshold." << endl;
+    std::cout << "Reading in deviation threshold." << endl;
     deviationThreshold = ::atof(allInputs[currentInput++].c_str());
 
-    cout << "Reading in nodeEdgeThreshold." << endl;
+    std::cout << "Reading in nodeEdgeThreshold." << endl;
     nodeEdgeThreshold = ::atof(allInputs[currentInput++].c_str());
     routingDAG->setminimumDistanceBetweenMergingNodes(minDistBetweenMergeNodes);
-    cout<< endl << "Generating a bottommost merge tree, please wait..." << endl;
+    std::cout<< endl << "Generating a bottommost merge tree, please wait..." << endl;
     /************************************************************************************************/
     ctrl_OperFlexGenerated = OPER_FLEX_NOT_GENERATED;				// when generating a new tree, the Oper-Flex pairs need to be generated again
     // first, generate the entry and fix nodes, then the internal nodes
     routingDAG->reset();											// a brand new routing instance
-    cout << endl << "Finished resetting edges." << endl;
+    std::cout << endl << "Finished resetting edges." << endl;
 
-    cout << "Current Input value: " << allInputs[currentInput] << endl;
+    std::cout << "Current Input value: " << allInputs[currentInput] << endl;
     double quadrantAngleOffset = ::atof(allInputs[currentInput++].c_str());
     double lane_width = ::atof(allInputs[currentInput++].c_str());
     if (lane_width > 0) {
@@ -238,84 +238,114 @@ bool UserInterface::generateTree()
         }
       }
     }
-    cout << "Demand RNPS: ";
+    std::cout << "Demand RNPS: ";
     for(int i = 0; i < demandRNPs.size(); i++) {
-      cout << demandRNPs[i] << " ";
+      std::cout << demandRNPs[i] << " ";
     }
-    cout << endl;
+    std::cout << endl;
 
-    cout << "Max Fix Nodes: " << allInputs[currentInput] << endl;
+    std::cout << "Max Fix Nodes: " << allInputs[currentInput] << endl;
     int maxFixNodes = ::atof(allInputs[currentInput++].c_str());
-    cout << "START GENERATING DAG" << endl;
+    std::cout << "START GENERATING DAG" << endl;
 
+    int demand_shift = ::atoi(allInputs[currentInput++].c_str());
+    int demand_drop  = ::atoi(allInputs[currentInput++].c_str());
 
     if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherData, routingDAG, quadrantAngleOffset, maxFixNodes))
     {
-      cout << "FINISHED DAG" << endl;
-      cout << endl << "Generating edge set..." << endl;
+      std::cout << "FINISHED DAG" << endl;
+      std::cout << endl << "Generating edge set..." << endl;
       routingDAG->generateEdgeSet();								// generate the edges in the searching DAG
-      cout << endl << "Edges (Routing DAG) generated." << endl;
+      std::cout << endl << "Edges (Routing DAG) generated." << endl;
       ctrl_RoutingDAGGenerated = ROUTINGDAG_GENERATED;
-      cout << endl << "Generating Tree..." << endl;
+      std::cout << endl << "Generating Tree..." << endl;
       // generate the tree here
-      cout << "START GENERATING TREE" << endl << "Demand RNPs: ";
+      std::cout << "START GENERATING TREE" << endl << "Demand RNPs: ";
       for (int i = 0; i < demandRNPs.size(); i++) {
-        cout << demandRNPs[i] << "  ";
+        std::cout << demandRNPs[i] << "  ";
       }
-      cout << endl;
-      
+      std::cout << endl;
+
       if(!routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold))
       {
         // Will added some code 04/2013 to add a demand shifting scheme to hopefully reduce tree generation failure
-        cout << "Beginning demand shifting." << endl;
+
         int demand_shift_index = 0;
-        while (demand_shift_index < demandRNPs.size() ) {
-          float temp;
-          if (demand_shift_index > 0 && demandRNPs[demand_shift_index - 1] == 0) {
-            // Swap the values of demandRNPs at the current index and the one below
-            demandRNPs[demand_shift_index - 1] = demandRNPs[demand_shift_index];
-            demandRNPs[demand_shift_index] = 0;
+        bool demand_shift_success = false;
+        if (demand_shift == 1) {
+          std::cout << "Beginning demand shifting." << endl;
+          /* We will try two techniques to make the tree more robust:
+          (1) We will try shifting the demand up one or down one, and then generating the tree. If that fails, we will try
+          (2) Deleting one demand node at a time, and then try generating the tree.
 
-            // If the tree is generated successfully, exit this block gracefully
-            if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
-              // setting demand_shift_index to demandRNPs.size() is one way of indicating the tree is generated successfully
-              demand_shift_index = demandRNPs.size();
-              cout << "A downward swap generated a tree on the following index: " << demand_shift_index << endl;
+          The next while loop is part (1)*/
+          while (demand_shift_index < demandRNPs.size() && !demand_shift_success ) {
+            float temp;
+
+            if (demand_shift_index > 0 && demandRNPs[demand_shift_index - 1] == 0 && !demand_shift_success) {
+              // Swap the values of demandRNPs at the current index and the one below
+              demandRNPs[demand_shift_index - 1] = demandRNPs[demand_shift_index];
+              demandRNPs[demand_shift_index] = 0;
+
+              // If the tree is generated successfully, exit this block gracefully
+              if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
+                demand_shift_success = true;
+                std::cout << "A downward swap generated a tree on the following index: " << demand_shift_index << endl;
+              }
+
+              // Swap them back
+              demandRNPs[demand_shift_index] = demandRNPs[demand_shift_index - 1];
+              demandRNPs[demand_shift_index - 1] = 0;
+
             }
+            if (demand_shift_index + 1 < demandRNPs.size() && demandRNPs[demand_shift_index + 1] == 0 && !demand_shift_success) {
+              // Swap the values of demandRNPs at the current index and the one above
+              demandRNPs[demand_shift_index + 1] = demandRNPs[demand_shift_index];
+              demandRNPs[demand_shift_index] = 0;
 
-            // Swap them back
-            demandRNPs[demand_shift_index] = demandRNPs[demand_shift_index - 1];
-            demandRNPs[demand_shift_index - 1] = 0;
+              // If the tree is generated successfully, exit this block gracefully
+              if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
+                demand_shift_success = true;
+                std::cout << "An upward swap generated a tree on the following index: " << demand_shift_index << endl;
+              }
 
+              // Swap them back
+              demandRNPs[demand_shift_index] = demandRNPs[demand_shift_index + 1];
+              demandRNPs[demand_shift_index + 1] = 0;
+            }
+            demand_shift_index++;
           }
-          if (demand_shift_index + 1 < demandRNPs.size() && demandRNPs[demand_shift_index + 1] == 0) {
-            // Swap the values of demandRNPs at the current index and the one above
-            demandRNPs[demand_shift_index + 1] = demandRNPs[demand_shift_index];
-            demandRNPs[demand_shift_index] = 0;
+        }
+        if (demand_drop == 1) {
+          /* Begin phase (2) of the demand shifting, aka demand_drop */
+          float temp_demand;
+          demand_shift_index = 0;
+          while (demand_shift_index < demandRNPs.size() && !demand_shift_success) {
+            if (demandRNPs[demand_shift_index] > 0) {
+              temp_demand = demandRNPs[demand_shift_index];
+              demandRNPs[demand_shift_index] = 0;
 
-            // If the tree is generated successfully, exit this block gracefully
-            if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
-              // setting demand_shift_index to demandRNPs.size() is one way of indicating the tree is generated successfully
-              demand_shift_index = demandRNPs.size();
-              cout << "An upward swap generated a tree on the following index: " << demand_shift_index << endl;
+              if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
+                demand_shift_success = true;
+                std::cout << "A demand drop generated a tree on the following index: " << demand_shift_index << endl;
+              }
+
+              demandRNPs[demand_shift_index] = temp_demand;
             }
-
-            // Swap them back
-            demandRNPs[demand_shift_index] = demandRNPs[demand_shift_index + 1];
-            demandRNPs[demand_shift_index + 1] = 0;
+            demand_shift_index++;
           }
         }
 
-        if (demand_shift_index >= demandRNPs.size() ) {
+        if (!demand_shift_success) {
           cerr<< endl << "There Does NOT Exist A Merge Tree!"<<endl;
           return false;
         }
       }
-      cout << endl << "FINISHED BOTTOMMOST FILL TREE" << endl;
-      cout<< endl << "A bottommost routing Tree is generated!" << endl;
+      std::cout << endl << "FINISHED BOTTOMMOST FILL TREE" << endl;
+      std::cout<< endl << "A bottommost routing Tree is generated!" << endl;
       return true;
     }	// an error message will pop up if failed to generate the DAG
-    else { cout << "Failed to generate the DAG."; }
+    else { std::cout << "Failed to generate the DAG."; }
   }
   // else, then the weather data and demand profile have to be read in first
   else cerr<<"\nPlease read in or generate the demand profile and weather data first."<<endl;
@@ -331,7 +361,7 @@ bool UserInterface::tautenTree()
     cerr<<"Please generate the bottommost tree first before tautening the tree."<<endl;
     return false;
   }
-  cout<<"\nWe are tautening the bottommost tree branches now, please wait...";
+  std::cout<<"\nWe are tautening the bottommost tree branches now, please wait...";
   return routingDAG->generateTautenedTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold);
 }
 
@@ -350,14 +380,14 @@ void UserInterface::inputOperationalFlexibility()
     This method ought to be cleaned up -- there is no reason for the while loop 
     since we're no longer accepting interactive user input.
 
-    cout<<"\nPlease input 3 values for operational flexibility pairs(in nm) in increasing order:";
+    std::cout<<"\nPlease input 3 values for operational flexibility pairs(in nm) in increasing order:";
     cin>>r1>>r2>>r3;
     */
     r1 = ::atof(allInputs[currentInput++].c_str());
     r2 = ::atof(allInputs[currentInput++].c_str());
     r3 = ::atof(allInputs[currentInput++].c_str());
     if(!(r1>0 & r2>0 &r3>0 & r1<r2 & r2<r3)) { // valid values, all positive and in increasing order, then move to the next step
-      cout<<"Operational flexbility values are invalid: Verify that r1 < r2 < r3.";
+      std::cout<<"Operational flexbility values are invalid: Verify that r1 < r2 < r3.";
       exit(0);
     }
     else break;									// valid input
@@ -369,7 +399,7 @@ void UserInterface::inputOperationalFlexibility()
   routingDAG->generateOperFlexPairs(radii, 3, weatherData, deviationThreshold);	// generate the pairs of operational flexibility values	
   delete []radii;
   ctrl_OperFlexGenerated = OPER_FLEX_GENERATED;
-  cout<<"\nOperational flexibility pairs successfully generated for the tree."<<endl;
+  std::cout<<"\nOperational flexibility pairs successfully generated for the tree."<<endl;
 }
 
 // generate the demand profile for testing
@@ -383,23 +413,23 @@ bool UserInterface::inputDemand()
   int numDemands = 0;
   while(true)
   {
-    cout<<"\nPlease input the number of demands (entry nodes):";
+    std::cout<<"\nPlease input the number of demands (entry nodes):";
     cin>>numDemands;
     if(numDemands>0)
       break;
     else
-      cout<<"\nInvalid Value...";
+      std::cout<<"\nInvalid Value...";
   }
   string tempDemands;
   cin.ignore(1000 ,'\n');													// clear the buffer, ignore the leftover characters
   while(true)
   {
-    cout<<"\nInput the demands one by one in nm (e.g. 2, 2, 1.5, 3, 2.7 means there are 5 entry nodes, and their rnp requirements are 2, 2, 1.5, 3 and 2.7.):";
+    std::cout<<"\nInput the demands one by one in nm (e.g. 2, 2, 1.5, 3, 2.7 means there are 5 entry nodes, and their rnp requirements are 2, 2, 1.5, 3 and 2.7.):";
     getline(cin, tempDemands);
     if(!inputDemandValid(tempDemands, numDemands))		// if the demand format is errorous
-      cout<<"\nInvalid Input...";
+      std::cout<<"\nInvalid Input...";
     else if (!quadrant->demandFeasible(demandRNPs))		// the new demands are stored in the demandRNPs vector but cannot be accomodated by the quadrant
-      cout<<"\nThe quadrant cannot accomodate the new demands...";
+      std::cout<<"\nThe quadrant cannot accomodate the new demands...";
     else
       break;
   }
@@ -492,7 +522,7 @@ bool UserInterface::readWeatherData()
   istringstream is(allInputs[currentInput++]);
   is >> totalNumWeatherFiles;
   if(totalNumWeatherFiles<=0) {
-    cout<< endl << "Invalid weather count..." << endl;
+    std::cout<< endl << "Invalid weather count..." << endl;
     return false;
   }
   vector<string> weatherFileDirectories;
@@ -509,7 +539,7 @@ bool UserInterface::readWeatherData()
   // data cells are trimed (not read into the memory of the storing vector at all)
   demandProfile->getRange(&rangeMinLati, &rangeMinLong, &rangeMaxLati, &rangeMaxLong);
   float minAlt, maxAlt;	minAlt = 10000;		maxAlt = 0;			// get the min and max altitude of all weather files in order to set the quadrant
-  cout<<"\nReading weather data files now, please wait..."<<endl;
+  std::cout<<"\nReading weather data files now, please wait..."<<endl;
   /***********************************************************************************************************************************/
 
   double weatherCellWidth = ::atof(allInputs[currentInput++].c_str());
@@ -528,7 +558,7 @@ bool UserInterface::readWeatherData()
         rangeMaxLati+1, 
         rangeMaxLong+1 ) )
       {
-        cout<<"\nWeather not read in successfully..."<<endl;
+        std::cout<<"\nWeather not read in successfully..."<<endl;
         return false;
       }
 
@@ -541,7 +571,7 @@ bool UserInterface::readWeatherData()
     }
     else
     {
-      cout<<"\nWeather file directory error..."<<endl;
+      std::cout<<"\nWeather file directory error..."<<endl;
       return false;
     }
   } // loop over all weather files
@@ -550,13 +580,13 @@ bool UserInterface::readWeatherData()
   for(int i=0; i<weatherData.size(); i++)
   {
     totalProbabilityOfWeatherFiles += weatherData[i].getProbability();
-    cout << i << "   " << weatherData[i].getProbability() << endl;
+    std::cout << i << "   " << weatherData[i].getProbability() << endl;
   }
   // the total probability of the weather files is not 1
   if(abs(totalProbabilityOfWeatherFiles-1.0)>0.1)			
   {
     cerr<< "\nThe total probability of the weather data files is not 1."<<endl;
-    cout << "Current Probability: " << totalProbabilityOfWeatherFiles << endl;
+    std::cout << "Current Probability: " << totalProbabilityOfWeatherFiles << endl;
     weatherData.clear();
     ctrl_WeatherReadIn = WEATHER_NOT_READ_IN;		// the weather is not read in yet
     return false;
@@ -608,7 +638,7 @@ bool UserInterface::readDemandProfile()
   }
   else
     cerr<<"\nPlease generate a quadrant first!"<<endl;
-  //  cout << ctrl_QuadGenerated << endl << QUADRANT_GENERATED << endl;
+  //  std::cout << ctrl_QuadGenerated << endl << QUADRANT_GENERATED << endl;
   return false;														// the file is NOT read in successfully
 }
 
@@ -626,5 +656,5 @@ void UserInterface::saveTreeInformation()
     return;
   }
   routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime, allInputs[currentInput++]);
-  cout<< "\nTree Information successfully written to file.\n";
+  std::cout<< "\nTree Information successfully written to file.\n";
 }
