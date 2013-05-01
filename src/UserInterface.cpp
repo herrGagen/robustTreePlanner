@@ -274,6 +274,14 @@ bool UserInterface::generateTree()
         bool demand_shift_success = false;
         if (demand_shift == 1) {
           std::cout << "Beginning demand shifting." << endl;
+          /* BEWARE: POTENTIAL BUG (due to Will not being certain what Shang's code does)
+          It is possible that you can only attempt to generate a tree once before needing to redo everything.
+          If this is the case, we're in trouble.
+
+          It shouldn't be an issue, there is a 'resetTree()' method called at the beginning of the definition of 
+          generateTree(), but it is a possible concern.
+          */
+
           /* We will try two techniques to make the tree more robust:
           (1) We will try shifting the demand up one or down one, and then generating the tree. If that fails, we will try
           (2) Deleting one demand node at a time, and then try generating the tree.
