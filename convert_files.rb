@@ -43,14 +43,14 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
   # First pass determines the range of times files can have
   # Could make this more efficient by only checking files from one Ensemble (all Member1's, for instance)
   path.each_child do |file_name|
-    name_ary = file_name.basename.to_s.split("_")
-    if name_ary[2]
+    begin
+      name_ary = file_name.basename.to_s.split("_")
       time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
-    else
-      print "There was a bad file in the ensemble directory: ", file_name, "\n"
+      min_time = time if time < min_time
+      max_time = time if time > max_time
+    rescue TypeError
+      print "Error parsing a file: ", file_name, "\n"
     end
-    min_time = time if time < min_time
-    max_time = time if time > max_time
   end
   
   raise "Files not in expected location or the filenames do not conform to ``DevProb_time1_time2_MemberX.dat``" if min_time == Time.new(Float::MAX) or max_time == Time.new(Float::MIN)
