@@ -44,7 +44,11 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
   # Could make this more efficient by only checking files from one Ensemble (all Member1's, for instance)
   path.each_child do |file_name|
     name_ary = file_name.basename.to_s.split("_")
-    time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
+    if name_ary[2]
+      time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
+    else
+      print "There was a bad file in the ensemble directory: ", file_name, "\n"
+    end
     min_time = time if time < min_time
     max_time = time if time > max_time
   end
