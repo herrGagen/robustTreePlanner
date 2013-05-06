@@ -91,7 +91,11 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
       w.write("Ensemble " + line)
       line = e.next.split.last.to_f / children_in_offset
       sum += line
-      w.write("Probability " + line.to_s + "\r\n") 
+      
+      # Will changed 2013-05-06
+      # Made this output with a force to output 9 decimals, since before it would use exponential notation.
+      w.write("Probability " + ("%.9f" % line).to_s + "\r\n")
+      # w.write("Probability " + line.to_s + "\r\n") 
 
       line = e.next
       while line.split.first == "#"

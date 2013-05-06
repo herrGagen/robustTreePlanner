@@ -346,6 +346,7 @@ bool UserInterface::generateTree()
 
         if (!demand_shift_success) {
           cerr<< endl << "There Does NOT Exist A Merge Tree!"<<endl;
+          exit(0);
           return false;
         }
       }

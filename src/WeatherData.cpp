@@ -155,7 +155,7 @@ bool WeatherData::handleInputData()
     return false;
   // The total number of weather cells
   numPoints = xCoors.size();
-  maxAlt = minAlt = altitudes[0];
+  maxAlt = minAlt = (int) altitudes[0];
   maxProbDev = minProbDev = probDeviation[0];
   // get the range of each data components from the vectors
   bool inputFormatError = false;				// no error supposedly
@@ -172,8 +172,8 @@ bool WeatherData::handleInputData()
       // normalize the range into (-180, 180]
       if(xCoors[i]>180)	xCoors[i]-=360;
     if(yCoors[i]>180)	yCoors[i]-=360;
-    if(altitudes[i]<minAlt)	minAlt = altitudes[i];
-    if(altitudes[i]>maxAlt)	maxAlt = altitudes[i];
+    if(altitudes[i]<minAlt)	minAlt = (int) altitudes[i];
+    if(altitudes[i]>maxAlt)	maxAlt = (int) altitudes[i];
     if(probDeviation[i]<minProbDev)	minProbDev = probDeviation[i];
     if(probDeviation[i]>maxProbDev)	maxProbDev = probDeviation[i];
   }
