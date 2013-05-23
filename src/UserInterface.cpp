@@ -274,6 +274,7 @@ bool UserInterface::generateTree()
         bool demand_shift_success = false;
         if (demand_shift == 1) {
           std::cout << "Beginning demand shifting." << endl;
+          std::cout << "Variables: demand_shift " << demand_shift << "; demand drop " << demand_drop << "; demand_shift_index " << demand_shift_index << "; demand_shift_success " << demand_shift_success << endl;
           /* BEWARE: POTENTIAL BUG (due to Will not being certain what Shang's code does)
           It is possible that you can only attempt to generate a tree once before needing to redo everything.
           If this is the case, we're in trouble.
@@ -288,7 +289,6 @@ bool UserInterface::generateTree()
 
           The next while loop is part (1)*/
           while (demand_shift_index < demandRNPs.size() && !demand_shift_success ) {
-            float temp;
 
             if (demand_shift_index > 0 && demandRNPs[demand_shift_index - 1] == 0 && !demand_shift_success) {
               // Swap the values of demandRNPs at the current index and the one below
@@ -326,6 +326,7 @@ bool UserInterface::generateTree()
         }
         if (demand_drop == 1) {
           /* Begin phase (2) of the demand shifting, aka demand_drop */
+          std::cout << "Demand shifting unsuccessful, beginning demand dropping." << endl;
           float temp_demand;
           demand_shift_index = 0;
           while (demand_shift_index < demandRNPs.size() && !demand_shift_success) {
