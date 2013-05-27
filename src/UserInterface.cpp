@@ -304,7 +304,7 @@ bool UserInterface::generateTree()
               // If the tree is generated successfully, exit this block gracefully
               if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
                 demand_shift_success = true;
-                std::cout << "A downward swap generated a tree on the following index: " << demand_shift_index << endl;
+                std::cout << endl << "A downward swap generated a tree on the following index: " << demand_shift_index << endl;
               }
 
               // Swap them back
@@ -320,7 +320,7 @@ bool UserInterface::generateTree()
               // If the tree is generated successfully, exit this block gracefully
               if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
                 demand_shift_success = true;
-                std::cout << "An upward swap generated a tree on the following index: " << demand_shift_index << endl;
+                std::cout << endl << "An upward swap generated a tree on the following index: " << demand_shift_index << endl;
               }
 
               // Swap them back
@@ -339,7 +339,7 @@ bool UserInterface::generateTree()
           float temp_demands[4]; // This 4 needs to be changed if combinations is ever changed -- HARDCODED
           // the below 255 is the length of ``combinations`` -- HARDCODED
           while (k < demand_drop && comb_i < 255 && !demand_shift_success) {
-            
+
             for (int j = 0; j < 4; ++j) {
               temp_demands[j] = 0;
             }
@@ -358,7 +358,7 @@ bool UserInterface::generateTree()
               if (j == 3) {
                 if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
                   demand_shift_success = true;
-                  std::cout << "A demand drop generated a tree on the following indices: ";
+                  std::cout << endl << "A demand drop generated a tree on the following indices: ";
                   for(int i = 0; i <= k; ++i) {
                     std::cout << combinations[comb_i][i] << " ";
                   }
@@ -369,7 +369,7 @@ bool UserInterface::generateTree()
                   /*
                   std::cout << "Demand RNPS: ";
                   for(int i = 0; i < demandRNPs.size(); i++) {
-                    std::cout << demandRNPs[i] << " ";
+                  std::cout << demandRNPs[i] << " ";
                   }
                   */
                   for (int j = 0; j < 4; ++j) {
@@ -395,18 +395,18 @@ bool UserInterface::generateTree()
           /*
           float temp_demand;
           while (demand_shift_index < demandRNPs.size() && !demand_shift_success) {
-            if (demandRNPs[demand_shift_index] > 0) {
-              temp_demand = demandRNPs[demand_shift_index];
-              demandRNPs[demand_shift_index] = 0;
+          if (demandRNPs[demand_shift_index] > 0) {
+          temp_demand = demandRNPs[demand_shift_index];
+          demandRNPs[demand_shift_index] = 0;
 
-              if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
-                demand_shift_success = true;
-                std::cout << "A demand drop generated a tree on the following index: " << demand_shift_index << endl;
-              }
+          if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
+          demand_shift_success = true;
+          std::cout << "A demand drop generated a tree on the following index: " << demand_shift_index << endl;
+          }
 
-              demandRNPs[demand_shift_index] = temp_demand;
-            }
-            demand_shift_index++;
+          demandRNPs[demand_shift_index] = temp_demand;
+          }
+          demand_shift_index++;
           }
           */
         }
