@@ -13,6 +13,12 @@
 
 using namespace std;	
 
+/* Have to update this if we ever allow more than 4 as a parameter for demand_drop
+There is also a 4 that needs to be changed down below, in the declaration of an array called temp_demands[4]
+There is a ruby file (combination.rb) to generate this line */  
+
+int combinations[][4] = { {0,-1,-1,-1,}, {1,-1,-1,-1,}, {2,-1,-1,-1,}, {3,-1,-1,-1,}, {4,-1,-1,-1,}, {5,-1,-1,-1,}, {6,-1,-1,-1,}, {7,-1,-1,-1,}, {8,-1,-1,-1,}, {0,1,-1,-1,}, {0,2,-1,-1,}, {0,3,-1,-1,}, {0,4,-1,-1,}, {0,5,-1,-1,}, {0,6,-1,-1,}, {0,7,-1,-1,}, {0,8,-1,-1,}, {1,2,-1,-1,}, {1,3,-1,-1,}, {1,4,-1,-1,}, {1,5,-1,-1,}, {1,6,-1,-1,}, {1,7,-1,-1,}, {1,8,-1,-1,}, {2,3,-1,-1,}, {2,4,-1,-1,}, {2,5,-1,-1,}, {2,6,-1,-1,}, {2,7,-1,-1,}, {2,8,-1,-1,}, {3,4,-1,-1,}, {3,5,-1,-1,}, {3,6,-1,-1,}, {3,7,-1,-1,}, {3,8,-1,-1,}, {4,5,-1,-1,}, {4,6,-1,-1,}, {4,7,-1,-1,}, {4,8,-1,-1,}, {5,6,-1,-1,}, {5,7,-1,-1,}, {5,8,-1,-1,}, {6,7,-1,-1,}, {6,8,-1,-1,}, {7,8,-1,-1,}, {0,1,2,-1,}, {0,1,3,-1,}, {0,1,4,-1,}, {0,1,5,-1,}, {0,1,6,-1,}, {0,1,7,-1,}, {0,1,8,-1,}, {0,2,3,-1,}, {0,2,4,-1,}, {0,2,5,-1,}, {0,2,6,-1,}, {0,2,7,-1,}, {0,2,8,-1,}, {0,3,4,-1,}, {0,3,5,-1,}, {0,3,6,-1,}, {0,3,7,-1,}, {0,3,8,-1,}, {0,4,5,-1,}, {0,4,6,-1,}, {0,4,7,-1,}, {0,4,8,-1,}, {0,5,6,-1,}, {0,5,7,-1,}, {0,5,8,-1,}, {0,6,7,-1,}, {0,6,8,-1,}, {0,7,8,-1,}, {1,2,3,-1,}, {1,2,4,-1,}, {1,2,5,-1,}, {1,2,6,-1,}, {1,2,7,-1,}, {1,2,8,-1,}, {1,3,4,-1,}, {1,3,5,-1,}, {1,3,6,-1,}, {1,3,7,-1,}, {1,3,8,-1,}, {1,4,5,-1,}, {1,4,6,-1,}, {1,4,7,-1,}, {1,4,8,-1,}, {1,5,6,-1,}, {1,5,7,-1,}, {1,5,8,-1,}, {1,6,7,-1,}, {1,6,8,-1,}, {1,7,8,-1,}, {2,3,4,-1,}, {2,3,5,-1,}, {2,3,6,-1,}, {2,3,7,-1,}, {2,3,8,-1,}, {2,4,5,-1,}, {2,4,6,-1,}, {2,4,7,-1,}, {2,4,8,-1,}, {2,5,6,-1,}, {2,5,7,-1,}, {2,5,8,-1,}, {2,6,7,-1,}, {2,6,8,-1,}, {2,7,8,-1,}, {3,4,5,-1,}, {3,4,6,-1,}, {3,4,7,-1,}, {3,4,8,-1,}, {3,5,6,-1,}, {3,5,7,-1,}, {3,5,8,-1,}, {3,6,7,-1,}, {3,6,8,-1,}, {3,7,8,-1,}, {4,5,6,-1,}, {4,5,7,-1,}, {4,5,8,-1,}, {4,6,7,-1,}, {4,6,8,-1,}, {4,7,8,-1,}, {5,6,7,-1,}, {5,6,8,-1,}, {5,7,8,-1,}, {6,7,8,-1,}, {0,1,2,3,}, {0,1,2,4,}, {0,1,2,5,}, {0,1,2,6,}, {0,1,2,7,}, {0,1,2,8,}, {0,1,3,4,}, {0,1,3,5,}, {0,1,3,6,}, {0,1,3,7,}, {0,1,3,8,}, {0,1,4,5,}, {0,1,4,6,}, {0,1,4,7,}, {0,1,4,8,}, {0,1,5,6,}, {0,1,5,7,}, {0,1,5,8,}, {0,1,6,7,}, {0,1,6,8,}, {0,1,7,8,}, {0,2,3,4,}, {0,2,3,5,}, {0,2,3,6,}, {0,2,3,7,}, {0,2,3,8,}, {0,2,4,5,}, {0,2,4,6,}, {0,2,4,7,}, {0,2,4,8,}, {0,2,5,6,}, {0,2,5,7,}, {0,2,5,8,}, {0,2,6,7,}, {0,2,6,8,}, {0,2,7,8,}, {0,3,4,5,}, {0,3,4,6,}, {0,3,4,7,}, {0,3,4,8,}, {0,3,5,6,}, {0,3,5,7,}, {0,3,5,8,}, {0,3,6,7,}, {0,3,6,8,}, {0,3,7,8,}, {0,4,5,6,}, {0,4,5,7,}, {0,4,5,8,}, {0,4,6,7,}, {0,4,6,8,}, {0,4,7,8,}, {0,5,6,7,}, {0,5,6,8,}, {0,5,7,8,}, {0,6,7,8,}, {1,2,3,4,}, {1,2,3,5,}, {1,2,3,6,}, {1,2,3,7,}, {1,2,3,8,}, {1,2,4,5,}, {1,2,4,6,}, {1,2,4,7,}, {1,2,4,8,}, {1,2,5,6,}, {1,2,5,7,}, {1,2,5,8,}, {1,2,6,7,}, {1,2,6,8,}, {1,2,7,8,}, {1,3,4,5,}, {1,3,4,6,}, {1,3,4,7,}, {1,3,4,8,}, {1,3,5,6,}, {1,3,5,7,}, {1,3,5,8,}, {1,3,6,7,}, {1,3,6,8,}, {1,3,7,8,}, {1,4,5,6,}, {1,4,5,7,}, {1,4,5,8,}, {1,4,6,7,}, {1,4,6,8,}, {1,4,7,8,}, {1,5,6,7,}, {1,5,6,8,}, {1,5,7,8,}, {1,6,7,8,}, {2,3,4,5,}, {2,3,4,6,}, {2,3,4,7,}, {2,3,4,8,}, {2,3,5,6,}, {2,3,5,7,}, {2,3,5,8,}, {2,3,6,7,}, {2,3,6,8,}, {2,3,7,8,}, {2,4,5,6,}, {2,4,5,7,}, {2,4,5,8,}, {2,4,6,7,}, {2,4,6,8,}, {2,4,7,8,}, {2,5,6,7,}, {2,5,6,8,}, {2,5,7,8,}, {2,6,7,8,}, {3,4,5,6,}, {3,4,5,7,}, {3,4,5,8,}, {3,4,6,7,}, {3,4,6,8,}, {3,4,7,8,}, {3,5,6,7,}, {3,5,6,8,}, {3,5,7,8,}, {3,6,7,8,}, {4,5,6,7,}, {4,5,6,8,}, {4,5,7,8,}, {4,6,7,8,}, {5,6,7,8,} };
+
 // the constructor sets all the control variables to their initial status
 UserInterface::UserInterface()
 {
@@ -324,11 +330,70 @@ bool UserInterface::generateTree()
             demand_shift_index++;
           }
         }
-        if (demand_drop == 1) {
+        if (demand_drop >= 1) {
           /* Begin phase (2) of the demand shifting, aka demand_drop */
           std::cout << "Demand shifting unsuccessful, beginning demand dropping." << endl;
+
+          int comb_i = 0; // an index of combinations
+          int k = 0; // k is the last positive element
+          float temp_demands[4]; // This 4 needs to be changed if combinations is ever changed -- HARDCODED
+          // the below 255 is the length of ``combinations`` -- HARDCODED
+          while (k < demand_drop && comb_i < 255 && !demand_shift_success) {
+            
+            for (int j = 0; j < 4; ++j) {
+              temp_demands[j] = 0;
+            }
+
+            // std::cout << endl;
+            for (int j = 0; j < 4; ++j) {
+              if (demandRNPs[combinations[comb_i][j]] > 0) {
+                temp_demands[j] = demandRNPs[combinations[comb_i][j]];
+                demandRNPs[combinations[comb_i][j]] = 0;
+              }
+              else {
+                // We could break out of the loop, but then we also need to reset demandRNPs values
+                // break;
+              }
+              // HARDCODED VALUE
+              if (j == 3) {
+                if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
+                  demand_shift_success = true;
+                  std::cout << "A demand drop generated a tree on the following indices: ";
+                  for(int i = 0; i <= k; ++i) {
+                    std::cout << combinations[comb_i][i] << " ";
+                  }
+                  std::cout << endl;
+                }
+                else {
+                  // reset all of the demandRNPs values -- HARDCODED
+                  /*
+                  std::cout << "Demand RNPS: ";
+                  for(int i = 0; i < demandRNPs.size(); i++) {
+                    std::cout << demandRNPs[i] << " ";
+                  }
+                  */
+                  for (int j = 0; j < 4; ++j) {
+                    demandRNPs[combinations[comb_i][j]] = temp_demands[j];
+                    if (demandRNPs[combinations[comb_i][j]] < 0.00000001) {
+                      demandRNPs[combinations[comb_i][j]] = 0;
+                    }
+                  }
+                }
+              }
+            }
+            // Find the new k value, which is the last positive number in the array -- HARDCODED
+            for (int j = 0; j < 4; ++j) {
+              if (combinations[comb_i][j] < 0) {
+                k = j - 1;
+                break;
+
+                if (j == 3) { k = 3; } // j would go on to being 4, but can't because of the loop condition
+              }
+            }
+            ++comb_i;
+          }
+          /*
           float temp_demand;
-          demand_shift_index = 0;
           while (demand_shift_index < demandRNPs.size() && !demand_shift_success) {
             if (demandRNPs[demand_shift_index] > 0) {
               temp_demand = demandRNPs[demand_shift_index];
@@ -343,6 +408,7 @@ bool UserInterface::generateTree()
             }
             demand_shift_index++;
           }
+          */
         }
 
         if (!demand_shift_success) {
@@ -654,3 +720,4 @@ void UserInterface::saveTreeInformation()
   routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime, allInputs[currentInput++]);
   std::cout<< "\nTree Information successfully written to file.\n";
 }
+
