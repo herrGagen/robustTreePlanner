@@ -211,6 +211,12 @@ void WeatherData::convertLatiLongHeightToXY(double cX, double cY, double latiPer
     // 0 is drawn on z=ALTITUDE_AT_BASE_PLANE; 15000 is at z=(15000-ALTITUDE_AT_BASE_PLANE)/ALTITUDE_PER_PIXEL, etc.
     altitudes[i] = (altitudes[i]-ALTITUDE_AT_BASE_PLANE)/ALTITUDE_PER_PIXEL;
   }
+
+  /* As of 2013-06-20, Will noted the following:
+  maxAlt = 24000;
+  minAlt = 0;
+  ALTITUDE_PER_PIXEL = 500;
+  cellHeight = 12; */
   cellHeight = (maxAlt - minAlt)/ALTITUDE_PER_PIXEL/4;// 10 pixels for 5000 feet altitude difference, suppose there are always 4 levels of weather data
   cellWidth = weatherCellWidth;									// a temporary value set for the width of each weather cell
   // std::cout << "Cell Width spot, index of allInputs: " << allInputs[currentInput] << endl;

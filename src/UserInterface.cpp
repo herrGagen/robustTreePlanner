@@ -279,7 +279,7 @@ bool UserInterface::generateTree()
         int demand_shift_index = 0;
         bool demand_shift_success = false;
         if (demand_shift == 1) {
-          std::cout << "Beginning demand shifting." << endl;
+          std::cout << endl << "Beginning demand shifting." << endl;
           std::cout << "Variables: demand_shift " << demand_shift << "; demand drop " << demand_drop << "; demand_shift_index " << demand_shift_index << "; demand_shift_success " << demand_shift_success << endl;
           /* BEWARE: POTENTIAL BUG (due to Will not being certain what Shang's code does)
           It is possible that you can only attempt to generate a tree once before needing to redo everything.
@@ -330,9 +330,9 @@ bool UserInterface::generateTree()
             demand_shift_index++;
           }
         }
-        if (demand_drop >= 1) {
+        if (demand_drop >= 1 && !demand_shift_success) {
           /* Begin phase (2) of the demand shifting, aka demand_drop */
-          std::cout << "Demand shifting unsuccessful, beginning demand dropping." << endl;
+          std::cout << endl <<  "Demand shifting unsuccessful, beginning demand dropping." << endl;
 
           int comb_i = 0; // an index of combinations
           int k = 0; // k is the last positive element
@@ -361,6 +361,12 @@ bool UserInterface::generateTree()
                   std::cout << endl << "A demand drop generated a tree on the following indices: ";
                   for(int i = 0; i <= k; ++i) {
                     std::cout << combinations[comb_i][i] << " ";
+                  }
+                  std::cout << endl;
+
+                  std::cout << endl << "Demand RNPs after the drop:" << endl;
+                  for(int i = 0; i < demandRNPs.size(); i++) {
+                    std::cout << demandRNPs[i] << " ";
                   }
                   std::cout << endl;
                 }
