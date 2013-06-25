@@ -953,14 +953,26 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, int entryIndex, const vect
 		{
 			Node* tempNode = temp->getOutNode(i);
 			Edge* tempEdge = temp->getOutEdge(i);
-			// first test if the new pair of nodes and edges collide with the weather data, if so, then just ignore this pair
+			
+      if ((41.9796 + tempEdge->getHead()->getX() * 0.0333309) >= 42.67 && 
+        (41.9796 + tempEdge->getHead()->getX() * 0.0333309) <= 42.7 &&
+        (-87.9044 + tempEdge->getHead()->getY() * 0.0448367) <= -90.8 &&
+        (-87.9044 + tempEdge->getHead()->getY() * 0.0448367) >= -91.8
+        ) {   
+          // std::cout << "RNP[0]" << tempEdge->rnpValues[0]->probability << "; Result: " << tempEdge->testRNPWithWeatherDataSet(rnp, wData, effectiveThres, routingThres) << "; h.x: " << (41.9796 + tempEdge->getHead()->getX() * 0.0333309) << "; h.y: " << (-87.9044 + tempEdge->getHead()->getY() * 0.0448367) << "; t.x: " << (41.9796 + tempEdge->getTail()->getX() * 0.0333309) << "; t.y: " << (-87.9044 + tempEdge->getTail()->getY() * 0.0448367) << endl;
+      }
+        
+      
+      // first test if the new pair of nodes and edges collide with the weather data, if so, then just ignore this pair
 			if(tempNode->testRadiusWithWeatherDataSet(rnp, wData, effectiveThres, routingThres) ||
-			   tempEdge->testRNPWithWeatherDataSet(rnp, wData, effectiveThres, routingThres))
+			   tempEdge->testRNPWithWeatherDataSet(rnp, wData, effectiveThres, routingThres)) {
 				continue;							// the node is infeasible, look at the next node
+      }
 			// then test if this new edge obviously goes across the previous or next branch, then ignore as well
 			if(tempNode->getLayerIndex()>layerUsedIndexReverseDirection[tempNode->getLayer()] || 
-			   tempNode->getLayerIndex()<layerUsedIndex[tempNode->getLayer()])
+			   tempNode->getLayerIndex()<layerUsedIndex[tempNode->getLayer()]) {
 				continue;
+      }
 			// if the edge was NOT completely a part of the next branch (if it is, we don't care about the indegree) 
 			if(!(onNextBranch(temp, entryIndex) && onNextBranch(tempNode, entryIndex))		// not going along the next branch
 			   && tempNode->getInDegree()==2)		// if the node is currently indegree full, then it's not going to be used again, ignore...	

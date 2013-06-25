@@ -139,6 +139,8 @@ public:
 	Edge(Node* head, Node* tail);						// a directed edge, from node start to node end
 	~Edge();
 public:
+	vector<OperationalFlexibility*> rnpValues;
+
 	// algorithms related functions
 	// test if an edge can be thicken enough to rnp*2 width and avoid weather obstacles
 	bool testRNPWithWeatherDataSet(float rnp, const vector<WeatherData> &wData, float effectiveThres, float routingThres);
@@ -198,7 +200,7 @@ private:
 	int treeEdge;
 	float drawingRNP;									// the rnp that we are drawing, width/2
 	double edgeLength;
-	vector<OperationalFlexibility*> rnpValues;
+
 	vector<OperationalFlexibility*> pathStretching;		// on the edge's right
 	vector<OperationalFlexibility*> wiggleRoom;			// on the edge's left
 	vector<Node*> deviationNodes;						// the nodes in this edge that are used to escape from the current tree

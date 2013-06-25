@@ -76,6 +76,7 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
   # Third pass writes files to a format readable by the C code
   sum = 0
   id = 0
+  print "Made changes successfully!!\n\n"
   path.each_child do |file_name|
     name_ary = file_name.basename.to_s.split("_")
 #     print file_name
@@ -107,8 +108,10 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
       end
 
       begin
-        loop do 
-          w.write(e.next)
+        loop do
+          w.write(line) if line.split(",").last.to_f >= 0.70
+          # print line.split(","), "\n"
+          line = e.next
         end
       rescue StopIteration
         break

@@ -724,6 +724,8 @@ void UserInterface::saveTreeInformation()
     return;
   }
   routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime, allInputs[currentInput++]);
+  std::cout << "latiPerPixel: " << latiPerPixel << "; centerLati: " << centerLati << endl;
+  std::cout << "longPerPixel: " << longPerPixel << "; centerLong: " << centerLong << endl;
   std::cout<< "\nTree Information successfully written to file.\n";
 }
 
