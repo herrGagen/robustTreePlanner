@@ -76,7 +76,6 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
   # Third pass writes files to a format readable by the C code
   sum = 0
   id = 0
-  print "Made changes successfully!!\n\n"
   path.each_child do |file_name|
     name_ary = file_name.basename.to_s.split("_")
 #     print file_name

@@ -189,7 +189,7 @@ bool Quadrant::demandFeasible(vector<float> &rnps)
 // effectiveThres means if a weather cell's deviation probability is below this value, it's going to be considered as NULL
 // routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
 // if the value < routingThres, then it is considered an obstacle 
-bool Quadrant::generateDAG(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData> &wData, RoutingDAG* rDAG, double qAngleOffset, int numFixNodes)
+bool Quadrant::generateDAG(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData*> &wData, RoutingDAG* rDAG, double qAngleOffset, int numFixNodes)
 {
 	cout << "Generating DAG..." << endl;
 	if(!generateEntryAndFixNodes(rnps, n, effectiveThres, routingThres, wData, rDAG, qAngleOffset, numFixNodes))
@@ -202,7 +202,7 @@ bool Quadrant::generateDAG(vector<float> rnps, int n, float effectiveThres, floa
 }
 
 // given a size n float array of entry points' rnps, and a weatherdata set, and the DAG structure that we are going to put the points in
-bool Quadrant::generateEntryAndFixNodes(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData> &wData, RoutingDAG *rDAG, double quadAngleOffset, int maxFixNodes)
+bool Quadrant::generateEntryAndFixNodes(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData*> &wData, RoutingDAG *rDAG, double quadAngleOffset, int maxFixNodes)
 {
   std::cout << "Max Number of Fix Nodes: " << maxFixNodes << endl;
 	if(!demandFeasible(rnps))

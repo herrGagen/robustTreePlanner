@@ -45,8 +45,8 @@ public:
 	Node(double ix, double iy, double iz, int itype = INTERNAL_NODE);
 	~Node();
 public:
-	bool testRadiusWithWeatherDataSet(double r, const vector<WeatherData> &wData, float effectiveThres, float routingThres);
-	double testRadiusWithWeatherDataSet(double r, const vector<WeatherData> &wData, float effectiveThres);
+	bool testRadiusWithWeatherDataSet(double r, const vector<WeatherData*> &wData, float effectiveThres, float routingThres);
+	double testRadiusWithWeatherDataSet(double r, const vector<WeatherData*> &wData, float effectiveThres);
 	bool collisionWithEdge(Edge *temp, float w);
 	bool collisionWithNode(Node *temp, float w);
 	void setTreeNode();				// set the node to be a node in the tree
@@ -123,7 +123,7 @@ private:
 	vector<float> weatherCollisionRNPs;					// define if a node is free of weather/ or collides with weather, record the tested rnps
 	vector<int> weatherCollisionStatus;					// define if a node is free of weather/ or collides with weather for each float rnp
 private:
-	bool testRadiusWithWeatherData(double r, const WeatherData &wData, float thres);	// test the surrounding of the point, if r=radius circle is weather free
+	bool testRadiusWithWeatherData(double r, const WeatherData* wData, float thres);	// test the surrounding of the point, if r=radius circle is weather free
 	// test intersection between a disk whose center is (xC, yC), radius r, with a square, whose bottomleft corner is (x, y), side length c
 	bool collisionBetweenDiskAndSquare(double xC, double yC, double r, double x, double y, double c);
 	bool collisionWithEdgeHelper(float r, double ix1, double iy1, double iz1, double ix2, double iy2, double iz2, double iw);
@@ -143,17 +143,17 @@ public:
 
 	// algorithms related functions
 	// test if an edge can be thicken enough to rnp*2 width and avoid weather obstacles
-	bool testRNPWithWeatherDataSet(float rnp, const vector<WeatherData> &wData, float effectiveThres, float routingThres);
+	bool testRNPWithWeatherDataSet(float rnp, const vector<WeatherData*> &wData, float effectiveThres, float routingThres);
 	// variable "thres" in the following fuctions are used to denote which weathe data is considered to be hazardous
 	// test the right side of the edge, if w=width rectangle is weather free
-	bool testPathStretchWithWeatherDataSet(double width, const vector<WeatherData> &wData, float effectiveThres, float routingThres);	
+	bool testPathStretchWithWeatherDataSet(double width, const vector<WeatherData*> &wData, float effectiveThres, float routingThres);	
 	// test the left side of the edge, if w=width rectangle is weather free
-	bool testWiggleRoomWithWeatherDataSet(double width, const vector<WeatherData> &wData, float effectiveThres, float routingThres);	
+	bool testWiggleRoomWithWeatherDataSet(double width, const vector<WeatherData*> &wData, float effectiveThres, float routingThres);	
 	
 	// overloaded versions of the functions above, return the probability that an edge is clear
-	double testRNPWithWeatherDataSet(float rnp, const vector<WeatherData> &wData, float effectiveThres);
-	double testPathStretchWithWeatherDataSet(double width, const vector<WeatherData> &wData, float effectiveThres);
-	double testWiggleRoomWithWeatherDataSet(double width, const vector<WeatherData> &wData, float effectiveThres);
+	double testRNPWithWeatherDataSet(float rnp, const vector<WeatherData*> &wData, float effectiveThres);
+	double testPathStretchWithWeatherDataSet(double width, const vector<WeatherData*> &wData, float effectiveThres);
+	double testWiggleRoomWithWeatherDataSet(double width, const vector<WeatherData*> &wData, float effectiveThres);
 	
 	bool collisionWithEdge(Edge *temp, float w);
 	bool collisionWithNode(Node *temp, float w);
@@ -209,12 +209,12 @@ private:
 	vector<int> weatherCollisionStatus;					// define if a node is free of weather/ or collides with weather for each float rnp						
 	
 private:
-	bool collisionWithWeatherDataHelper(float w, const vector<WeatherData> &wData, float effectiveThres, float routingThres, int testType);
-	double collisionWithWeatherDataHelper(float w, const vector<WeatherData> &wData, float effectiveThres, int testType);
+	bool collisionWithWeatherDataHelper(float w, const vector<WeatherData*> &wData, float effectiveThres, float routingThres, int testType);
+	double collisionWithWeatherDataHelper(float w, const vector<WeatherData*> &wData, float effectiveThres, int testType);
 	
 	// test the intersection between rectangle: center segments(x1, y1)->(x2, y2), width w*2, with square: bottomleft corner (x, y), side length c
 	bool collisionBetweenRectangleAndSquare(double x1, double y1, double x2, double y2, double w, double x, double y, double c);
-	bool collisionTestingHelper(double width, const WeatherData &wData, float thres, int testType);
+	bool collisionTestingHelper(double width, const WeatherData *wData, float thres, int testType);
 	bool collisionWithEdgeHelper(float w, double ix1, double iy1, double iz1, double ix2, double iy2, double iz2, double iw);
 	bool collisionWithNodeHelper(float w, double ix, double iy, double iz, double ir);
 };

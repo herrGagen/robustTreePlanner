@@ -123,10 +123,15 @@ void UserInterface::ProgramBegins(std::string inputFile)
   quadrant->getoRadius(),
   quadrant->getiHeight(),
   quadrant->getoHeight() ); */
+
+  cout << "Quadrant parameters" << endl << 
+    "Inner Radius | Height: " << quadrant->getiRadius() << " | " << quadrant->getiHeight() << endl <<
+    "Outer Radius | Height: " << quadrant->getoRadius() << " | " << quadrant->getoHeight() << endl;
+
   (*quadrant).setAngle( ::atof(allInputs[currentInput++].c_str() ) );
   //   std::cout << "Current LINE FOR allInputs: " << currentInput << "  " << allInputs[currentInput] << endl;
   std::cout << "Current angle: " << quadrant->getAngle() << endl;
-  std::cout << "Generating tree." << endl;
+  std::cout << "Calling 'generateTree()'." << endl;
   generateTree();
   std::cout << "Tautening tree." << endl;
   tautenTree();
@@ -619,8 +624,8 @@ bool UserInterface::readWeatherData()
     {
       is.close();
       std::string currentFile = weatherFileDirectories[i];
-      WeatherData tempWeather;
-      if(!tempWeather.readInFileData(currentFile, 
+      WeatherData* tempWeather = new WeatherData();
+      if(!tempWeather->readInFileData(currentFile, 
         rangeMinLati-1, 
         rangeMinLong-1, 
         rangeMaxLati+1, 
@@ -631,11 +636,11 @@ bool UserInterface::readWeatherData()
       }
 
       // You had something about onverting lat long to pixel values, but used uninitialized values.
-      tempWeather.convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
+      tempWeather->convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
 
       weatherData.push_back(tempWeather);		// push the newly read in weather data into the storing vector
-      minAlt = min(minAlt, (float)tempWeather.getMinAlt());
-      maxAlt = max(maxAlt, (float)tempWeather.getMaxAlt());
+      minAlt = min(minAlt, (float)tempWeather->getMinAlt());
+      maxAlt = max(maxAlt, (float)tempWeather->getMaxAlt());
     }
     else
     {
@@ -647,8 +652,8 @@ bool UserInterface::readWeatherData()
   float totalProbabilityOfWeatherFiles = 0;
   for(int i=0; i<weatherData.size(); i++)
   {
-    totalProbabilityOfWeatherFiles += weatherData[i].getProbability();
-    std::cout << i << "   " << weatherData[i].getProbability() << endl;
+    totalProbabilityOfWeatherFiles += weatherData[i]->getProbability();
+    std::cout << i << "   " << weatherData[i]->getProbability() << endl;
   }
   // the total probability of the weather files is not 1
   if(abs(totalProbabilityOfWeatherFiles-1.0)>0.1)			
