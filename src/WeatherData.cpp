@@ -45,12 +45,6 @@ void WeatherData::reset()		//reset the weather data
 // the range of a box is given so that anything that is not in this range will NOT be stored in the vectors (weather trimming)
 bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, double rangeMinLong, double rangeMaxLati, double rangeMaxLong)
 {
-	/******************************************************************************************************/
-	// test file read in time
-	/*LARGE_INTEGER m_lpFrequency, lpPerformanceCount2,lpPerformanceCount1;  //variables for time counting
-	QueryPerformanceFrequency(&m_lpFrequency);
-	QueryPerformanceCounter(&lpPerformanceCount1);*/
-	/******************************************************************************************************/
 	reset();											// first reset the vectors to empty, then read in
 
 	const char *fname = fileName.c_str();
@@ -83,14 +77,6 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 			return( handleInputData() );
 		}
 	}
-
-
-
-	// // Each line of this file, after this point, contains 4 numbers:
-	// // xCoors, yCoors, altitudes, probDeviation
-	// // The Coordinates have to be checked with:
-	// // (tempX>rangeMinLati && tempX<rangeMaxLati && tempY>rangeMinLong && tempY<rangeMaxLong)
-	// // to ensure that we should push this element into the arrays.
 
 	// New format (2013-03-14):
 	// Each line of this file after this point contains 7 numbers:
@@ -137,12 +123,6 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 			probDeviation.push_back(values[3]);
 		}
 	}
-	/******************************************************************************************************/
-	// end of testing file read in time
-	/*QueryPerformanceCounter(&lpPerformanceCount2);                                // time query
-	double time = (double)(lpPerformanceCount2.LowPart - lpPerformanceCount1.LowPart)/m_lpFrequency.LowPart;
-	TRACE("The Time Needed is %g\n", time);*/
-	/******************************************************************************************************/
 	return handleInputData();	
 }
 
