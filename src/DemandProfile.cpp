@@ -26,9 +26,7 @@ bool DemandProfile::readInFile(std::string fileName)
 
   std::cout << "Parsing demand file: " << fileName << std::endl;
   ifstream dataStream( fileName.c_str(), ifstream::in );
-  unsigned long fileSize = 0;
   dataStream.seekg(0, ios_base::end);
-  fileSize = dataStream.tellg();
   dataStream.seekg(0, ios_base::beg);
   std::string thisLine;
 
@@ -81,11 +79,11 @@ bool DemandProfile::readInFile(std::string fileName)
         {
           size_t beginNumber = thisLine.find_first_of("-.0123456789",0);
           size_t endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
-          centerX = ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() ); // store it in the timeStart string
+          centerX = (double) ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() ); // store it in the timeStart string
           beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
           endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
           endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
-          centerY   = ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() ); // store it in the timeStart string
+          centerY   = (double) ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() ); // store it in the timeStart string
         }
 
       // Look for BEGIN_FLIGHTS to signal that we're in the correct location for flight data
@@ -102,7 +100,7 @@ bool DemandProfile::readInFile(std::string fileName)
     Unique ID,ACID,RNP Level,Airport Range Entry Time,Airport Range Entry Lat,Airport Range Entry Lon, Dept. Airport,Arr. Airport,Flight Plan String
     Unique ID ==> Ignore
     ACID ==> Ignore
-    RNP Level ==> vector<float>  rnp (note, the entries are all integers)
+    RNP Level ==> vector<double>  rnp (note, the entries are all integers)
     Airport Range Entry Time ==> Ignore
     Airport Range Entry Lat ==> vector xCoors
     Airport Range Entry Lon ==> vector yCoors
@@ -111,7 +109,7 @@ bool DemandProfile::readInFile(std::string fileName)
     Flight Plan String ==> Ignore
   */
   std::string tempString;
-  float tempFloat = 0;
+  double tempdouble = 0;
   int numPaths = 0;
   while ( !dataStream.eof() )
     {
@@ -138,8 +136,8 @@ bool DemandProfile::readInFile(std::string fileName)
       endNumber   = thisLine.find_first_not_of("-.0123456789",beginNumber);
 		
       tempString = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str();
-      tempFloat = ::atof( tempString.c_str() );
-      rnp.push_back( tempFloat );
+      tempdouble = (double) ::atof( tempString.c_str() );
+      rnp.push_back( tempdouble );
 
       // Now ignore next CSV
       beginNumber = thisLine.find_first_of(",",endNumber); // first comma after RNP
@@ -151,8 +149,8 @@ bool DemandProfile::readInFile(std::string fileName)
       endNumber   = thisLine.find_first_not_of("-.0123456789",beginNumber);
 					
       tempString = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str();
-      tempFloat = ::atof( tempString.c_str() );
-      xCoors.push_back( (double)tempFloat );
+      tempdouble = (double) ::atof( tempString.c_str() );
+      xCoors.push_back( (double)tempdouble );
 
       // Next we find the yCoord
       beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
@@ -160,8 +158,8 @@ bool DemandProfile::readInFile(std::string fileName)
       endNumber = endNumber < thisLine.length() ? endNumber : thisLine.length();
 
       tempString = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str();
-      tempFloat = ::atof( tempString.c_str() );
-      yCoors.push_back( (double)tempFloat );
+      tempdouble = (double) ::atof( tempString.c_str() );
+      yCoors.push_back( (double)tempdouble );
     }
   return handleInputData();
 }
@@ -186,12 +184,12 @@ bool DemandProfile::handleInputData()
   minX = maxX = centerX;
   minY = maxY = centerY;
   // check if there is input content error, and regulate the lati/long to the range of (-180, 180]
-  for(int i=0; i<numDemands; i++) 
+  for(unsigned int i=0; i<numDemands; i++) 
     {
       if(rnp[i]<0 || xCoors[i]>360 || yCoors[i]>360)
         {
           std::cout << rnp[i] << " " << xCoors[i] << " " << yCoors[i] << std::endl;
-          std::cerr<<"\nFile Content Error!"<<std::endl;				// prompt that the file has format errors
+          std::cerr << "\nFile Content Error!"<<std::endl;				// prompt that the file has format errors
           return false;
         }
       if(xCoors[i]>180)									// change the format to (-180, 180]
@@ -236,15 +234,6 @@ void DemandProfile::reset()
   minX = maxX = minY = maxY = 0;
 }
 
-// test if we are going out of the end of the file, which means input format error. Pop up a messagebox to prompt format error and reset the demandprofile
-bool DemandProfile::testIndex(const int* readingIndex, const int *fileSize)
-{
-  if(*readingIndex < *fileSize)
-    return false;						// meaning there is not a problem
-  std::cerr<<"\n File Format Error!"<<std::endl;	// prompt that the file has format errors
-  reset();
-  return true;							// means we are out of file total size
-}
 
 // thsi function is called when reading in weather data. The function is used to do data conversion, from
 // the read in weather cell in lati/long to their x/y positions. 
@@ -267,11 +256,11 @@ void DemandProfile::getRange(double *minLati, double *minLong, double *maxLati, 
 }
 
 // generate a set of 8 entry points and their rnp values based on the starting angle of the quadrant
-void DemandProfile::generateDemandVector(std::vector<float> &demand, double startingAngle, double endingAngle, float nmilesPerPixel)
+void DemandProfile::generateDemandVector(std::vector<double> &demand, double startingAngle, double endingAngle, double nmilesPerPixel)
 {
-  float demandRNPS[NUM_ENTRY_NODES_PER_QUADRANT] = {0};
+  double demandRNPS[NUM_ENTRY_NODES_PER_QUADRANT] = {0};
   double angleIncrement = (endingAngle - startingAngle)/NUM_ENTRY_NODES_PER_QUADRANT;
-  for(int i=0; i<numDemands; i++)
+  for(unsigned int i=0; i<numDemands; i++)
     {
       // compute the x, y coordinates in the opengl coordinate system for each demand, where the center is (0, 0)
       double tempX = (xCoors[i]-centerX)/latiPerPixel;	
@@ -303,7 +292,7 @@ void DemandProfile::generateDemandVector(std::vector<float> &demand, double star
         }
     }
   // convert to opengl coordinate system and in the project, rnp is half the lane width
-  for(int i=0; i<NUM_ENTRY_NODES_PER_QUADRANT; i++)		
+  for(unsigned int i=0; i<NUM_ENTRY_NODES_PER_QUADRANT; i++)		
     {
     demand.push_back(demandRNPS[i]/(2*nmilesPerPixel));						// store them into the resulting vector
     }

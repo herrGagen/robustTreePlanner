@@ -57,7 +57,7 @@ void Node::clearFreeRadiusVector()
 // effectiveThres means if a weather cell's deviation probability is below this value, it's going to be considered as NULL
 // routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
 // if the value < routingThres, then it is considered an obstacle 
-bool Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, float effectiveThres, float routingThres)
+bool Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres)
 {
 	if(getWeatherCollisionStatus(r) == WEATHER_COLLISION)			// if was tested to be colliding with the weather
 	{
@@ -90,7 +90,7 @@ bool Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData>
 
 // overloaded function which does the same but returns the value of the final probability (for probability output)
 // return the probability that the cell is clear
-double Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, float effectiveThres)
+double Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, double effectiveThres)
 {
 	if(wData.size()==0)									// there is no weather read in
 	{
@@ -111,17 +111,20 @@ double Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherDat
 
 
 // test if the radius r ball centered at current node conflict with the weatherdata, actually only do 2d testing if there z coordinates collide with each other
-bool Node::testRadiusWithWeatherData(double r, const WeatherData &wData, float thres)
+bool Node::testRadiusWithWeatherData(double r, const WeatherData &wData, double thres)
 {
-	if(wData.size() == 0)	return false;					// if the weather data does not exist, then just return false
-	int numCells = wData.size();
+	if(wData.size() == 0)
+		{
+			return false;					// if the weather data does not exist, then just return false
+	}
+	unsigned int numCells = wData.size();
 	double x1;
 	double y1;
 	double z1;
 	double cellWidth;
 	double cellHeight;
 	double deviationProbability;
-	for(int i=0; i<numCells; i++)
+	for(unsigned int i=0; i<numCells; i++)
 	{
 		// if successfully read out all the cell data, the bottomleft corner of the cell is (x1, y1, z1)
 		if(wData.getCellData(i, &x1, &y1, &z1, &deviationProbability, &cellWidth, &cellHeight))	
@@ -343,18 +346,18 @@ void Node::insertOutNodeEdge(Node *node, Edge *edge)
 	}
 }
 
-int Node::getInSize()
+unsigned int Node::getInSize()
 {
 	return inNodes.size();
 }
 
-int Node::getOutSize()
+unsigned int Node::getOutSize()
 {
 	return outNodes.size();
 }
 
 // search for the index-th node in the nodes that come into the node
-Node* Node::getInNode(int index)
+Node* Node::getInNode(unsigned int index)
 {
 	if(index<getInSize() && index>=0)
 	{
@@ -363,7 +366,7 @@ Node* Node::getInNode(int index)
 	return NULL;
 }
 
-Node* Node::getOutNode(int index)
+Node* Node::getOutNode(unsigned int index)
 {
 	if(index<getOutSize() && index>=0)
 	{
@@ -372,7 +375,7 @@ Node* Node::getOutNode(int index)
 	return NULL;
 }
 
-Edge* Node::getInEdge(int index)
+Edge* Node::getInEdge(unsigned int index)
 {
 	if(index<getInSize() && index>=0)
 	{
@@ -381,7 +384,7 @@ Edge* Node::getInEdge(int index)
 	return NULL;
 }
 
-Edge* Node::getOutEdge(int index)
+Edge* Node::getOutEdge(unsigned int index)
 {
 	if(index<getOutSize() && index>=0)
 	{
@@ -425,12 +428,12 @@ int Node::getNodeType()
 	return type;
 }
 
-float Node::getDrawingRNP()
+double Node::getDrawingRNP()
 {
 	return drawingRNP;
 }
 
-void Node::setDrawingRNP(float rnp)
+void Node::setDrawingRNP(double rnp)
 {
 	if(rnp>=0)
 	{
@@ -487,7 +490,7 @@ bool Node::getFreeRadiusResults(int n, double* radius, double* prob)
 }
 
 // insert into the operational flexibility std::vector a pair of radius and probability
-void Node::insertFreeRadiusVec(float r, float prob)
+void Node::insertFreeRadiusVec(double r, double prob)
 {
 	OperationalFlexibility* temp = new OperationalFlexibility;
 	temp->radius = r;
@@ -495,7 +498,7 @@ void Node::insertFreeRadiusVec(float r, float prob)
 	freeRadius.push_back(temp);
 }
 
-void Node::setTreeOutEdgeIndex(int index)
+void Node::setTreeOutEdgeIndex(unsigned int index)
 {
 	if(index<getOutSize() && index>=0)
 	{
@@ -504,20 +507,20 @@ void Node::setTreeOutEdgeIndex(int index)
 }
 
 // test if THIS node collides with another edge
-bool Node::collisionWithEdge(Edge *temp, float r)
+bool Node::collisionWithEdge(Edge *temp, double r)
 {
 	return collisionWithEdgeHelper(r, temp->getHead()->getX(), temp->getHead()->getY(), temp->getHead()->getZ(), 
 		temp->getTail()->getX(), temp->getTail()->getY(), temp->getTail()->getZ(), temp->getDrawingRNP());  
 }
 
 // test if THIS node collides with another edge
-bool Node::collisionWithNode(Node* temp, float r)
+bool Node::collisionWithNode(Node* temp, double r)
 {
 	return collisionWithNodeHelper(r, temp->getX(), temp->getY(), temp->getZ(), temp->getDrawingRNP());
 }
 
 // test if THIS node(radius r) collides with another node, (ix, iy, iz), radius ir
-bool Node::collisionWithNodeHelper(float r, double ix, double iy, double iz, double ir)
+bool Node::collisionWithNodeHelper(double r, double ix, double iy, double iz, double ir)
 {
 	if((x-ix)*(x-ix)+(y-iy)*(y-iy)+(z-iz)*(z-iz)>=(r+ir)*(r+ir))	// distance between the centers is greater than the sum of the radii
 	{
@@ -528,7 +531,7 @@ bool Node::collisionWithNodeHelper(float r, double ix, double iy, double iz, dou
 
 // test if THIS node(radius r) collides with an edge, (ix1, iy1, iz2)->(ix2, iy2, iz2), width iw
 // it's the same as testing the point (x, y, z) with the 3d segment (ix1, iy1, iz2)->(ix2, iy2, iz2), width iw+r
-bool Node::collisionWithEdgeHelper(float r, double ix1, double iy1, double iz1, double ix2, double iy2, double iz2, double iw)
+bool Node::collisionWithEdgeHelper(double r, double ix1, double iy1, double iz1, double ix2, double iy2, double iz2, double iw)
 {
 	double tWidth = r+iw;			// define the total width
 	// first use bounding box to eleminate obvious cases
@@ -641,12 +644,12 @@ void Edge::resetTreeStatus()
 	deviationNodes.clear();
 }
 
-float Edge::getDrawingRNP()
+double Edge::getDrawingRNP()
 {
 	return drawingRNP;
 }
 
-void Edge::setDrawingRNP(float rnp)
+void Edge::setDrawingRNP(double rnp)
 {
 	if(rnp>0)
 	{
@@ -662,13 +665,13 @@ void Edge::resetWeatherCollisionStatus()
 }
 
 // after a new testing, save the test results
-void Edge::insertWeatherCollisionStatus(float rnp, int collisionStatus)
+void Edge::insertWeatherCollisionStatus(double rnp, int collisionStatus)
 {
 	weatherCollisionRNPs.push_back(rnp);
 	weatherCollisionStatus.push_back(collisionStatus);
 }
 
-int Edge::getWeatherCollisionStatus(float rnp)
+int Edge::getWeatherCollisionStatus(double rnp)
 {
 	for(unsigned int i=0; i<weatherCollisionRNPs.size(); i++)
 	{
@@ -767,11 +770,11 @@ bool Edge::getRNPResults(int n, double *r, double *prob)
 }
 
 // insert an operational flexibility pair into corresponding std::vector (marked by vecIndex value)
-void Edge::insertOperFlex(float r, float prob, int vecIndex)
+void Edge::insertOperFlex(double r, double prob, int vecIndex)
 {
 	if(vecIndex<1 || vecIndex>3)
 	{
-		std::cerr<<"\nCannot insert the operational plexibility pair into a valid std::vector..."<<std::endl;
+		std::cerr << "\nCannot insert the operational plexibility pair into a valid std::vector..."<<std::endl;
 		return;
 	}
 	OperationalFlexibility* temp = new OperationalFlexibility;
@@ -799,7 +802,7 @@ void Edge::insertOperFlexDeviationCandidateNode(Node *temp)
 }
 
 // test the rnp on both side of THIS edge with the weatherDataSet (a set of boxes)
-bool Edge::testRNPWithWeatherDataSet(float rnp, const std::vector<WeatherData> &wData, float effectiveThres, float routingThres)
+bool Edge::testRNPWithWeatherDataSet(double rnp, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres)
 {
 	if(getWeatherCollisionStatus(rnp) == WEATHER_COLLISION)			// if was tested to be colliding with the weather
 	{
@@ -822,7 +825,7 @@ bool Edge::testRNPWithWeatherDataSet(float rnp, const std::vector<WeatherData> &
 	return false;
 }
 // test the right side of THIS edge with the WeatherDataSet (a set of boxes), the width of the rectangle is passed into the function as parameter width
-bool Edge::testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, float effectiveThres, float routingThres)
+bool Edge::testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres)
 {
 	if(wData.size()==0)	
 	{
@@ -831,7 +834,7 @@ bool Edge::testPathStretchWithWeatherDataSet(double width, const std::vector<Wea
 	return collisionWithWeatherCheck(width, wData, effectiveThres, routingThres, 2);
 }
 // test the left side of THIS edge with the WeatherDataSet (a set of boxes)
-bool Edge::testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, float effectiveThres, float routingThres)
+bool Edge::testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres)
 {
 	if(wData.size()==0)
 	{
@@ -841,7 +844,7 @@ bool Edge::testWiggleRoomWithWeatherDataSet(double width, const std::vector<Weat
 }
 
 // overloaded function to test the probability that THIS edge is clear of obstacles
-double Edge::testRNPWithWeatherDataSet(float rnp, const std::vector<WeatherData> &wData, float effectiveThres)
+double Edge::testRNPWithWeatherDataSet(double rnp, const std::vector<WeatherData> &wData, double effectiveThres)
 {
 	if(wData.size()==0)	
 	{
@@ -851,7 +854,7 @@ double Edge::testRNPWithWeatherDataSet(float rnp, const std::vector<WeatherData>
 }
 
 // overloaded function to test the probability that the right side of THIS edge is clear of obstacles
-double Edge::testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, float effectiveThres)
+double Edge::testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres)
 {
 	if(wData.size()==0)	
 	{
@@ -861,7 +864,7 @@ double Edge::testPathStretchWithWeatherDataSet(double width, const std::vector<W
 }
 
 // overloaded function to test the probability that the left side of THIS edge is clear of obstacles
-double Edge::testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, float effectiveThres)
+double Edge::testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres)
 {
 	if(wData.size()==0)
 	{
@@ -910,14 +913,14 @@ double Edge::collisionWithWeatherDataHelper(double w, const std::vector<WeatherD
 // parameter testType means the type we are testing, 1 for rnp, 2 for pathStretching, 3 for Wiggle Airspace
 bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double thres, int testType)
 {
-	int numCells = wData.size();
+	unsigned int numCells = wData.size();
 	double x;
 	double y;
 	double z;
 	double cellWidth;
 	double cellHeight;
 	double deviationProbability;
-	for(int i=0; i<numCells; i++)
+	for(unsigned int i=0; i<numCells; i++)
 	{
 		// if successfully read out all the cell data, the bottomleft corner of the cell is (x, y, z)
 		if(wData.getCellData(i, &x, &y, &z, &deviationProbability, &cellWidth, &cellHeight))	
@@ -1085,14 +1088,14 @@ bool Edge::collisionBetweenRectangleAndSquare(double x1, double y1, double x2, d
 }
 
 // test if THIS edge collides with another edge
-bool Edge::collisionWithEdge(Edge *temp, float w)
+bool Edge::collisionWithEdge(Edge *temp, double w)
 {
 	return collisionWithEdgeHelper(w, temp->getHead()->getX(), temp->getHead()->getY(), temp->getHead()->getZ(), 
 		temp->getTail()->getX(), temp->getTail()->getY(), temp->getTail()->getZ(), temp->getDrawingRNP()); 
 }
 
 // test if THIS edge collides with another node
-bool Edge::collisionWithNode(Node *temp, float w)
+bool Edge::collisionWithNode(Node *temp, double w)
 {
 	return collisionWithNodeHelper(w, temp->getX(), temp->getY(), temp->getZ(), temp->getDrawingRNP());
 }

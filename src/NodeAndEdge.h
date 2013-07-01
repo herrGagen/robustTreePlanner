@@ -43,10 +43,10 @@ public:
 	Node(double ix, double iy, double iz, int itype = INTERNAL_NODE);
 	~Node();
 public:
-	bool testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, float effectiveThres, float routingThres);
-	double testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, float effectiveThres);
-	bool collisionWithEdge(Edge *temp, float w);
-	bool collisionWithNode(Node *temp, float w);
+	bool testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres);
+	double testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, double effectiveThres);
+	bool collisionWithEdge(Edge *temp, double w);
+	bool collisionWithNode(Node *temp, double w);
 	void setTreeNode();				// set the node to be a node in the tree
 	void setNotTreeNode();
 	bool setLayer(int ilayer);
@@ -59,12 +59,12 @@ public:
 public:
 	void insertInNodeEdge(Node* node, Edge* edge);						
 	void insertOutNodeEdge(Node* node, Edge* edge);
-	int getInSize();									// number of coming in edges
-	int getOutSize();									// number of going out edges
-	Node* getInNode(int index);
-	Node* getOutNode(int index);
-	Edge* getInEdge(int index);
-	Edge* getOutEdge(int index);
+	unsigned int getInSize();									// number of coming in edges
+	unsigned int getOutSize();									// number of going out edges
+	Node* getInNode(unsigned int index);
+	Node* getOutNode(unsigned int index);
+	Edge* getInEdge(unsigned int index);
+	Edge* getOutEdge(unsigned int index);
 	double getX();
 	double getY();
 	double getZ();
@@ -75,10 +75,10 @@ public:
 	bool addInDegree();
 	int getInDegree();
 	int getNodeType();
-	void setDrawingRNP(float rnp);
-	float getDrawingRNP();
+	void setDrawingRNP(double rnp);
+	double getDrawingRNP();
 	int getTreeOutEdgeIndex();
-	void setTreeOutEdgeIndex(int index);
+	void setTreeOutEdgeIndex(unsigned int index);
 	void storeTreeOutEdgeIndexInformation();
 	void restoreTreeOutEdgeIndexInformation();
 	void resetTreeStatus();
@@ -96,7 +96,7 @@ public:
 public:
 	int getFreeRadiusVecSize();
 	bool getFreeRadiusResults(int n, double *radius, double *prob);	// get the value of nth element in the radius testing result (operational flexity)
-	void insertFreeRadiusVec(float r, float prob);					// insert into the operational flexibility std::vector a pair of radius and probability
+	void insertFreeRadiusVec(double r, double prob);					// insert into the operational flexibility std::vector a pair of radius and probability
 private:
 	double x, y, z;										// the coordinates of the point
 	std::vector<Node*> inNodes;								// the nodes that go into this node, size is the same as inEdges
@@ -113,19 +113,19 @@ private:
 	int visited;										// mark if the node was visited already in the graph search algorithm
 	int inDeg;											// currently, only allow in degree 2 trees
 	int treeNode;										// after routing, if it is a node used in the tree
-	float drawingRNP;									// the rnp when drawing, rnp is the width of the thick cylinder/2
+	double drawingRNP;									// the rnp when drawing, rnp is the width of the thick cylinder/2
 	std::vector<OperationalFlexibility*> freeRadius;			// for a set of width, the probability that the node is free of obstacles
 	Node* prevTreeNode;													
 	Edge* prevTreeEdge;	
 	double distance;									// when generating the tautened tree, used as distance in Dijkstra algorithm
 	std::vector<double> weatherCollisionRNPs;					// define if a node is free of weather/ or collides with weather, record the tested rnps
-	std::vector<int> weatherCollisionStatus;					// define if a node is free of weather/ or collides with weather for each float rnp
+	std::vector<int> weatherCollisionStatus;					// define if a node is free of weather/ or collides with weather for each double rnp
 private:
-	bool testRadiusWithWeatherData(double r, const WeatherData &wData, float thres);	// test the surrounding of the point, if r=radius circle is weather free
+	bool testRadiusWithWeatherData(double r, const WeatherData &wData, double thres);	// test the surrounding of the point, if r=radius circle is weather free
 	// test intersection between a disk whose center is (xC, yC), radius r, with a square, whose bottomleft corner is (x, y), side length c
 	bool collisionBetweenDiskAndSquare(double xC, double yC, double r, double x, double y, double c);
-	bool collisionWithEdgeHelper(float r, double ix1, double iy1, double iz1, double ix2, double iy2, double iz2, double iw);
-	bool collisionWithNodeHelper(float r, double ix, double iy, double iz, double ir);
+	bool collisionWithEdgeHelper(double r, double ix1, double iy1, double iz1, double ix2, double iy2, double iz2, double iw);
+	bool collisionWithNodeHelper(double r, double ix, double iy, double iz, double ir);
 };
 
 /********************************************************************************************************************************************/
@@ -139,24 +139,24 @@ public:
 public:
 	// algorithms related functions
 	// test if an edge can be thicken enough to rnp*2 width and avoid weather obstacles
-	bool testRNPWithWeatherDataSet(float rnp, const std::vector<WeatherData> &wData, float effectiveThres, float routingThres);
+	bool testRNPWithWeatherDataSet(double rnp, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres);
 	// variable "thres" in the following fuctions are used to denote which weathe data is considered to be hazardous
 	// test the right side of the edge, if w=width rectangle is weather free
-	bool testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, float effectiveThres, float routingThres);	
+	bool testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres);	
 	// test the left side of the edge, if w=width rectangle is weather free
-	bool testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, float effectiveThres, float routingThres);	
+	bool testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres);	
 	
 	// overloaded versions of the functions above, return the probability that an edge is clear
-	double testRNPWithWeatherDataSet(float rnp, const std::vector<WeatherData> &wData, float effectiveThres);
-	double testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, float effectiveThres);
-	double testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, float effectiveThres);
+	double testRNPWithWeatherDataSet(double rnp, const std::vector<WeatherData> &wData, double effectiveThres);
+	double testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres);
+	double testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres);
 	
-	bool collisionWithEdge(Edge *temp, float w);
-	bool collisionWithNode(Node *temp, float w);
+	bool collisionWithEdge(Edge *temp, double w);
+	bool collisionWithNode(Node *temp, double w);
 	void setTreeEdge();													// set the edge as an edge used in the tree
 	void setNotTreeEdge();
-	float getDrawingRNP();												
-	void setDrawingRNP(float rnp);
+	double getDrawingRNP();												
+	void setDrawingRNP(double rnp);
 public:
 	// these functions are currently only used when outputting the path stretching and wiggle room information to an .xml file
 	// compute the vertex coordinates of a rectangle on the right side of current edge, in clockwide order(head, tail, 3rd, 4th) 
@@ -173,7 +173,7 @@ public:
 	void resetTreeStatus();
 public:
 	// information of RNP testing, path stretching testing and wiggle room testing results, oprational flexibility
-	void insertOperFlex(float r, float prob, int vecIndex);
+	void insertOperFlex(double r, double prob, int vecIndex);
 	void insertOperFlexDeviationCandidateNode(Node* temp);
 	int getRNPVecSize();
 	int getPathStretchingVecSize();
@@ -184,8 +184,8 @@ public:
 	bool getWiggleRoomResults(int n, double *width, double *prob);	// get the value of nth element in the wiggleRoom std::vector
 	Node* getDeviationNode(int n);
 	void resetWeatherCollisionStatus();
-	void insertWeatherCollisionStatus(float rnp, int collisionStatus);
-	int getWeatherCollisionStatus(float rnp);
+	void insertWeatherCollisionStatus(double rnp, int collisionStatus);
+	int getWeatherCollisionStatus(double rnp);
 	/* set and get functions related to pathStretching and wiggleRoom defination here*/
 private:
 	double x1, y1, z1;									// the coordinates of its 2 endpoints
@@ -194,15 +194,15 @@ private:
 	Node* tailNode;
 	int layer, layerIndex;
 	int treeEdge;
-	float drawingRNP;									// the rnp that we are drawing, width/2
+	double drawingRNP;									// the rnp that we are drawing, width/2
 	double edgeLength;
 	std::vector<OperationalFlexibility*> rnpValues;
 	std::vector<OperationalFlexibility*> pathStretching;		// on the edge's right
 	std::vector<OperationalFlexibility*> wiggleRoom;			// on the edge's left
 	std::vector<Node*> deviationNodes;						// the nodes in this edge that are used to escape from the current tree
 	// define if an edge is free of weather/ or collides with weather/ or not tested yet, avoid testing again(time consuming)
-	std::vector<float> weatherCollisionRNPs;					// define if a node is free of weather/ or collides with weather, record the tested rnps
-	std::vector<int> weatherCollisionStatus;					// define if a node is free of weather/ or collides with weather for each float rnp						
+	std::vector<double> weatherCollisionRNPs;					// define if a node is free of weather/ or collides with weather, record the tested rnps
+	std::vector<int> weatherCollisionStatus;					// define if a node is free of weather/ or collides with weather for each double rnp						
 	
 private:
 	bool collisionWithWeatherCheck(double w, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres, int testType);

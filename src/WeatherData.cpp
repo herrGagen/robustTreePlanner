@@ -64,7 +64,7 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 	// redone with more modern c++ tools than pointers, and strcomp()
 
 	std::string thisLine;
-	for(int i = 0; i<5; i++) // Try and find the "Probability" line in the first 5 lines of the file.
+	for(unsigned int i = 0; i<5; i++) // Try and find the "Probability" line in the first 5 lines of the file.
 	{
 		std::getline(dataStream, thisLine);
 		size_t found = thisLine.find("Probability");
@@ -74,7 +74,7 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 			unsigned endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
 			endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
 			std::string tempString = thisLine.substr(beginNumber, endNumber);
-			probability = ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() );
+			probability = (double) ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() );
 			break; // leave the for loop once probability has been found.
 		}
 		if(i==4)
@@ -101,7 +101,7 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 	while(!dataStream.eof() )
 	{
 		std::getline(dataStream, thisLine);
-		float values[4]; // Storage for tempX, tempY, tempAltitude, tempProbability		
+		double values[4]; // Storage for tempX, tempY, tempAltitude, tempProbability		
 		size_t beginNumber = thisLine.find_first_of("-.0123456789",0);
 		// Just a double check to ensure we aren't feeding the parser garbage lines.
 		if(beginNumber == string::npos)
@@ -111,16 +111,16 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 		size_t endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
 
 		// Ignore the first three values of each line, since they are not used by this program.
-		for(int i = 0; i < 3; i++)
+		for(unsigned int i = 0; i < 3; i++)
 		{
 			beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
 			endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
 		}
 
-		for(int i = 0; i<4; i++)
+		for(unsigned int i = 0; i<4; i++)
 		{
 			std::string tempString = thisLine.substr(beginNumber, endNumber-beginNumber);
-			values[i] = (float)::atof( tempString.c_str() );
+			values[i] = (double)(double) ::atof( tempString.c_str() );
 			// Move the search window for a number in the current line.
 			beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
 			endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
@@ -200,7 +200,7 @@ bool WeatherData::handleInputData()
 #if defined(DEBUG)
 		std::cout << "minProbDev: " << minProbDev << "  maxProbDev: " << maxProbDev << std::endl;
 #endif
-		std::cerr<<"\nWeather Data Content Error."<<std::endl;
+		std::cerr << "\nWeather Data Content Error."<<std::endl;
 		return false;									// the probability of deviation must be between 0 and 1, a messagebox is popped up
 	}
 	return true;										// the format is good and we are ready to draw
@@ -214,7 +214,7 @@ bool WeatherData::testIndex(const int* readingIndex, const int *fileSize)
 	{
 		return false;				// meaning there is not a problem
 	}
-	std::cerr<<"\nFile Format Error!"<<std::endl;		// prompt that the file has format errors
+	std::cerr << "\nFile Format Error!"<<std::endl;		// prompt that the file has format errors
 	reset();
 	return true;
 }

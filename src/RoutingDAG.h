@@ -33,22 +33,22 @@ public:
 	RoutingDAG();
 	~RoutingDAG();
 	// the key function, routing algorithm, used to generate a tree from a prebuilt graph
-	bool generateTree(const vector<WeatherData> &wData, vector<float> rnp, float effectiveThres, float routingThres);
-	bool generateTautenedTree(const vector<WeatherData> &wData, vector<float> rnp, float effectiveThres, float routingThres);
+	bool generateTree(const vector<WeatherData> &wData, vector<double> rnp, double effectiveThres, double routingThres);
+	bool generateTautenedTree(const vector<WeatherData> &wData, vector<double> rnp, double effectiveThres, double routingThres);
 	void resetTree();
 	void reset();
 	void setminimumDistanceBetweenMergingNodes(double dis);
 	void insertNode(Node* temp);
 	void insertEdge(Edge* temp);
-	void setNumLayers(int n);
+	void setNumLayers(unsigned int n);
 	void setNodesReadInStatus(int status);
 	int  getStatus();
 	bool generateEdgeSet();
-	void generateOperFlexPairs(float *radii, int length, vector<WeatherData> &wData, float effectiveThres);
+	void generateOperFlexPairs(double *radii, int length, vector<WeatherData> &wData, double effectiveThres);
 public:
 	bool outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, std::string &startTime, std::string &endTime, std::string &outputName);
 private:
-	int numLayers;
+	unsigned int numLayers;
 	// the entry nodes have to be in the order aligned along the outer boundary of the quadrant, with enough RNP separating them
 	vector<Node*> entries;
 	vector<Node*> nodes;
@@ -65,20 +65,20 @@ private:
 	int treeShapeStatus;							// if its bottommost tree or tautened tree
 	double minimumDistanceBetweenMergingNodes;		// the minimum distance in between 2 merging nodes along a single branch
 private:
-	bool routeBranch(Node *start, int entryIndex, const vector<WeatherData> &wData, float rnp, float effectiveThres, float routingThres);
-	bool testRemainingBranchWhileMerging(Node *start, const vector<WeatherData> &wData, float rnp, float effectiveThres, float routingThres);
-	void setTreeBranchUp(Node* current, Node* start, float rnp);
-	void setTreeBranchUpMerging(Node* start, float rnp);
-	void treeBranchPostProcessing(Node* start, float rnp);
-	bool testBranchWithEdge(Edge* current, float rnp, Node* start, int testType);
-	bool testPreviousBranchEdge(Edge* current, float rnp, int entryIndex);
-	bool testBranchWithNode(Node* current, float rnp, Node* start);
-	bool testPreviousBranchNode(Node* current, float rnp, int entryIndex);
-	bool testPreviousBranchTillCurrentLayerEdge(Edge* current, float rnp, int entryIndex);
-	bool onPreviousBranch(Node* current, int entryIndex);
+	bool routeBranch(Node *start, unsigned int entryIndex, const vector<WeatherData> &wData, double rnp, double effectiveThres, double routingThres);
+	bool testRemainingBranchWhileMerging(Node *start, const vector<WeatherData> &wData, double rnp, double effectiveThres, double routingThres);
+	void setTreeBranchUp(Node* current, Node* start, double rnp);
+	void setTreeBranchUpMerging(Node* start, double rnp);
+	void treeBranchPostProcessing(Node* start, double rnp);
+	bool testBranchWithEdge(Edge* current, double rnp, Node* start, int testType);
+	bool testPreviousBranchEdge(Edge* current, double rnp, unsigned int entryIndex);
+	bool testBranchWithNode(Node* current, double rnp, Node* start);
+	bool testPreviousBranchNode(Node* current, double rnp, unsigned int entryIndex);
+	bool testPreviousBranchTillCurrentLayerEdge(Edge* current, double rnp, unsigned int entryIndex);
+	bool onPreviousBranch(Node* current, unsigned int entryIndex);
 	bool onBranchStartingAt(Node* current, Node* start);
 	bool generateLayerStartingIndexVector();
-	int  findFeasiblePreviousEntryNode(int entryIndex);
+	int  findFeasiblePreviousEntryNode(unsigned int entryIndex);
 	
 	// helper functions for locating a node by its index or layer/layerIndex
 	Node* fetchNode(int n);
@@ -86,26 +86,26 @@ private:
 	Node* findNode(int layer, int layerIndex);
 	
 	// helper functions when tautening the tree branches
-	void updateLayerUsedIndexVector(int entryIndex);
-	int findFeasibleNextEntryNode(int entryIndex);
-	bool routeTautenedTreeBranch(Node *start, int entryIndex, const vector<WeatherData> &wData, float rnp, 
-								 float effectiveThres, float routingThres, int topMostTendency);
-	bool onNextBranch(Node* current, int entryIndex);
-	bool testNextBranchNode(Node* current, float rnp, int entryIndex);
-	bool testNextBranchEdge(Edge* current, float rnp, int entryIndex);
-	bool testnextBranchTillCurrentLayerEdge(Edge* current, float rnp, int entryIndex);
-	void treeBranchPostProcessingForTreeTautening(Node* start, float rnp);
-	void setTreeBranchUpForTreeTautening(Node* current, Node* start, float rnp);
-	void setTreeBranchUpMergingForTreeTautening(Node *start, float rnp);
-	Node* findMergingNodeOfPrevious2BranchesInBottomTree(int entryIndex);
+	void updateLayerUsedIndexVector(unsigned int entryIndex);
+	int findFeasibleNextEntryNode(unsigned int entryIndex);
+	bool routeTautenedTreeBranch(Node *start, unsigned int entryIndex, const vector<WeatherData> &wData, double rnp, 
+								 double effectiveThres, double routingThres, int topMostTendency);
+	bool onNextBranch(Node* current, unsigned int entryIndex);
+	bool testNextBranchNode(Node* current, double rnp, unsigned int entryIndex);
+	bool testNextBranchEdge(Edge* current, double rnp, unsigned int entryIndex);
+	bool testnextBranchTillCurrentLayerEdge(Edge* current, double rnp, unsigned int entryIndex);
+	void treeBranchPostProcessingForTreeTautening(Node* start, double rnp);
+	void setTreeBranchUpForTreeTautening(Node* current, Node* start, double rnp);
+	void setTreeBranchUpMergingForTreeTautening(Node *start, double rnp);
+	Node* findMergingNodeOfPrevious2BranchesInBottomTree(unsigned int entryIndex);
 	
 	// helper functions used to test if the new branch satisfies the minimum distance between merging points constraint
-	bool testDistanceTooCloseToMergingNodesOnNextBranch(Node* current, int entryIndex);
+	bool testDistanceTooCloseToMergingNodesOnNextBranch(Node* current, unsigned int entryIndex);
 	bool testDistanceTooCloseToMergingNodesOnBranch(Node* current, Node* start);
-	bool testDistanceTooCloseToMergingNodesOnPreviousBranch(Node* current, int entryIndex);
-	bool testDistanceTooCloseToMergingNodesOnCurrentBranch(Node* toBeDecided, Node* current, int entryIndex);
-	Node* nextNodeOfGivenNodeOnNextBranch(Node* current, int entryIndex);
-	Node* nextNodeOfGivenNodeOnCurrentBranch(Node* current, int entryIndex);
+	bool testDistanceTooCloseToMergingNodesOnPreviousBranch(Node* current, unsigned int entryIndex);
+	bool testDistanceTooCloseToMergingNodesOnCurrentBranch(Node* toBeDecided, Node* current, unsigned int entryIndex);
+	Node* nextNodeOfGivenNodeOnNextBranch(Node* current, unsigned int entryIndex);
+	Node* nextNodeOfGivenNodeOnCurrentBranch(Node* current, unsigned int entryIndex);
 };
 
 #endif

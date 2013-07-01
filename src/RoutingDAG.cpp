@@ -20,13 +20,13 @@ RoutingDAG::RoutingDAG()
 // delete all the memory that is allocated to the nodes and edges
 RoutingDAG::~RoutingDAG()
 {
-	for(int i=0; i<entries.size(); i++)
+	for(unsigned int i=0; i<entries.size(); i++)
 		delete entries[i];
-	for(int i=0; i<nodes.size(); i++)
+	for(unsigned int i=0; i<nodes.size(); i++)
 		delete nodes[i];
-	for(int i=0; i<fixes.size(); i++)
+	for(unsigned int i=0; i<fixes.size(); i++)
 		delete fixes[i];
-	for(int i=0; i<edges.size(); i++)
+	for(unsigned int i=0; i<edges.size(); i++)
 		delete edges[i];
 	entries.clear();
 	nodes.clear();
@@ -43,14 +43,14 @@ void RoutingDAG::insertEdge(Edge *temp)
 }
 
 // set the number of layers in the routingDAG
-void RoutingDAG::setNumLayers(int n)
+void RoutingDAG::setNumLayers(unsigned int n)
 {
-	if(n>=2)					// at least 2 levels of fix nodes and entry nodes
+	if(n >= 2)					// at least 2 levels of fix nodes and entry nodes
 	{
 		numLayers = n;
-		for(int i=0; i<numLayers; i++)			// initialize the layerUsedIndex vector which will be used when computing the tree
+		for(unsigned int i=0; i<numLayers; i++)			// initialize the layerUsedIndex vector which will be used when computing the tree
 			layerUsedIndex.push_back(-1);
-		for(int i=0; i<fixes.size(); i++)
+		for(unsigned int i=0; i<fixes.size(); i++)
 			fixes[i]->setLayer(n-1);			// all the fix nodes now know that they are in layer (n-1)
 	}
 }
@@ -85,40 +85,40 @@ void RoutingDAG::insertNode(Node *temp)
 // reset the weather status to be WEATHER_NOT_TESTED, a helper scheme to reduce the number of testings against weather data
 void RoutingDAG::resetTree()
 {
-	for(int i=0; i<entries.size(); i++)
+	for(unsigned int i=0; i<entries.size(); i++)
 	{
 		entries[i]->resetTreeStatus();
 		entries[i]->resetWeatherCollisionStatus();
 	}
-	for(int i=0; i<nodes.size(); i++)
+	for(unsigned int i=0; i<nodes.size(); i++)
 	{
 		nodes[i]->resetTreeStatus();
 		nodes[i]->resetWeatherCollisionStatus();
 	}
-	for(int i=0; i<fixes.size(); i++)
+	for(unsigned int i=0; i<fixes.size(); i++)
 	{
 		fixes[i]->resetTreeStatus();
 		fixes[i]->resetTreeStatus();
 	}
-	for(int i=0; i<edges.size(); i++)
+	for(unsigned int i=0; i<edges.size(); i++)
 	{
 		edges[i]->resetTreeStatus();
 		edges[i]->resetWeatherCollisionStatus();
 	}
-	for(int i=0; i<layerUsedIndex.size(); i++)
+	for(unsigned int i=0; i<layerUsedIndex.size(); i++)
 		layerUsedIndex[i] = -1;
 	status = TREE_NOT_GENERATED;
 }
 
 void RoutingDAG::reset()
 {
-	for(int i=0; i<entries.size(); i++)
+	for(unsigned int i=0; i<entries.size(); i++)
 		delete entries[i];
-	for(int i=0; i<nodes.size(); i++)
+	for(unsigned int i=0; i<nodes.size(); i++)
 		delete nodes[i];
-	for(int i=0; i<fixes.size(); i++)
+	for(unsigned int i=0; i<fixes.size(); i++)
 		delete fixes[i];
-	for(int i=0; i<edges.size(); i++)
+	for(unsigned int i=0; i<edges.size(); i++)
 		delete edges[i];
 	entries.clear();
 	nodes.clear();
@@ -164,7 +164,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
             string tempFileName;
             tempFileName = outputName.c_str();
             std::cout << outputName.c_str() << std::endl;
-            // std::cout<<"\nPlease provide a name for the output file:\n";
+            // std::cout << "\nPlease provide a name for the output file:\n";
             // std::getline(cin,tempFileName);
             if( tempFileName.length() > 0 )
               {
@@ -212,7 +212,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
                 // start printing the tree nodes information here
 		vector<int>	indexToFetchNodeIndexVec;							// for each node in the tree, it will have an index value used for outputing
 		int treeNodeIndex = 0;											// record all the tree nodes one by one starting from 1
-		for(int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
+		for(unsigned int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
 		{
 			Node* temp = fetchNode(i);
 			if(temp->treeNodeOrNot()) // if we have a tree node
@@ -247,7 +247,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 		// output the information for deviation nodes of edges. the deviationNodeIndex variable is for edges' deviation nodes
 		int deviationNodeIndex = treeNodeIndex;						
 		// output all the operational flexibility deviation nodes information for each edge
-		for(int i=0; i<edges.size(); i++)
+		for(unsigned int i=0; i<edges.size(); i++)
 		{
 			if(edges[i]->treeEdgeOrNot())
 			{
@@ -276,7 +276,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 		int treeEdgeIndex = 0;												// record all the tree nodes one by one starting from 1
 		deviationNodeIndex = treeNodeIndex;									// the last output index of tree nodes
 		os << "\n\t<Arcs>";
-		for(int i=0; i<edges.size(); i++)
+		for(unsigned int i=0; i<edges.size(); i++)
 		{
 			if(edges[i]->treeEdgeOrNot())
 			{
@@ -352,7 +352,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 		os << "\n\t</Arcs>";
 		// output tree branch information here. For each tree branch, output its edge lists
 		os << "\n\t<Branches>";
-		for(int i=0; i<entries.size(); i++)
+		for(unsigned int i=0; i<entries.size(); i++)
 		{
 			if(entries[i]->getDrawingRNP()==0)					// make sure that the branch has actual demand
 				continue;
@@ -383,13 +383,13 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 Node* RoutingDAG::findNode(int layer, int layerIndex)
 {
 	// search all the nodes linearly to find the correnponding one
-	for(int i=0; i<nodes.size(); i++)
+	for(unsigned int i=0; i<nodes.size(); i++)
 		if(nodes[i]->getLayer()==layer && nodes[i]->getLayerIndex()==layerIndex)
 			return nodes[i];
-	for(int i=0; i<fixes.size(); i++)
+	for(unsigned int i=0; i<fixes.size(); i++)
 		if(fixes[i]->getLayer()==layer && fixes[i]->getLayerIndex()==layerIndex)
 			return fixes[i];
-	for(int i=0; i<entries.size(); i++)
+	for(unsigned int i=0; i<entries.size(); i++)
 		if(entries[i]->getLayer()==layer && entries[i]->getLayerIndex()==layerIndex)
 			return entries[i];
 	return NULL;
@@ -412,7 +412,7 @@ bool RoutingDAG::generateEdgeSet()
 		return false;
 	// iterate for each layer, deal with the fix node layer and the second to the last layer separately later because the last layer only has edges going to fix nodes
 	// but the order where we fill in fix nodes is opposite
-	for(int i=0; i<numLayers-2; i++)					
+	for(unsigned int i=0; i<numLayers-2; i++)					
 	{
 		int startingLayer = (i+3>numLayers-2)? (numLayers-2) : (i+3);
 		int endingLayer = i+1;							// connect to points that lie in the range [startingLayer, endingLayer]
@@ -495,7 +495,7 @@ bool RoutingDAG::generateLayerStartingIndexVector()
 	layerStartingIndex.push_back(0);						// the starting position of the entry nodes is firstly pushed in the vector
 	int initialLayer = 0;
 	int entrySize = entries.size();
-	for(int i=0; i<nodes.size(); i++)
+	for(unsigned int i=0; i<nodes.size(); i++)
 	{
 		if(nodes[i]->getLayer()!=initialLayer)
 		{
@@ -551,7 +551,7 @@ Node* RoutingDAG::fetchNode(int n)
 // effectiveThres means if a weather cell's deviation probability is below this value, it's going to be considered as NULL
 // routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
 // if the value < routingThres, then it is considered an obstacle 
-bool RoutingDAG::generateTree(const vector<WeatherData> &wData, vector<float> rnp, float effectiveThres, float routingThres)
+bool RoutingDAG::generateTree(const vector<WeatherData> &wData, vector<double> rnp, double effectiveThres, double routingThres)
 {
 	// before computing, first reset all tree related variables and tree generating status
 	resetTree();	
@@ -567,16 +567,16 @@ bool RoutingDAG::generateTree(const vector<WeatherData> &wData, vector<float> rn
 		std::cerr << "\nNumber of RNP values does not match the number of entry points." << std::endl;
 		return false;
 	}
-	for(int i=0; i<entries.size(); i++)						// first make sure that all the entry nodes are themselves weather obstacle free
+	for(unsigned int i=0; i<entries.size(); i++)						// first make sure that all the entry nodes are themselves weather obstacle free
 		if(entries[i]->testRadiusWithWeatherDataSet(rnp[i], wData, effectiveThres, routingThres))
 		{
 			return false;	
 		}
 	// then start testing branches coming out of each entry node
-	for(int i=0; i<entries.size(); i++)
+	for(unsigned int i=0; i<entries.size(); i++)
 	{
 		// test if the entry node is feasible, then route a branch for each entry node
-		for(int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
+		for(unsigned int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
 		{
 			fetchNode(j)->setVisited(NOT_VISITED);					// when starting a new graph search from a new entry node, set every node unvisited
 		}
@@ -584,7 +584,7 @@ bool RoutingDAG::generateTree(const vector<WeatherData> &wData, vector<float> rn
 		updateLayerUsedIndexVector(i);
 		entries[i]->setDrawingRNP(rnp[i]);							// set the rnp information and treeNode status of the entry node
 		entries[i]->setTreeNode();
-		for(int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
+		for(unsigned int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
 		{
 			fetchNode(j)->setVisited(NOT_VISITED);					// when starting a new search, all the nodes within the search DAG are set to be unvisited
 		}
@@ -607,7 +607,7 @@ bool RoutingDAG::generateTree(const vector<WeatherData> &wData, vector<float> rn
 // effectiveThres means if a weather cell's deviation probability is below this value, it's going to be considered as NULL
 // routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
 // if the value < routingThres, then it is considered an obstacle 
-bool RoutingDAG::routeBranch(Node *start, int entryIndex, const vector<WeatherData> &wData, float rnp, float effectiveThres, float routingThres)
+bool RoutingDAG::routeBranch(Node *start, unsigned int entryIndex, const vector<WeatherData> &wData, double rnp, double effectiveThres, double routingThres)
 {
 	// if there is no entry demand at all from this entry node, then simply return true
 	if(rnp==0)	return true;
@@ -620,7 +620,7 @@ bool RoutingDAG::routeBranch(Node *start, int entryIndex, const vector<WeatherDa
           std::cout  <<  "."  <<  std::flush;		
 		Node* temp = tempStack.top();								// pop the first node out and store it as Node* temp
 		tempStack.pop();
-		for(int i=0; i<=temp->getOutSize()-1; i++)					// test each of its outgoing edges (from top(right) to bottommost(left))
+		for(unsigned int i=0; i< temp->getOutSize(); i++)					// test each of its outgoing edges (from top(right) to bottommost(left))
 		{															// because the stack pops elements last in first out
 			Edge* tempEdge = temp->getOutEdge(i);					// the pointers to the current outer edge and outer node
 			Node* tempNode = temp->getOutNode(i);
@@ -719,7 +719,7 @@ bool RoutingDAG::routeBranch(Node *start, int entryIndex, const vector<WeatherDa
 }
 
 // test a branch of the tree starting from a given Node, and see if the remaining part of the branch is good to be merged in by another branch
-bool RoutingDAG::testRemainingBranchWhileMerging(Node *start, const vector<WeatherData> &wData, float rnp, float effectiveThres, float routingThres)
+bool RoutingDAG::testRemainingBranchWhileMerging(Node *start, const vector<WeatherData> &wData, double rnp, double effectiveThres, double routingThres)
 {
 	if(start->getInDegree()>=2)										// if a node is already fully occupied, then return fail
 		return false;
@@ -752,7 +752,7 @@ bool RoutingDAG::testRemainingBranchWhileMerging(Node *start, const vector<Weath
 // set all the edges that we used to be in the tree, and it is guaruateed to be a bottommost tree branch
 // when we find the last node of a tree(a fix node), mark the tree from the current node all way up to the entry node start
 // set rnp values and in degrees
-void RoutingDAG::setTreeBranchUp(Node* current, Node* start, float rnp)
+void RoutingDAG::setTreeBranchUp(Node* current, Node* start, double rnp)
 {
 	while(current!=start)
 	{
@@ -770,7 +770,7 @@ void RoutingDAG::setTreeBranchUp(Node* current, Node* start, float rnp)
 
 // set the drawingRNP values from the fix node to the merging node, only rnp values are updated because the other status variables are already set to be in the tree
 // Node* current is always a fix node, and it links up to start node, this funtion is only called when we are merging a new branch into an existing branch
-void RoutingDAG::setTreeBranchUpMerging(Node *start, float rnp)
+void RoutingDAG::setTreeBranchUpMerging(Node *start, double rnp)
 {
 	Node* temp = start;								// find the fix node of the branch containing node start
 	while(temp->getNodeType()!=FIX_NODE)
@@ -787,14 +787,14 @@ void RoutingDAG::setTreeBranchUpMerging(Node *start, float rnp)
 }
 
 // process a tree brach so that each tree node knows which its outgoing edge in the tree is, by marking its treeOutEdgeIndex variable
-void RoutingDAG::treeBranchPostProcessing(Node* start, float rnp)			// the node pointer start always points to an entry node
+void RoutingDAG::treeBranchPostProcessing(Node* start, double rnp)			// the node pointer start always points to an entry node
 {
 	if(start->getDrawingRNP()==0)								// nothing to process here
 		return;
 	Node* temp = start;
 	while(temp->getNodeType()!=FIX_NODE)
 	{
-		for(int i=0; i<temp->getOutSize(); i++)
+		for(unsigned int i=0; i<temp->getOutSize(); i++)
 		{
 			if(temp->getOutEdge(i)->treeEdgeOrNot())			// if we find a tree edge
 			{
@@ -807,17 +807,23 @@ void RoutingDAG::treeBranchPostProcessing(Node* start, float rnp)			// the node 
 }
 
 // update the layerUsedIndex vector by walking the previous (from 0 to (i-1)th) branches
-void RoutingDAG::updateLayerUsedIndexVector(int entryIndex)
+void RoutingDAG::updateLayerUsedIndexVector(unsigned int entryIndex)
 {
-	if(entryIndex>=entries.size())					// i should be at most entries.size()-1
+	if(entryIndex >= entries.size())					// i should be at most entries.size()-1
+	{
 		return;
-	for(int j=0; j<numLayers; j++)			// first restore every element to -1
+	}
+	for(unsigned int j=0; j<numLayers; j++)			// first restore every element to -1
+	{
 		layerUsedIndex[j] = -1;
-	for(int i=0; i<entryIndex; i++)
+	}
+	for(unsigned int i=0; i<entryIndex; i++)
 	{
 		Node* start = entries[i];
 		if(start->getDrawingRNP()==0)		// if there is no branch starting from this entry node
+		{
 			continue;
+		}
 		while(start->getNodeType()!=FIX_NODE)
 		{
 			int tempLayer = start->getLayer();
@@ -833,7 +839,7 @@ void RoutingDAG::updateLayerUsedIndexVector(int entryIndex)
 // after the bottommost tree is generated, tauten its branches so that it looks much better using Dijkstra algorithm on DAG
 // in the front of this function, no feasibility needs to be tested (other than if the bottommost tree was generated already) 
 // because the function is only called after the bottommost tree is generated
-bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<float> rnp, float effectiveThres, float routingThres)
+bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<double> rnp, double effectiveThres, double routingThres)
 {
 	if(status == TREE_NOT_GENERATED)		// this is not actually going to happen because the same test was always conducted before calling this function
 	{
@@ -843,7 +849,7 @@ bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<f
 	else if(treeShapeStatus == TAUTENED_TREE)	// if the tree was generated already, then just return, no need to generate again
 		return false;
 	// save the original bottommost tree information, in case there are multiple rounds of tautened tree generating
-	for(int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
+	for(unsigned int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
 	{
 		fetchNode(i)->storeTreeOutEdgeIndexInformation();
 	}
@@ -851,34 +857,38 @@ bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<f
 	// next round, then every 3rd and 2nd branches will try to merge into their corresponding 1st branch. until topMostTendency is entry.size(), where
 	// each branch will try to merge into the first branch. This is used to deal with the bottleneck cases and urge branches to merge early
 	// the tree will look more like a topmost tree if every branch tries to merge into the first branch. Hence it's called topMostTendency
-	for(int topMostTendency=1; topMostTendency<=entries.size(); topMostTendency++)
+	for(unsigned int topMostTendency=1; topMostTendency<=entries.size(); topMostTendency++)
 	{
 		std::cout  <<  ".";
 		//preparation for the new tree: clear the unuseful(useful for the new tree) data structure related to the previous tree for nodes and edges
-		for(int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
+		for(unsigned int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
 		{
 			Node* temp = fetchNode(i);
-			float tempRNP = temp->getDrawingRNP();
+			double tempRNP = temp->getDrawingRNP();
 			// set nodes NOT in the tree, in degree 0, BUT THE TREE OUTGOING EDGE INFORMATION IS KEPT(IMPORTANT!!!): we can still trace a branch from an entry
 			temp->resetTreeStatus();			
 			temp->setDrawingRNP(tempRNP);					// restore the drawingRNP information
 			temp->restoreTreeOutEdgeIndexInformation();		// whenever a new round of tautening starts, restore the bottommost tree info
 		}
-		for(int i=0; i<edges.size(); i++)
+		for(unsigned int i=0; i<edges.size(); i++)
 			edges[i]->setNotTreeEdge();						// all edges are not NOT in the tree
 		// note that we can still trace a branch from any entry nodes using the treeOutEdgeIndex variable
 		//set these indices one more than the index of the last node in the layer, so no node is used at the beginning
 		layerUsedIndexReverseDirection.clear();
-		for(int i=0; i<numLayers; i++)
+		for(unsigned int i=0; i<numLayers; i++)
 			layerUsedIndexReverseDirection.push_back(layerStartingIndex[i+1]-layerStartingIndex[i]);
 		// routing from the entry nodes, from last one to the first one
 		bool successfullyTautened = true;					// denote if we route successfully till the last entry node
-		for(int i=entries.size()-1; i>=0; i--)
+		for(unsigned int i=entries.size()-1; i>=0; i--)
 		{
-			for(int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
+			for(unsigned int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
+			{
 				fetchNode(j)->setVisited(NOT_VISITED);		// when starting a new search, all the nodes within the search DAG are set to be unvisited
-			for(int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
+			}
+			for(unsigned int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
+			{
 				fetchNode(j)->setDistance(*max_element(rnp.begin(), rnp.end())*5*numLayers);	// at the beginning of Dijkstra, every node has very large distance
+			}
 			// first update the layerUsedIndex vector by walking thru the previous branches
 			updateLayerUsedIndexVector(i);
 			entries[i]->setTreeNode();
@@ -917,8 +927,8 @@ bool compareNodes(Node* n1, Node* n2)
 
 // this function route a branch of the tautened tree starting from an entry node, the topMostTendency parameter denotes if the tree will more like a 
 // topmost tree or not(sometimes the only way to do this is a topmost tree), topMostTendency is from 1 to entries.size() 
-bool RoutingDAG::routeTautenedTreeBranch(Node *start, int entryIndex, const vector<WeatherData> &wData, float rnp, 
-										 float effectiveThres, float routingThres, int topMostTendency)
+bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, const vector<WeatherData> &wData, double rnp, 
+										 double effectiveThres, double routingThres, int topMostTendency)
 {
 	if(start->getDrawingRNP()==0)			// if there is no demand from the current entry node, then no branch is coming out of it, return
 		return true;
@@ -945,7 +955,7 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, int entryIndex, const vect
 			return true;
 		}
 		/****************************************************************************************************************/
-		for(int i=0; i<temp->getOutSize(); i++)		// iterate thru each adjacent node and edge of the current node
+		for(unsigned int i=0; i<temp->getOutSize(); i++)		// iterate thru each adjacent node and edge of the current node
 		{
 			Node* tempNode = temp->getOutNode(i);
 			Edge* tempEdge = temp->getOutEdge(i);
@@ -1031,7 +1041,7 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, int entryIndex, const vect
 
 // process a tautened tree brach so that each tree node knows which its outgoing edge in the tree is, by marking its treeOutEdgeIndex variable
 // the function also helps setting the new rnps of the branch(make sure that the new tree edges have new rnp values)
-void RoutingDAG::treeBranchPostProcessingForTreeTautening(Node* start, float rnp)			// the node pointer start always points to an entry node
+void RoutingDAG::treeBranchPostProcessingForTreeTautening(Node* start, double rnp)			// the node pointer start always points to an entry node
 {
 	if(start->getDrawingRNP()==0)								// nothing to process here
 		return;
@@ -1041,7 +1051,7 @@ void RoutingDAG::treeBranchPostProcessingForTreeTautening(Node* start, float rnp
 		temp->setDrawingRNP(max(temp->getDrawingRNP(), rnp));	
 		// and update the layerUsedIndexReverseDirection vector to be up to date, based on the new branch information
 		layerUsedIndexReverseDirection[temp->getLayer()] = min(layerUsedIndexReverseDirection[temp->getLayer()], temp->getLayerIndex());
-		for(int i=0; i<temp->getOutSize(); i++)
+		for(unsigned int i=0; i<temp->getOutSize(); i++)
 		{
 			if(temp->getOutEdge(i)->treeEdgeOrNot())			// if we find a tree edge
 			{
@@ -1058,7 +1068,7 @@ void RoutingDAG::treeBranchPostProcessingForTreeTautening(Node* start, float rnp
 
 // set all the edges that we used to be in the tree, and it is guaruateed to be a tautend tree branch
 // when we find the last node of a tree(a fix node), mark the tree from the current node all way up to the entry node start
-void RoutingDAG::setTreeBranchUpForTreeTautening(Node* current, Node* start, float rnp)
+void RoutingDAG::setTreeBranchUpForTreeTautening(Node* current, Node* start, double rnp)
 {
 	while(current!=start)
 	{
@@ -1078,7 +1088,7 @@ void RoutingDAG::setTreeBranchUpForTreeTautening(Node* current, Node* start, flo
 
 // set the drawingRNP values from the merging node to its the fix node, only rnp values are updated because the other status variables are already set 
 // to be in the tree. This funtion is only called when we are merging a new branch into an existing branch in the tautened tree
-void RoutingDAG::setTreeBranchUpMergingForTreeTautening(Node *start, float rnp)
+void RoutingDAG::setTreeBranchUpMergingForTreeTautening(Node *start, double rnp)
 {
 	Node* temp = start;								// find the fix node of the branch containing node start
 	while(temp->getNodeType()!=FIX_NODE)
@@ -1095,7 +1105,7 @@ void RoutingDAG::setTreeBranchUpMergingForTreeTautening(Node *start, float rnp)
 //HELPER FUNCTIONS USED TO HELP GENERATING TREE BRANCHES
 
 // find the next node of node current on the next branch of the current branch starting from entries[entryIndex], if none, return NULL
-Node* RoutingDAG::nextNodeOfGivenNodeOnNextBranch(Node* current, int entryIndex)
+Node* RoutingDAG::nextNodeOfGivenNodeOnNextBranch(Node* current, unsigned int entryIndex)
 {
 	int nextBranchEntryIndex = findFeasibleNextEntryNode(entryIndex);
 	if(nextBranchEntryIndex==-1)
@@ -1104,7 +1114,7 @@ Node* RoutingDAG::nextNodeOfGivenNodeOnNextBranch(Node* current, int entryIndex)
 }
 
 // find the next node of node current on the current branch starting from entries[entryIndex], if none, return NULL
-Node* RoutingDAG::nextNodeOfGivenNodeOnCurrentBranch(Node *current, int entryIndex)
+Node* RoutingDAG::nextNodeOfGivenNodeOnCurrentBranch(Node *current, unsigned int entryIndex)
 {
 	Node* temp = entries[entryIndex];
 	while(temp->getNodeType()!=FIX_NODE)
@@ -1120,7 +1130,7 @@ Node* RoutingDAG::nextNodeOfGivenNodeOnCurrentBranch(Node *current, int entryInd
 // example: current starting node in (layer, layerIndex) format is (0, 3). This function finds the merging node of original branches
 // starting from (0, 2) and (0, 1). Reason for testing is that we always want to leave enough space for the remaining to be routed branches. If it is 
 // a merging node, then we are not going to use it now. Otherwise, the remaining branches will not have a way to get routed.
-Node* RoutingDAG::findMergingNodeOfPrevious2BranchesInBottomTree(int entryIndex)
+Node* RoutingDAG::findMergingNodeOfPrevious2BranchesInBottomTree(unsigned int entryIndex)
 {
 	int previousBranch = findFeasiblePreviousEntryNode(entryIndex);
 	if(previousBranch==-1)						// if there is NO previous branch existing
@@ -1144,7 +1154,7 @@ Node* RoutingDAG::findMergingNodeOfPrevious2BranchesInBottomTree(int entryIndex)
 }
 
 // test the previous branch with the current edge so that till the current layer,there was no collision 
-bool RoutingDAG::testPreviousBranchTillCurrentLayerEdge(Edge *current, float rnp, int entryIndex)
+bool RoutingDAG::testPreviousBranchTillCurrentLayerEdge(Edge *current, double rnp, unsigned int entryIndex)
 {
 	// find the previous entry node that actually has some demand on it
 	int temp = findFeasiblePreviousEntryNode(entryIndex);
@@ -1155,7 +1165,7 @@ bool RoutingDAG::testPreviousBranchTillCurrentLayerEdge(Edge *current, float rnp
 }
 
 // test the next branch with the current edge so that till the current layer,there was no collision 
-bool RoutingDAG::testnextBranchTillCurrentLayerEdge(Edge* current, float rnp, int entryIndex)
+bool RoutingDAG::testnextBranchTillCurrentLayerEdge(Edge* current, double rnp, unsigned int entryIndex)
 {
 	// find the previous entry node that actually has some demand on it
 	int temp = findFeasibleNextEntryNode(entryIndex);
@@ -1167,7 +1177,7 @@ bool RoutingDAG::testnextBranchTillCurrentLayerEdge(Edge* current, float rnp, in
 
 // in the next a couple of functions, the return value is true if the node/edgt collides with the branch, is false if there is no collision
 // test the current node with the previous branch, the branch is extracted from layerUsedIndex[0]
-bool RoutingDAG::testPreviousBranchNode(Node* current, float rnp, int entryIndex)
+bool RoutingDAG::testPreviousBranchNode(Node* current, double rnp, unsigned int entryIndex)
 {
 	// find the previous entry node that actually has some demand on it
 	int temp = findFeasiblePreviousEntryNode(entryIndex);
@@ -1178,7 +1188,7 @@ bool RoutingDAG::testPreviousBranchNode(Node* current, float rnp, int entryIndex
 }
 
 // test the current edge with the previous branch, the branch is extracted from layerUsedIndex[0]
-bool RoutingDAG::testPreviousBranchEdge(Edge* current, float rnp, int entryIndex)
+bool RoutingDAG::testPreviousBranchEdge(Edge* current, double rnp, unsigned int entryIndex)
 {
 	// find the previous entry node that actually has some demand on it
 	int temp = findFeasiblePreviousEntryNode(entryIndex);
@@ -1189,7 +1199,7 @@ bool RoutingDAG::testPreviousBranchEdge(Edge* current, float rnp, int entryIndex
 }
 
 // test the current node with the previous branch, the branch is extracted from layerUsedIndex[0]
-bool RoutingDAG::testNextBranchNode(Node* current, float rnp, int entryIndex)
+bool RoutingDAG::testNextBranchNode(Node* current, double rnp, unsigned int entryIndex)
 {
 	// find the previous entry node that actually has some demand on it
 	int temp = findFeasibleNextEntryNode(entryIndex);
@@ -1200,7 +1210,7 @@ bool RoutingDAG::testNextBranchNode(Node* current, float rnp, int entryIndex)
 }
 
 // test the current edge with the previous branch, the branch is extracted from layerUsedIndex[0]
-bool RoutingDAG::testNextBranchEdge(Edge* current, float rnp, int entryIndex)
+bool RoutingDAG::testNextBranchEdge(Edge* current, double rnp, unsigned int entryIndex)
 {
 	// find the previous entry node that actually has some demand on it
 	int temp = findFeasibleNextEntryNode(entryIndex);
@@ -1212,7 +1222,7 @@ bool RoutingDAG::testNextBranchEdge(Edge* current, float rnp, int entryIndex)
 
 // test the current node with a branch starting at entry node start(bottom most branch searching, so the new branch cannot intersect with previous one)
 // return true if there is an intersection
-bool RoutingDAG::testBranchWithNode(Node* current, float rnp, Node* start)
+bool RoutingDAG::testBranchWithNode(Node* current, double rnp, Node* start)
 {
 	//tracking down the branch starting at the Node start, first test the collision with the startnode
 	if(current->collisionWithNode(start, rnp))
@@ -1233,7 +1243,7 @@ bool RoutingDAG::testBranchWithNode(Node* current, float rnp, Node* start)
 
 // test the current edge with a branch starting at entry node start(bottom most branch searching, so the new branch cannot intersect with previous one)
 // testType 1: test till the end of the branch. testType 2: test till the current layer of current
-bool RoutingDAG::testBranchWithEdge(Edge* current, float rnp, Node* start, int testType)
+bool RoutingDAG::testBranchWithEdge(Edge* current, double rnp, Node* start, int testType)
 {
 	//tracking down the branch starting at the Node start, first test the collision with the startnode
 	if(current->collisionWithNode(start, rnp))
@@ -1267,7 +1277,7 @@ bool RoutingDAG::testBranchWithEdge(Edge* current, float rnp, Node* start, int t
 }
 
 // helper function to test if a node is on the previous branch of the tree, start is the entry of the current branch we are routing
-bool RoutingDAG::onPreviousBranch(Node* current, int entryIndex)
+bool RoutingDAG::onPreviousBranch(Node* current, unsigned int entryIndex)
 {
 	// find the previous entry node that actually has some demand on it
 	int tempIndex = findFeasiblePreviousEntryNode(entryIndex);
@@ -1278,7 +1288,7 @@ bool RoutingDAG::onPreviousBranch(Node* current, int entryIndex)
 }
 
 // almost the same as the previous function except that we are looking into the next branch
-bool RoutingDAG::onNextBranch(Node* current, int entryIndex)
+bool RoutingDAG::onNextBranch(Node* current, unsigned int entryIndex)
 {
 	int tempIndex = findFeasibleNextEntryNode(entryIndex);
 	if(tempIndex==-1)
@@ -1288,7 +1298,7 @@ bool RoutingDAG::onNextBranch(Node* current, int entryIndex)
 
 // find the previous branch that actually has demand input (test if the rnp is 0), return -1 if there isn't any
 // current branch starts at node start
-int RoutingDAG::findFeasiblePreviousEntryNode(int entryIndex)
+int RoutingDAG::findFeasiblePreviousEntryNode(unsigned int entryIndex)
 {
 	if(entryIndex==0)	return -1;						// start is the first entry, so no previous entry node
 	// find the previous branch that actually has demand input (test if the rnp is 0)
@@ -1300,7 +1310,7 @@ int RoutingDAG::findFeasiblePreviousEntryNode(int entryIndex)
 }
 
 // find the next entry node that actually has demand input, return -1 if there isn't any
-int RoutingDAG::findFeasibleNextEntryNode(int entryIndex)
+int RoutingDAG::findFeasibleNextEntryNode(unsigned int entryIndex)
 {
 	int infeasibleIndex = layerStartingIndex[1];		// the start of the second level(entries are on the first level)
 	if(entryIndex==infeasibleIndex-1)	return -1;		// start is the last entry, so no previous entry node
@@ -1327,7 +1337,7 @@ bool RoutingDAG::onBranchStartingAt(Node* current, Node* start)
 
 // test to make sure that the minimum distance between 2 merging nodes constraint is satisfied
 // return true is the Node current is too close to the branches' merging nodes
-bool RoutingDAG::testDistanceTooCloseToMergingNodesOnNextBranch(Node *current, int entryIndex)
+bool RoutingDAG::testDistanceTooCloseToMergingNodesOnNextBranch(Node *current, unsigned int entryIndex)
 {
 	if(minimumDistanceBetweenMergingNodes == 0)		// no need to test distance at all
 		return false;
@@ -1339,7 +1349,7 @@ bool RoutingDAG::testDistanceTooCloseToMergingNodesOnNextBranch(Node *current, i
 
 // test to make sure that the minimum distance between 2 merging nodes constraint is satisfied
 // return true is the Node current is too close to the branches' merging nodes
-bool RoutingDAG::testDistanceTooCloseToMergingNodesOnPreviousBranch(Node* current, int entryIndex)
+bool RoutingDAG::testDistanceTooCloseToMergingNodesOnPreviousBranch(Node* current, unsigned int entryIndex)
 {
 	if(minimumDistanceBetweenMergingNodes == 0)		// no need to test distance at all
 		return false;
@@ -1370,7 +1380,7 @@ bool RoutingDAG::testDistanceTooCloseToMergingNodesOnBranch(Node *current, Node 
 }
 
 // test if a node is too close to the previous merging node on the current branch (if there is one), note that current is on the current branch
-bool RoutingDAG::testDistanceTooCloseToMergingNodesOnCurrentBranch(Node* toBeDecided, Node *current, int entryIndex)
+bool RoutingDAG::testDistanceTooCloseToMergingNodesOnCurrentBranch(Node* toBeDecided, Node *current, unsigned int entryIndex)
 {
 	// if its impossible to have a merging node on the current branch OR there is NO distance requirement 
 	// OR the current node is NOT part of the next branch at all, if so, then there is NO possible merging node along the current branch
@@ -1393,7 +1403,7 @@ bool RoutingDAG::testDistanceTooCloseToMergingNodesOnCurrentBranch(Node* toBeDec
 
 /***************************************************************************************************************************************************************/
 // after the tree is generated, for each node and edge in the tree, calculate their operational flxibilities
-void RoutingDAG::generateOperFlexPairs(float* radii, int length, vector<WeatherData> &wData, float effectiveThres)
+void RoutingDAG::generateOperFlexPairs(double* radii, int length, vector<WeatherData> &wData, double effectiveThres)
 {
 	if(status==TREE_NOT_GENERATED)
 	{
@@ -1401,7 +1411,7 @@ void RoutingDAG::generateOperFlexPairs(float* radii, int length, vector<WeatherD
 		return;
 	}
 	// generate the pairs for each branch of the tree
-	for(int i=0; i<entries.size(); i++)
+	for(unsigned int i=0; i<entries.size(); i++)
 	{
 		Node* tempNode = entries[i];
 		if(entries[i]->getDrawingRNP()==0)			// if there is no branch coming out of the current entry node
@@ -1428,7 +1438,7 @@ void RoutingDAG::generateOperFlexPairs(float* radii, int length, vector<WeatherD
 			// generate the deviation node for the edge, each edge has at most 3 deviation nodes, 
 			// the minimum interval between nodes is preset to be rnp*2; Each node has its own operational flexibility pairs
 			double edgeLength = tempEdge->getLength();
-			float currentRNP = tempEdge->getDrawingRNP();
+			double currentRNP = tempEdge->getDrawingRNP();
 			if(edgeLength>=8*currentRNP)										// generate the nodes at 1/4 position from head to tail
 			{
 				Node* temp = new Node((tempEdge->getHead()->getX()*3+tempEdge->getTail()->getX())/4, (tempEdge->getHead()->getY()*3+tempEdge->getTail()->getY())/4,
@@ -1461,7 +1471,7 @@ void RoutingDAG::generateOperFlexPairs(float* radii, int length, vector<WeatherD
 		}
 	}
 	// finally, computing the operational flexibility of the fix nodes
-	for(int i=0; i<fixes.size(); i++)
+	for(unsigned int i=0; i<fixes.size(); i++)
 	{
 		Node* tempNode = fixes[i];
 		for(int j=0; j<length; j++)

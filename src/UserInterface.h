@@ -61,9 +61,9 @@ private:
 	vector<WeatherData> weatherData;		// a set of weather data files
 	DemandProfile* demandProfile;			// demand profile information
 	RoutingDAG* routingDAG;					// key component, the routing DAG structure
-	vector<float> demandRNPs;				// the vector storing RNP values for each entry node
-	float deviationThreshold;				// the threshold that a weather cell is considered hazardous
-	float nodeEdgeThreshold;				// the threshold that we consider a thick edge or disk to be clear of weather
+	vector<double> demandRNPs;				// the vector storing RNP values for each entry node
+	double deviationThreshold;				// the threshold that a weather cell is considered hazardous
+	double nodeEdgeThreshold;				// the threshold that we consider a thick edge or disk to be clear of weather
 	/****************************************************************************************************************************/
 	// control variables
 private:
