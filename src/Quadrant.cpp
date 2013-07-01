@@ -191,23 +191,23 @@ bool Quadrant::demandFeasible(vector<float> &rnps)
 // if the value < routingThres, then it is considered an obstacle 
 bool Quadrant::generateDAG(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData> &wData, RoutingDAG* rDAG, double qAngleOffset, int numFixNodes)
 {
-	cout << "Generating DAG..." << endl;
+	std::cout << "Generating DAG..." << std::endl;
 	if(!generateEntryAndFixNodes(rnps, n, effectiveThres, routingThres, wData, rDAG, qAngleOffset, numFixNodes))
 		return false;
-	cout << "Generating internal nodes..." << endl;
+	std::cout << "Generating internal nodes..." << std::endl;
 
   generateRoutingDAGInternalNodes(rDAG, rnps, n, qAngleOffset);
-	cout << "Finished generating internal nodes." << endl;
+	std::cout << "Finished generating internal nodes." << std::endl;
 	return true;
 }
 
 // given a size n float array of entry points' rnps, and a weatherdata set, and the DAG structure that we are going to put the points in
 bool Quadrant::generateEntryAndFixNodes(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData> &wData, RoutingDAG *rDAG, double quadAngleOffset, int maxFixNodes)
 {
-  cout << "Max Number of Fix Nodes: " << maxFixNodes << endl;
+  std::cout << "Max Number of Fix Nodes: " << maxFixNodes << std::endl;
 	if(!demandFeasible(rnps))
 	{
-		cerr<<"\nThe Quadrant is NOT large enough to be used for routing!"<<endl;
+		std::cerr<<"\nThe Quadrant is NOT large enough to be used for routing!"<<std::endl;
 		return false;
 	}
 	/*******************************************************/
@@ -321,8 +321,8 @@ bool Quadrant::generateEntryAndFixNodes(vector<float> rnps, int n, float effecti
 	}
 	delete []nodeArrayToBeInsertedIntoTheDAG;
 	delete []anglesOfFixNodes;
-	cerr << endl <<"The Quadrant is NOT large enough to be used for routing, please edit the quadrant!"<<endl;
-	cout << endl << "Failure generating entry / fix nodes.!" << endl;
+	std::cerr << std::endl <<"The Quadrant is NOT large enough to be used for routing, please edit the quadrant!"<<std::endl;
+	std::cout << std::endl << "Failure generating entry / fix nodes.!" << std::endl;
 	return false;
 }
 
@@ -331,14 +331,14 @@ void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, vector<float> r
 {
 	int numLayers = 0;
 	float minrnp = *max_element(rnps.begin(), rnps.end());
-	cout << "minrnp initialized: " << minrnp << endl;
+	std::cout << "minrnp initialized: " << minrnp << std::endl;
 	for (int i=0; i<n; i++)
 	for(int i=0; i<n; i++)
 	{
 		if(rnps[i]!=0)
 			minrnp = minrnp > rnps[i] ? rnps[i] : minrnp;							// use minrnp*3 as the interval in between levels, except 0
 	}
-	cout << "Found minrnp = " << minrnp << endl;
+	std::cout << "Found minrnp = " << minrnp << std::endl;
 	if(liftedoRadius - liftediRadius > minrnp * 4)	
 	{
 		numLayers = 1;
@@ -350,12 +350,12 @@ void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, vector<float> r
 		numLayers--;
 		// the actual number of layers was the number of divisions (which is 1 more)
 	}
-	cout << "Found numLayers = " << numLayers << endl;
+	std::cout << "Found numLayers = " << numLayers << std::endl;
 	// generate the nodes on each layer, i is the layer index, where the smaller i denotes layer that is closer to the outer boundary
 	for(int i=1; i<=numLayers; i++)
 	{
 		if (i % 5000 == 0) {
-			cout << "Current layer is: " << i << endl;
+			std::cout << "Current layer is: " << i << std::endl;
 		}
 		// compute the unified heights and radius(on the base plane) of all the nodes on this layer
 		double layerHeight = oHeight - (oHeight - iHeight) * i / (numLayers + 1);

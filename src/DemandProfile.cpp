@@ -190,8 +190,8 @@ bool DemandProfile::handleInputData()
     {
       if(rnp[i]<0 || xCoors[i]>360 || yCoors[i]>360)
         {
-          cout << rnp[i] << " " << xCoors[i] << " " << yCoors[i] << endl;
-          cerr<<"\nFile Content Error!"<<endl;				// prompt that the file has format errors
+          std::cout << rnp[i] << " " << xCoors[i] << " " << yCoors[i] << std::endl;
+          std::cerr<<"\nFile Content Error!"<<std::endl;				// prompt that the file has format errors
           return false;
         }
       if(xCoors[i]>180)									// change the format to (-180, 180]
@@ -241,7 +241,7 @@ bool DemandProfile::testIndex(const int* readingIndex, const int *fileSize)
 {
   if(*readingIndex < *fileSize)
     return false;						// meaning there is not a problem
-  cerr<<"\n File Format Error!"<<endl;	// prompt that the file has format errors
+  std::cerr<<"\n File Format Error!"<<std::endl;	// prompt that the file has format errors
   reset();
   return true;							// means we are out of file total size
 }

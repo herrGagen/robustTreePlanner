@@ -41,7 +41,7 @@ private:
 	/****************************************************************************************************************************/
 	// get user/file input or save to files functions
  private:
-	string allInputs[200];
+	std::vector<string> allInputs;
 	int currentInput;  
 	bool editQuadrant();					// ask for user input and edit the quadrant information
 	bool readWeatherData();					// read in from weather data files 

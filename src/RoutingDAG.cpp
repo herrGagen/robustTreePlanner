@@ -154,7 +154,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 {
 	if(status==TREE_NOT_GENERATED)
 	{
-		cerr << "\nPlease generate the tree first before outputting the tree information!" << endl;
+		std::cerr << "\nPlease generate the tree first before outputting the tree information!" << std::endl;
 		return false;
 	}
 	string XMLFileName("out.xml");
@@ -163,8 +163,8 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
           {
             string tempFileName;
             tempFileName = outputName.c_str();
-            std::cout << outputName.c_str() << endl;
-            // cout<<"\nPlease provide a name for the output file:\n";
+            std::cout << outputName.c_str() << std::endl;
+            // std::cout<<"\nPlease provide a name for the output file:\n";
             // std::getline(cin,tempFileName);
             if( tempFileName.length() > 0 )
               {
@@ -375,7 +375,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 		os.close();
 		return true;
 	}
-	cerr << "\nCannot successfully create the file..." << endl;
+	std::cerr << "\nCannot successfully create the file..." << std::endl;
 	return false;
 }
 
@@ -401,7 +401,7 @@ bool RoutingDAG::generateEdgeSet()
 {
 	if(nodesReadIn == NODES_NOT_READ_IN)
 	{
-		cerr << "\nThe Nodes have to be read in before generating the edges." << endl;
+		std::cerr << "\nThe Nodes have to be read in before generating the edges." << std::endl;
 		return false;
 	}
 	/***************************************************************************************************/
@@ -489,7 +489,7 @@ bool RoutingDAG::generateLayerStartingIndexVector()
 {
 	if(nodesReadIn == NODES_NOT_READ_IN)
 	{
-		cerr << "\nThe Nodes have to be read in before generating the edges." << endl;
+		std::cerr << "\nThe Nodes have to be read in before generating the edges." << std::endl;
 		return false;
 	}
 	layerStartingIndex.push_back(0);						// the starting position of the entry nodes is firstly pushed in the vector
@@ -559,12 +559,12 @@ bool RoutingDAG::generateTree(const vector<WeatherData> &wData, vector<float> rn
 	treeShapeStatus = BOTTOM_TREE;
 	if(nodesReadIn == NODES_NOT_READ_IN || edgesGenerated == EDGES_NOT_GENERATED)
 	{
-		cerr << "\nNodes or Edges are not ready yet to generate a tree." << endl;
+		std::cerr << "\nNodes or Edges are not ready yet to generate a tree." << std::endl;
 		return false;
 	}
 	if(rnp.size()!=entries.size())							// input error, there is supposed to be an rnp value related to each entry point
 	{														// format error, then prompt the problem
-		cerr << "\nNumber of RNP values does not match the number of entry points." << endl;
+		std::cerr << "\nNumber of RNP values does not match the number of entry points." << std::endl;
 		return false;
 	}
 	for(int i=0; i<entries.size(); i++)						// first make sure that all the entry nodes are themselves weather obstacle free
@@ -740,7 +740,7 @@ bool RoutingDAG::testRemainingBranchWhileMerging(Node *start, const vector<Weath
 		}
 		else				// means no outgoing tree edge is found, means there is tree error in the previous branch
 		{
-			cerr << "\nWhen merging, detected that the previous branch of the tree is incomplete" << endl;
+			std::cerr << "\nWhen merging, detected that the previous branch of the tree is incomplete" << std::endl;
 			resetTree();
 			return false;
 		}
@@ -837,7 +837,7 @@ bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<f
 {
 	if(status == TREE_NOT_GENERATED)		// this is not actually going to happen because the same test was always conducted before calling this function
 	{
-		cerr << "\nPlease generate the bottommost tree before tautening its branches!" << endl;
+		std::cerr << "\nPlease generate the bottommost tree before tautening its branches!" << std::endl;
 		return false;
 	}
 	else if(treeShapeStatus == TAUTENED_TREE)	// if the tree was generated already, then just return, no need to generate again
@@ -888,7 +888,7 @@ bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<f
 			{
 				if(topMostTendency==entries.size())			// if the last try also failed, then there is no tautening
 				{
-					cerr << "Tautening algorithm Error! Cannot tauten the tree!" << endl;
+					std::cerr << "Tautening algorithm Error! Cannot tauten the tree!" << std::endl;
 					resetTree();	
 					return false;
 				}
@@ -1397,7 +1397,7 @@ void RoutingDAG::generateOperFlexPairs(float* radii, int length, vector<WeatherD
 {
 	if(status==TREE_NOT_GENERATED)
 	{
-		cerr << "\nThe Tree Was Not Generated Yet." << endl;
+		std::cerr << "\nThe Tree Was Not Generated Yet." << std::endl;
 		return;
 	}
 	// generate the pairs for each branch of the tree
