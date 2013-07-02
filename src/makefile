@@ -7,7 +7,8 @@ SOURCES=DemandProfile.cpp \
 	WeatherData.cpp \
 	main.cpp \
 	Quadrant.cpp \
-	UserInterface.cpp
+	UserInterface.cpp \
+	InputFileReader.cpp
 
 OBJECTS=$(subst .cpp,.o,$(SOURCES) )
 
