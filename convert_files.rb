@@ -100,7 +100,8 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
 
       begin
         loop do 
-          w.write(e.next)
+          w.write(line)
+          line = e.next
         end
       rescue StopIteration
         break
