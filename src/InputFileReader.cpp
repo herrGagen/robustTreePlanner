@@ -6,6 +6,13 @@
 
 #include "InputFileReader.h"
 
+/**
+   \brief Simple constructor that parses an input file
+   
+   To see the format of the input file, see the class description.
+   
+   \param inputFileName Name of input file (i.e. input.txt)
+*/
 InputFileReader::InputFileReader(std::string inputFileName)
 {
 	std::ifstream in_stream;
