@@ -3,6 +3,7 @@
 #include "DemandProfile.h"
 #include "RoutingDAG.h"
 #include <string>
+#include "InputFileReader.h"
 
 #define QUADRANT_NOT_GENERATED 0			// define if the quadrant is generated or not
 #define QUADRANT_GENERATED 1
@@ -41,8 +42,6 @@ private:
 	/****************************************************************************************************************************/
 	// get user/file input or save to files functions
  private:
-	std::vector<string> allInputs;
-	int currentInput;  
 	bool editQuadrant();					// ask for user input and edit the quadrant information
 	bool readWeatherData();					// read in from weather data files 
 	bool readDemandProfile();				// read in the demand profile information
@@ -57,6 +56,7 @@ private:
 	bool tautenTree();						// tauten the generated bottommost tree
 	/****************************************************************************************************************************/
 private:
+	InputFileReader inputs;
 	Quadrant* quadrant;						// the quadrant in the routing context
 	vector<WeatherData> weatherData;		// a set of weather data files
 	DemandProfile* demandProfile;			// demand profile information

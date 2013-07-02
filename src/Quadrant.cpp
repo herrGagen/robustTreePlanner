@@ -232,7 +232,7 @@ bool Quadrant::generateEntryAndFixNodes(vector<double> rnps, double effectiveThr
   // WILLXYZ
 	double currentAngleRight = quadAngleOffset/2;
 	startingAngle = (maxrnp+0.5)/iRadius; // the boundary condition
-  endingAngle = quadAngleOffset - (maxrnp+0.5)/iRadius;
+	endingAngle = quadAngleOffset - (maxrnp+0.5)/iRadius;
 	Node** nodeArrayToBeInsertedIntoTheDAG = new Node*[3]; 
 	// store the fix nodes first, then insert them into the DAG in order of their angles
 
@@ -286,14 +286,17 @@ bool Quadrant::generateEntryAndFixNodes(vector<double> rnps, double effectiveThr
 				currentAngleLeft += angleIncrement;
 				numFixNodes ++;
 				if(numFixNodes==3)												// already got enough fix nodes
+				{
 					break;
+				}
 			}
 		}
 	}
-	if(numFixNodes>=1) 
+	 
 		/* find at least 1 fix node,
 		then insert them in order of the angle into the DAG,
 		and set their layerIndex values */
+	if(numFixNodes>=1)
 	{
 		/* we have the fix nodes stored in the nodeArrayToBeInsertedIntoTheDAG array, 
 		and their corresponding angles are stores in the anglesOfFixNodes array */

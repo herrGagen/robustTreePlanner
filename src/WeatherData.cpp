@@ -106,7 +106,7 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 		for(unsigned int i = 0; i<4; i++)
 		{
 			std::string tempString = thisLine.substr(beginNumber, endNumber-beginNumber);
-			values[i] = (double)(double) ::atof( tempString.c_str() );
+			values[i] = (double) ::atof( tempString.c_str() );
 			// Move the search window for a number in the current line.
 			beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
 			endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);

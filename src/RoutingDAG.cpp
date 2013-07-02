@@ -21,13 +21,21 @@ RoutingDAG::RoutingDAG()
 RoutingDAG::~RoutingDAG()
 {
 	for(unsigned int i=0; i<entries.size(); i++)
+	{
 		delete entries[i];
+	}
 	for(unsigned int i=0; i<nodes.size(); i++)
+	{
 		delete nodes[i];
+	}
 	for(unsigned int i=0; i<fixes.size(); i++)
+	{
 		delete fixes[i];
+	}
 	for(unsigned int i=0; i<edges.size(); i++)
+	{
 		delete edges[i];
+	}
 	entries.clear();
 	nodes.clear();
 	fixes.clear();
@@ -49,17 +57,26 @@ void RoutingDAG::setNumLayers(unsigned int n)
 	{
 		numLayers = n;
 		for(unsigned int i=0; i<numLayers; i++)			// initialize the layerUsedIndex vector which will be used when computing the tree
+		{
 			layerUsedIndex.push_back(-1);
+		}
 		for(unsigned int i=0; i<fixes.size(); i++)
+		{
 			fixes[i]->setLayer(n-1);			// all the fix nodes now know that they are in layer (n-1)
+		}
 	}
 }
 
 void RoutingDAG::setNodesReadInStatus(int status)
 {
 	if(status>=1 && status<=2)
+	{
 		nodesReadIn = status;
-	else nodesReadIn = NODES_NOT_READ_IN;
+	}
+	else 
+	{
+			nodesReadIn = NODES_NOT_READ_IN;
+	}
 }
 
 // insert a node into the graph
@@ -106,20 +123,30 @@ void RoutingDAG::resetTree()
 		edges[i]->resetWeatherCollisionStatus();
 	}
 	for(unsigned int i=0; i<layerUsedIndex.size(); i++)
+	{
 		layerUsedIndex[i] = -1;
+	}
 	status = TREE_NOT_GENERATED;
 }
 
 void RoutingDAG::reset()
 {
 	for(unsigned int i=0; i<entries.size(); i++)
+	{
 		delete entries[i];
+	}
 	for(unsigned int i=0; i<nodes.size(); i++)
+	{
 		delete nodes[i];
+	}
 	for(unsigned int i=0; i<fixes.size(); i++)
+	{
 		delete fixes[i];
+	}
 	for(unsigned int i=0; i<edges.size(); i++)
+	{
 		delete edges[i];
+	}
 	entries.clear();
 	nodes.clear();
 	fixes.clear();
@@ -158,7 +185,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 		return false;
 	}
 	string XMLFileName("out.xml");
-        ofstream os;
+    ofstream os;
         do
           {
             string tempFileName;
@@ -293,7 +320,8 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 				os << "\n\t\t\t<RNP_Levels>";
 				for(int j=0; j<edges[i]->getRNPVecSize(); j++)
 				{
-					double radius, prob;
+					double radius;
+					double prob;
 					edges[i]->getRNPResults(j, &radius, &prob);
 					os << "\n\t\t\t\t<RNP_Level RNP=\"" << radius*NMILESPERPIXEL << "\" probability=\"" << prob << "\"/>";
 				}
@@ -301,7 +329,8 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 				// print path streching information on the right side of the edge
 				for(int j=0; j<edges[i]->getPathStretchingVecSize(); j++)
 				{
-					double radius, prob;
+					double radius;
+					double prob;
 					edges[i]->getPathStretchingResults(j, &radius, &prob);
 					os << "\n\t\t\t<Operational_Flexibility_Rectangle index=\"" << j+1 << "\" width=\"" << radius*NMILESPERPIXEL << "\" units=\"nm\" ";
 					os << "probability=\"" << prob << "\""; 
@@ -537,11 +566,17 @@ Node* RoutingDAG::fetchNode(int n)
 	int nodesSize = nodes.size();
 	int fixSize = fixes.size();
 	if(n>=0 && n<entrySize)
+	{
 		return entries[n];
+	}
 	if(n>=entrySize && n<nodesSize+entrySize)
+	{
 		return nodes[n-entrySize];
+	}
 	if(n>=nodesSize+entrySize && n<nodesSize+entrySize+fixSize)
+	{
 		return fixes[n-entrySize-nodesSize];
+	}
 	return NULL;
 }
 
@@ -847,7 +882,9 @@ bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<d
 		return false;
 	}
 	else if(treeShapeStatus == TAUTENED_TREE)	// if the tree was generated already, then just return, no need to generate again
+	{
 		return false;
+	}
 	// save the original bottommost tree information, in case there are multiple rounds of tautened tree generating
 	for(unsigned int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
 	{
@@ -861,25 +898,29 @@ bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<d
 	{
 		std::cout  <<  ".";
 		//preparation for the new tree: clear the unuseful(useful for the new tree) data structure related to the previous tree for nodes and edges
-		for(unsigned int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
+		for(unsigned int j = 0; j < entries.size()+nodes.size()+fixes.size(); j++)
 		{
-			Node* temp = fetchNode(i);
+			Node* temp = fetchNode( j );
 			double tempRNP = temp->getDrawingRNP();
 			// set nodes NOT in the tree, in degree 0, BUT THE TREE OUTGOING EDGE INFORMATION IS KEPT(IMPORTANT!!!): we can still trace a branch from an entry
 			temp->resetTreeStatus();			
 			temp->setDrawingRNP(tempRNP);					// restore the drawingRNP information
 			temp->restoreTreeOutEdgeIndexInformation();		// whenever a new round of tautening starts, restore the bottommost tree info
 		}
-		for(unsigned int i=0; i<edges.size(); i++)
-			edges[i]->setNotTreeEdge();						// all edges are not NOT in the tree
+		for(unsigned int j = 0; j < edges.size(); j++)
+		{
+			edges[j]->setNotTreeEdge();						// all edges are not NOT in the tree
+		}
 		// note that we can still trace a branch from any entry nodes using the treeOutEdgeIndex variable
 		//set these indices one more than the index of the last node in the layer, so no node is used at the beginning
 		layerUsedIndexReverseDirection.clear();
-		for(unsigned int i=0; i<numLayers; i++)
-			layerUsedIndexReverseDirection.push_back(layerStartingIndex[i+1]-layerStartingIndex[i]);
+		for(unsigned int j=0; j < numLayers; j++)
+		{
+			layerUsedIndexReverseDirection.push_back(layerStartingIndex[j+1]-layerStartingIndex[j]);
+		}
 		// routing from the entry nodes, from last one to the first one
 		bool successfullyTautened = true;					// denote if we route successfully till the last entry node
-		for(unsigned int i=entries.size()-1; i>=0; i--)
+		for(int i=entries.size()-1; i>=0; i--)
 		{
 			for(unsigned int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
 			{
@@ -906,10 +947,14 @@ bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<d
 				break;
 			}
 			else								// the tree was generated successfully, then set the corresponding status variables 
+			{
 				treeBranchPostProcessingForTreeTautening(entries[i], rnp[i]);
+			}
 		}
 		if(successfullyTautened)							// if this round of topMostTendency gives us a tautened tree, then stop
+		{
 			break;
+		}
 	}
 	// the tree was generated successfully(otherwise returned in the if block), then set the corresponding status variables 
 	status = TREE_GENERATED;
@@ -1016,8 +1061,12 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 				}
 				// if the node is a feasible FIX node and is closer to the source, then store it using pointer endingFixNode 
 				if(tempNode->getNodeType() == FIX_NODE && endingFixNode!=tempNode)
+				{
 					if (!endingFixNode || (endingFixNode->getDistance()>=tempNode->getDistance()))
+					{
 						endingFixNode = tempNode;
+					}
+				}
 				// if we are currently merging into the previous branch, then we consider the current branch complete
 				// end the current branch search as soon as we find a node to merge into the next branch(therefore, merge into next branch as early as possible)
 				// when topMostTendency is 1, this piece of code never excutes, then next round, every 2nd branches will try to merge into its next branch
@@ -1027,15 +1076,21 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 				if((entries.size()-entryIndex-1)%topMostTendency!=0)
 				{
 					if(onNextBranch(tempNode, entryIndex) && !onNextBranch(temp, entryIndex) && earlyMergeNode==NULL)	// this will only be entered once
+					{
 						earlyMergeNode = tempNode;
+					}
 				}
 			}
 		}		// visited all adjacent nodes of the current node
 	}
 	if(!endingFixNode)		// if we didn't find a fix node, which should NOT happen
+	{
 		return false;
+	}
 	else
+	{
 		setTreeBranchUpForTreeTautening(endingFixNode, start, rnp);			// The branch is complete, trace it back
+	}
 	return true;
 }
 
@@ -1044,7 +1099,9 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 void RoutingDAG::treeBranchPostProcessingForTreeTautening(Node* start, double rnp)			// the node pointer start always points to an entry node
 {
 	if(start->getDrawingRNP()==0)								// nothing to process here
+	{
 		return;
+	}
 	Node* temp = start;
 	while(temp->getNodeType()!=FIX_NODE)
 	{
@@ -1074,13 +1131,19 @@ void RoutingDAG::setTreeBranchUpForTreeTautening(Node* current, Node* start, dou
 	{
 		// if the current new edge is part of the previous branch, then it means we are NOT adding an indegree on the current node
 		if(!(current->treeNodeOrNot() && current->getPrevTreeNode()->treeNodeOrNot()))
+		{
 			current->addInDegree();										// one more edge is coming in	
+		}
 		current->setTreeNode();											// the node is a tree node
 		if(rnp>current->getDrawingRNP())
+		{
 			current->setDrawingRNP(rnp);								// the max rnp is updated
+		}
 		current->getPrevTreeEdge()->setTreeEdge();						// the edge leading to this node is a tree edge
 		if(rnp>current->getPrevTreeEdge()->getDrawingRNP())
+		{
 			current->getPrevTreeEdge()->setDrawingRNP(rnp);
+		}
 		layerUsedIndex[current->getLayer()] = current->getLayerIndex();	// in current layer, the layerIndex node was the last node used in the tree
 		current = current->getPrevTreeNode();
 	}
@@ -1109,7 +1172,9 @@ Node* RoutingDAG::nextNodeOfGivenNodeOnNextBranch(Node* current, unsigned int en
 {
 	int nextBranchEntryIndex = findFeasibleNextEntryNode(entryIndex);
 	if(nextBranchEntryIndex==-1)
+	{
 		return NULL;
+	}
 	return nextNodeOfGivenNodeOnCurrentBranch(current, nextBranchEntryIndex);
 }
 
@@ -1120,7 +1185,9 @@ Node* RoutingDAG::nextNodeOfGivenNodeOnCurrentBranch(Node *current, unsigned int
 	while(temp->getNodeType()!=FIX_NODE)
 	{
 		if(temp==current)
+		{
 			return temp->getOutNode(temp->getTreeOutEdgeIndex());
+		}
 		temp = temp->getOutNode(temp->getTreeOutEdgeIndex());
 	}
 	return NULL;
@@ -1134,21 +1201,32 @@ Node* RoutingDAG::findMergingNodeOfPrevious2BranchesInBottomTree(unsigned int en
 {
 	int previousBranch = findFeasiblePreviousEntryNode(entryIndex);
 	if(previousBranch==-1)						// if there is NO previous branch existing
+	{
 		return NULL;
+	}
 	Node* head1 = entries[previousBranch];		// the starting node of the previous branch
 	previousBranch = findFeasiblePreviousEntryNode(previousBranch);
 	if(previousBranch==-1)						// if there is NOT a second previous branch
+	{
 		return NULL;							// then of course current cannot be a merging node
+	}
 	Node* head2 = entries[previousBranch];		// the starting node of the second previous branch
 	// now we find the merging node of branches head1 and head2
 	while(head1!=head2)
 	{
 		if(head1->getLayer()<head2->getLayer())
+		{
 			head1 = head1->getOutNode(head1->getTreeOutEdgeIndex());
-		else head2 = head2->getOutNode(head2->getTreeOutEdgeIndex());
+		}
+		else
+		{
+				head2 = head2->getOutNode(head2->getTreeOutEdgeIndex());
+		}
 		// if they are both on the fix level and they are still different, then there is NO merging nodes at all 
 		if(head1->getLayer()==numLayers-1 && head2->getLayer()==numLayers-1 && head1!=head2)	
+		{
 			return NULL;
+		}
 	}
 	return head1;								// when head1 and head2 point to the same node, then its the merging node
 }
@@ -1159,7 +1237,9 @@ bool RoutingDAG::testPreviousBranchTillCurrentLayerEdge(Edge *current, double rn
 	// find the previous entry node that actually has some demand on it
 	int temp = findFeasiblePreviousEntryNode(entryIndex);
 	if(temp==-1)
+	{
 		return false;
+	}
 	// we have the starting node of the adjacent feasible branch now
 	return testBranchWithEdge(current, rnp, entries[temp], 2);
 }
@@ -1170,7 +1250,9 @@ bool RoutingDAG::testnextBranchTillCurrentLayerEdge(Edge* current, double rnp, u
 	// find the previous entry node that actually has some demand on it
 	int temp = findFeasibleNextEntryNode(entryIndex);
 	if(temp==-1)
+	{
 		return false;
+	}
 	// we have the starting node of the adjacent feasible branch now
 	return testBranchWithEdge(current, rnp, entries[temp], 2);
 }
@@ -1182,7 +1264,9 @@ bool RoutingDAG::testPreviousBranchNode(Node* current, double rnp, unsigned int 
 	// find the previous entry node that actually has some demand on it
 	int temp = findFeasiblePreviousEntryNode(entryIndex);
 	if(temp==-1)
+	{
 		return false;
+	}
 	// we have the starting node of the adjacent feasible branch now
 	return testBranchWithNode(current, rnp, entries[temp]);		
 }
@@ -1193,7 +1277,9 @@ bool RoutingDAG::testPreviousBranchEdge(Edge* current, double rnp, unsigned int 
 	// find the previous entry node that actually has some demand on it
 	int temp = findFeasiblePreviousEntryNode(entryIndex);
 	if(temp==-1)
+	{
 		return false;
+	}
 	// we have the starting node of the adjacent feasible branch now
 	return testBranchWithEdge(current, rnp, entries[temp], 1);
 }
@@ -1204,7 +1290,9 @@ bool RoutingDAG::testNextBranchNode(Node* current, double rnp, unsigned int entr
 	// find the previous entry node that actually has some demand on it
 	int temp = findFeasibleNextEntryNode(entryIndex);
 	if(temp==-1)
+	{
 		return false;
+	}
 	// we have the starting node of the adjacent feasible branch now
 	return testBranchWithNode(current, rnp, entries[temp]);		
 }
@@ -1215,7 +1303,9 @@ bool RoutingDAG::testNextBranchEdge(Edge* current, double rnp, unsigned int entr
 	// find the previous entry node that actually has some demand on it
 	int temp = findFeasibleNextEntryNode(entryIndex);
 	if(temp==-1)
+	{
 		return false;
+	}
 	// we have the starting node of the adjacent feasible branch now
 	return testBranchWithEdge(current, rnp, entries[temp], 1);
 }
@@ -1226,16 +1316,22 @@ bool RoutingDAG::testBranchWithNode(Node* current, double rnp, Node* start)
 {
 	//tracking down the branch starting at the Node start, first test the collision with the startnode
 	if(current->collisionWithNode(start, rnp))
+	{
 		return true;
+	}
 	// then track down the branch
 	Node* temp = start;
 	while(temp->getNodeType()!=FIX_NODE)			// traverse till the fix node, but no need to test the fix node (cause it will eventually merge into a fix node)
 	{
 		if(current->collisionWithEdge(temp->getOutEdge(temp->getTreeOutEdgeIndex()), rnp))
+		{
 			return true;
+		}
 		Node* tempNode = temp->getOutNode(temp->getTreeOutEdgeIndex());
 		if(current->collisionWithNode(tempNode, rnp))
+		{
 			return true;
+		}
 		temp = tempNode;							// going down to the next level
 	}
 	return false;
@@ -1247,7 +1343,9 @@ bool RoutingDAG::testBranchWithEdge(Edge* current, double rnp, Node* start, int 
 {
 	//tracking down the branch starting at the Node start, first test the collision with the startnode
 	if(current->collisionWithNode(start, rnp))
+	{
 		return true;
+	}
 	// then track down the branch
 	Node* temp = start;
 	if(testType==1)
@@ -1255,10 +1353,14 @@ bool RoutingDAG::testBranchWithEdge(Edge* current, double rnp, Node* start, int 
 		while(temp->getNodeType()!=FIX_NODE)			// traverse till the fix node, but no need to test the fix node (cause it will eventually merge into a fix node)
 		{
 			if(current->collisionWithEdge(temp->getOutEdge(temp->getTreeOutEdgeIndex()), rnp))
+			{
 				return true;
+			}
 			Node* tempNode = temp->getOutNode(temp->getTreeOutEdgeIndex());
 			if(current->collisionWithNode(tempNode, rnp))
+			{
 				return true;
+			}
 			temp = tempNode;							// going down to the next level
 		}
 		return false;
@@ -1267,10 +1369,14 @@ bool RoutingDAG::testBranchWithEdge(Edge* current, double rnp, Node* start, int 
 	while(temp->getOutNode(temp->getTreeOutEdgeIndex())->getLayer()<current->getTail()->getLayer())
 	{
 		if(current->collisionWithEdge(temp->getOutEdge(temp->getTreeOutEdgeIndex()), rnp))
+		{
 			return true;
+		}
 		Node* tempNode = temp->getOutNode(temp->getTreeOutEdgeIndex());
 		if(current->collisionWithNode(tempNode, rnp))
+		{
 			return true;
+		}
 		temp = tempNode;							// going down to the next level
 	}
 	return false;
@@ -1282,7 +1388,9 @@ bool RoutingDAG::onPreviousBranch(Node* current, unsigned int entryIndex)
 	// find the previous entry node that actually has some demand on it
 	int tempIndex = findFeasiblePreviousEntryNode(entryIndex);
 	if(tempIndex==-1)
+	{
 		return false;								// there is no previous branch, return false
+	}
 	// we have the starting node of the adjacent feasible branch now
 	return onBranchStartingAt(current, entries[tempIndex]);				// the entry node of the previous branch	
 }
@@ -1292,7 +1400,9 @@ bool RoutingDAG::onNextBranch(Node* current, unsigned int entryIndex)
 {
 	int tempIndex = findFeasibleNextEntryNode(entryIndex);
 	if(tempIndex==-1)
+	{
 		return false;
+	}
 	return onBranchStartingAt(current, entries[tempIndex]);
 }
 
@@ -1300,11 +1410,16 @@ bool RoutingDAG::onNextBranch(Node* current, unsigned int entryIndex)
 // current branch starts at node start
 int RoutingDAG::findFeasiblePreviousEntryNode(unsigned int entryIndex)
 {
-	if(entryIndex==0)	return -1;						// start is the first entry, so no previous entry node
+	if(entryIndex==0)
+	{
+			return -1;						// start is the first entry, so no previous entry node
+	}
 	// find the previous branch that actually has demand input (test if the rnp is 0)
 	int previousFeasibleEntryNodeIndex = entryIndex-1;
 	while(previousFeasibleEntryNodeIndex!=-1 && entries[previousFeasibleEntryNodeIndex]->getDrawingRNP()==0)
+	{
 		previousFeasibleEntryNodeIndex--;
+	}
 	// we have the starting node of the adjacent feasible branch now
 	return previousFeasibleEntryNodeIndex;				// this is -1 if the previous few entry nodes have no demand at all
 }
@@ -1313,12 +1428,19 @@ int RoutingDAG::findFeasiblePreviousEntryNode(unsigned int entryIndex)
 int RoutingDAG::findFeasibleNextEntryNode(unsigned int entryIndex)
 {
 	int infeasibleIndex = layerStartingIndex[1];		// the start of the second level(entries are on the first level)
-	if(entryIndex==infeasibleIndex-1)	return -1;		// start is the last entry, so no previous entry node
+	if(entryIndex==infeasibleIndex-1)
+	{
+			return -1;		// start is the last entry, so no previous entry node
+	}
 	int nextFeasibleEntryNodeIndex = entryIndex+1;
 	while(nextFeasibleEntryNodeIndex!=infeasibleIndex && entries[nextFeasibleEntryNodeIndex]->getDrawingRNP()==0)
+	{
 		nextFeasibleEntryNodeIndex++;
+	}
 	if(nextFeasibleEntryNodeIndex==infeasibleIndex)		// this happens if the next few entry nodes have no demand at all
+	{
 		return -1;
+	}
 	return nextFeasibleEntryNodeIndex;
 }
 
@@ -1328,10 +1450,15 @@ bool RoutingDAG::onBranchStartingAt(Node* current, Node* start)
 	while(start->getNodeType()!=FIX_NODE)
 	{
 		if(current==start)
+		{
 			return true;
+		}
 		start = start->getOutNode(start->getTreeOutEdgeIndex());	// get the next node in the branch
 	}
-	if(current==start)	return true;				// current is the fix node of the previous branch
+	if(current==start)	
+	{
+			return true;				// current is the fix node of the previous branch
+	}
 	return false;
 }
 
@@ -1340,10 +1467,14 @@ bool RoutingDAG::onBranchStartingAt(Node* current, Node* start)
 bool RoutingDAG::testDistanceTooCloseToMergingNodesOnNextBranch(Node *current, unsigned int entryIndex)
 {
 	if(minimumDistanceBetweenMergingNodes == 0)		// no need to test distance at all
+	{
 		return false;
+	}
 	int nextEntryIndex = findFeasibleNextEntryNode(entryIndex);
 	if(nextEntryIndex==-1)							// there is no next entry
+	{
 		return false;
+	}
 	return testDistanceTooCloseToMergingNodesOnBranch(current, entries[nextEntryIndex]);
 }
 
@@ -1352,10 +1483,14 @@ bool RoutingDAG::testDistanceTooCloseToMergingNodesOnNextBranch(Node *current, u
 bool RoutingDAG::testDistanceTooCloseToMergingNodesOnPreviousBranch(Node* current, unsigned int entryIndex)
 {
 	if(minimumDistanceBetweenMergingNodes == 0)		// no need to test distance at all
+	{
 		return false;
+	}
 	int previousEntryIndex = findFeasiblePreviousEntryNode(entryIndex);
 	if(previousEntryIndex==-1)						// there is no previous entry
+	{
 		return false;
+	}
 	return testDistanceTooCloseToMergingNodesOnBranch(current, entries[previousEntryIndex]);
 }
 
@@ -1370,10 +1505,14 @@ bool RoutingDAG::testDistanceTooCloseToMergingNodesOnBranch(Node *current, Node 
 			if(sqrt((current->getX()-start->getX())*(current->getX()-start->getX()) +
 					(current->getY()-start->getY())*(current->getY()-start->getY()) +
 					(current->getZ()-start->getZ())*(current->getZ()-start->getZ()))<minimumDistanceBetweenMergingNodes)
+			{
 				return true;
+			}
 		}
 		if(start->getNodeType()==FIX_NODE)
+		{
 			break;
+		}
 		start = start->getOutNode(start->getTreeOutEdgeIndex());
 	}
 	return false;									// was never too close, then return NEVER too close
@@ -1385,19 +1524,25 @@ bool RoutingDAG::testDistanceTooCloseToMergingNodesOnCurrentBranch(Node* toBeDec
 	// if its impossible to have a merging node on the current branch OR there is NO distance requirement 
 	// OR the current node is NOT part of the next branch at all, if so, then there is NO possible merging node along the current branch
 	if(minimumDistanceBetweenMergingNodes<=0 || findFeasibleNextEntryNode(entryIndex)==-1 || !onNextBranch(current, entryIndex))
+	{
 		return false;
+	}
 	Node* start = entries[entryIndex];			// the start of the current branch. Entry node cannot be a merging node
 	while(current!=start)						// walk up the branch to find the nearest merging node if there is one
 	{
 		Node* prevNodeOnCurrentBranch = current->getPrevTreeNode();	// the previous node on the current branch
 		if(!onNextBranch(prevNodeOnCurrentBranch, entryIndex))		// if the previous node is NOT on the next branch, then the current node is a merging node
+		{
 			break;
+		}
 		current = prevNodeOnCurrentBranch;							// walk up the current branch
 	}
 	// test the distance between the merging node and the toBeDecided Node
 	if(sqrt((toBeDecided->getX()-current->getX())*(toBeDecided->getX()-current->getX()) + (toBeDecided->getY()-current->getY())*(toBeDecided->getY()-current->getY())
 			+(toBeDecided->getZ()-current->getZ())*(toBeDecided->getZ()-current->getZ()))<minimumDistanceBetweenMergingNodes)
+	{
 		return true;
+	}
 	return false;
 }
 
@@ -1415,7 +1560,9 @@ void RoutingDAG::generateOperFlexPairs(double* radii, int length, vector<Weather
 	{
 		Node* tempNode = entries[i];
 		if(entries[i]->getDrawingRNP()==0)			// if there is no branch coming out of the current entry node
+		{
 			continue;
+		}
 		while(tempNode->getNodeType()!=FIX_NODE)
 		{
 			Edge* tempEdge = tempNode->getOutEdge(tempNode->getTreeOutEdgeIndex());
@@ -1445,7 +1592,9 @@ void RoutingDAG::generateOperFlexPairs(double* radii, int length, vector<Weather
 									  (tempEdge->getHead()->getZ()*3+tempEdge->getTail()->getZ())/4);
 				// compute the operational flxibility pairs of each generated deviation node
 				for(int j=0; j<length; j++)
+				{
 					temp->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres));
+				}
 				tempEdge->insertOperFlexDeviationCandidateNode(temp);
 			}
 			if(edgeLength>4*currentRNP)										// generate the nodes at 1/2 position from head to tail
@@ -1454,7 +1603,9 @@ void RoutingDAG::generateOperFlexPairs(double* radii, int length, vector<Weather
 									  (tempEdge->getHead()->getZ()+tempEdge->getTail()->getZ())/2);
 				// compute the operational flxibility pairs of each generated deviation node
 				for(int j=0; j<length; j++)
+				{
 					temp->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres));
+				}
 				tempEdge->insertOperFlexDeviationCandidateNode(temp);
 			}
 			if(edgeLength>=8*currentRNP)										// generate the nodes at 3/4 position from head to tail
@@ -1463,7 +1614,9 @@ void RoutingDAG::generateOperFlexPairs(double* radii, int length, vector<Weather
 									  (tempEdge->getHead()->getZ()+3*tempEdge->getTail()->getZ())/4);
 				// compute the operational flxibility pairs of each generated deviation node
 				for(int j=0; j<length; j++)
+				{
 					temp->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres));
+				}
 				tempEdge->insertOperFlexDeviationCandidateNode(temp);
 			}
 			/***************************************************************************************************************/
@@ -1475,6 +1628,8 @@ void RoutingDAG::generateOperFlexPairs(double* radii, int length, vector<Weather
 	{
 		Node* tempNode = fixes[i];
 		for(int j=0; j<length; j++)
+		{
 			tempNode->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres));
+		}
 	}
 }

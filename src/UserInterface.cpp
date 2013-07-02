@@ -10,8 +10,7 @@
 /*****************************************/
 // header files from within the project
 #include "NodeAndEdge.h"
-
-using namespace std;	
+#include "InputFileReader.h"
 
 // the constructor sets all the control variables to their initial status
 UserInterface::UserInterface()
@@ -73,30 +72,8 @@ void UserInterface::resetHelper()
 // The project starts excuting here, called by the main function
 void UserInterface::ProgramBegins(std::string inputFile)
 {
-  ifstream in_stream;
-  string line;
 
-  std::cout << "Input file: " << inputFile.c_str() << std::endl;
-  in_stream.open(inputFile.c_str());
-  currentInput = 0;
-  while (!in_stream.eof() ) 
-  {
-    getline(in_stream, line);
-    for(int j = line.length()-1; j>=0; j--)
-    {
-      if(line[j] == '\n' || line[j] == '\r')
-      {
-        line[j] = '\0';
-      }
-      else
-      {
-        break;
-      }
-    }
-    allInputs.push_back(line);
-  }
-  in_stream.close();
-  currentInput = 0;
+  inputs = InputFileReader(inputFile);
 
   char userInput = '0';	     // the user input will always be a number, deciding what to do next
   bool startOver = false;    // when the user chooses to do everything again
@@ -120,15 +97,15 @@ void UserInterface::ProgramBegins(std::string inputFile)
     return;
   }
   std::cout << "\nWeather files are succesfully read in!" << std::endl;
-  (*quadrant).setAngle( (double) ::atof(allInputs[currentInput++].c_str() ) );
+  (*quadrant).setAngle( inputs.getQuadrantAngle() );
   std::cout << "Current angle: " << quadrant->getAngle() << std::endl;
   std::cout << "Generating tree." << std::endl;
   generateTree();
   std::cout << "Tautening tree." << std::endl;
   tautenTree();
-  std::cout << "Doing operational Flexibility stuff." << std::endl;
+  std::cout << "\nDoing operational Flexibility stuff." << std::endl;
   inputOperationalFlexibility();
-  std::cout << "Saving tree information." << std::endl;
+  std::cout << "\nSaving tree information." << std::endl;
   saveTreeInformation();
 
 }
@@ -218,10 +195,10 @@ bool UserInterface::generateTree()
     double minDistBetweenMergeNodes = 5/NMILESPERPIXEL; // WILLXYZ make this read from config file
 
     std::cout << "Reading in deviation threshold." << std::endl;
-    deviationThreshold = (double) ::atof(allInputs[currentInput++].c_str());
+    deviationThreshold = inputs.getDeviationThreshold();
 
     std::cout << "Reading in nodeEdgeThreshold." << std::endl;
-    nodeEdgeThreshold = (double) (double) ::atof(allInputs[currentInput++].c_str());
+    nodeEdgeThreshold = inputs.getNodeEdgeThreshold();
     routingDAG->setminimumDistanceBetweenMergingNodes(minDistBetweenMergeNodes);
     std::cout <<  std::endl << "Generating a bottommost merge tree, please wait..." << std::endl;
     /************************************************************************************************/
@@ -230,24 +207,27 @@ bool UserInterface::generateTree()
     routingDAG->reset();											// a brand new routing instance
     std::cout << std::endl << "Finished resetting edges." << std::endl;
 
-    std::cout << "Current Input value: " << allInputs[currentInput] << std::endl;
-    double quadrantAngleOffset = (double) ::atof(allInputs[currentInput++].c_str());
-    double lane_width = (double) ::atof(allInputs[currentInput++].c_str());
-    if (lane_width > 0) {
-      for (unsigned int i = 0; i < demandRNPs.size(); i++) {
-        if (demandRNPs[i] > 0) {
+    double quadrantAngleOffset = inputs.getAngleOffset();
+    double lane_width = inputs.getLaneWidth();
+    if (lane_width > 0) 
+	{
+      for (unsigned int i = 0; i < demandRNPs.size(); i++) 
+	  {
+        if (demandRNPs[i] > 0) 
+		{
           demandRNPs[i] = lane_width;
         }
       }
     }
     std::cout << "Demand RNPS: ";
-    for(unsigned int i = 0; i < demandRNPs.size(); i++) {
+    for(unsigned int i = 0; i < demandRNPs.size(); i++) 
+	{
       std::cout << demandRNPs[i] << " ";
     }
     std::cout << std::endl;
 
-    std::cout << "Max Fix Nodes: " << allInputs[currentInput] << std::endl;
-    int maxFixNodes = ::atoi(allInputs[currentInput++].c_str());
+    std::cout << "Max Fix Nodes: " << inputs.getNumFixedNodes() << std::endl;
+    unsigned int maxFixNodes = inputs.getNumFixedNodes();
     std::cout << "START GENERATING DAG" << std::endl;
 
 
@@ -273,7 +253,10 @@ bool UserInterface::generateTree()
         return true;
       }
     }	// an error message will pop up if failed to generate the DAG
-    else { std::cout << "Failed to generate the DAG."; }
+    else 
+	{ 
+		std::cout << "Failed to generate the DAG."; 
+	}
   }
   // else, then the weather data and demand profile have to be read in first
   else std::cerr << "\nPlease read in or generate the demand profile and weather data first."<<std::endl;
@@ -283,8 +266,11 @@ bool UserInterface::generateTree()
 // after the tree is ready, tauten the tree to make it look better
 bool UserInterface::tautenTree()
 {
-  if(!(ctrl_QuadGenerated == QUADRANT_GENERATED && ctrl_WeatherReadIn == WEATHER_READ_IN && ctrl_DemandReadIn == DEMAND_READ_IN &&
-    ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED && routingDAG->getStatus()==TREE_GENERATED))
+  if(!(ctrl_QuadGenerated == QUADRANT_GENERATED && 
+	   ctrl_WeatherReadIn == WEATHER_READ_IN && 
+	   ctrl_DemandReadIn == DEMAND_READ_IN &&
+	   ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED && 
+	   routingDAG->getStatus()==TREE_GENERATED))
   {
     std::cerr << "Please generate the bottommost tree first before tautening the tree."<<std::endl;
     return false;
@@ -301,7 +287,9 @@ void UserInterface::inputOperationalFlexibility()
     std::cerr << "\nPlease generate the tree first!"<<std::endl;
     return;
   }
-  double r1, r2, r3;
+  double r1;
+  double r2;
+  double r3;
   while(true)
   {
     /*
@@ -311,15 +299,18 @@ void UserInterface::inputOperationalFlexibility()
     std::cout << "\nPlease input 3 values for operational flexibility pairs(in nm) in increasing order:";
     cin>>r1>>r2>>r3;
     */
-    r1 = (double) ::atof(allInputs[currentInput++].c_str());
-    r2 = (double) ::atof(allInputs[currentInput++].c_str());
-    r3 = (double) ::atof(allInputs[currentInput++].c_str());
+    r1 = inputs.getOperFlex1();
+    r2 = inputs.getOperFlex2();
+    r3 = inputs.getOperFlex3();
     if(!(r1>0 && r2>0 && r3>0 && r1<r2 && r2<r3) ) 
 	{ // valid values, all positive and in increasing order, then move to the next step
       std::cout << "Operational flexbility values are invalid: Verify that r1 < r2 < r3.";
       exit(0);
     }
-    else break;									// valid input
+    else
+	{
+			break;									// valid input
+	}
   }
   double* radii = new double[3];
   radii[0] = r1;
@@ -345,9 +336,13 @@ bool UserInterface::inputDemand()
     std::cout << "\nPlease input the number of demands (entry nodes):";
     cin>>numDemands;
     if(numDemands>0)
-      break;
+    {
+		break;
+	}
     else
-      std::cout << "\nInvalid Value...";
+    {
+		std::cout << "\nInvalid Value...";
+	}
   }
   string tempDemands;
   cin.ignore(1000 ,'\n');													// clear the buffer, ignore the leftover characters
@@ -356,16 +351,24 @@ bool UserInterface::inputDemand()
     std::cout << "\nInput the demands one by one in nm (e.g. 2, 2, 1.5, 3, 2.7 means there are 5 entry nodes, and their rnp requirements are 2, 2, 1.5, 3 and 2.7.):";
     getline(cin, tempDemands);
     if(!inputDemandValid(tempDemands, numDemands))		// if the demand format is errorous
-      std::cout << "\nInvalid Input...";
+    {
+		std::cout << "\nInvalid Input...";
+	}
     else if (!quadrant->demandFeasible(demandRNPs))		// the new demands are stored in the demandRNPs vector but cannot be accomodated by the quadrant
-      std::cout << "\nThe quadrant cannot accomodate the new demands...";
+    {
+		std::cout << "\nThe quadrant cannot accomodate the new demands...";
+	}
     else
-      break;
+    {
+		break;
+	}
   }
   ctrl_DemandReadIn = DEMAND_READ_IN;
   // when demand or weather data is changed, the routingDAG must be regenerated based on the new demand/weather data
   if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)
-    ctrl_RoutingDAGGenerated = ROUTINGDAG_NOT_GENERATED;
+  {
+	  ctrl_RoutingDAGGenerated = ROUTINGDAG_NOT_GENERATED;
+  }
   return true;
 }
 
@@ -386,20 +389,40 @@ bool UserInterface::inputDemandValid(string &input, int numDemands)
   {
     char temp = input.at(i);
     if(!((temp>='0' && temp<='9') || temp==' ' || temp==',' || temp=='.'))
-      return false;
-    if(temp==',')	numCommas++;
-    if(temp=='.')	numPoints++;
+    {
+		return false;
+	}
+    if(temp==',')	
+	{
+			numCommas++;
+	}
+    if(temp=='.')	
+	{
+		numPoints++;
+	}
     if(i!=input.length()-1 && temp==',' && (input.at(i+1)==',' || input.at(i+1)=='.'))
-      return false;							// a comma must be followed by a number
+    {
+		return false;							// a comma must be followed by a number
+	}
     if(i!=input.length()-1 && temp=='.' && (input.at(i+1)==',' || input.at(i+1)=='.'))
-      return false;							// a point must be followed by a number too
+    {
+		return false;							// a point must be followed by a number too
+	}
   }
-  if(numCommas!=numDemands-1)	return false;		// there should be numDemands-1 commas in total
-  if(numPoints>numDemands)	return false;		// there can be at most numDemands doubleing points
+  if(numCommas!=numDemands-1)	
+  {
+	  return false;		// there should be numDemands-1 commas in total
+  }
+  if(numPoints>numDemands)	
+  {
+	return false;		// there can be at most numDemands floating points
+  }
   // after the first lass, the spaces are removed
   char* rnpInputsCStr = new char[input.length()+1];
   for(unsigned int i=0; i<input.length(); i++)
-    rnpInputsCStr[i] = input.at(i);
+  {
+	  rnpInputsCStr[i] = input.at(i);
+  }
   rnpInputsCStr[input.length()] = '\0';						// almost sure that the input format is correct
   vector<double> tempRnps;
   int index = 0;
@@ -408,32 +431,44 @@ bool UserInterface::inputDemandValid(string &input, int numDemands)
   while(index<=length)
   {
     if(rnpInputsCStr[index]!=',' && rnpInputsCStr[index]!='\0')		// parse the string by separators
-      index++;
+    {
+		index++;
+	}
     else 
     {
       rnpInputsCStr[index]='\0';
-      if(index==wordStartingIndex) return false;			// there is no character between 2 commas, invalid
+      if(index==wordStartingIndex) 
+		  {
+			  return false;			// there is no character between 2 commas, invalid
+	  }
       int numPoints = 0;
-      int doubleingPointPosition = 0;
+      int floatingPointPosition = 0;
       for(int j=wordStartingIndex; j<index;j++)
       {
         if(rnpInputsCStr[j]=='.')						// for this number, check its doubleing point position
         {
-          doubleingPointPosition = j;
+          floatingPointPosition = j;
           numPoints++;
         }
       }
-      if(numPoints>1)			return false;				// one number could have at most 1 doubleing point
-      // if there is a doubleing point, and its position is wrong, return invalid
-      if(numPoints==1 && (doubleingPointPosition==index-1 || doubleingPointPosition==wordStartingIndex))
-        return false;
+      if(numPoints>1)
+		  {
+			  return false;				// one number could have at most 1 doubleing point
+	  }
+      // if there is a floating point, and its position is wrong, return invalid
+      if(numPoints==1 && (floatingPointPosition==index-1 || floatingPointPosition==wordStartingIndex))
+      {
+		  return false;
+	  }
       tempRnps.push_back(atof(&rnpInputsCStr[wordStartingIndex]));
       wordStartingIndex = ++index;
     }
   }
   demandRNPs.clear();											// copy the temporarily stored rnp values into the demand vector
   for(unsigned int i=0; i<tempRnps.size(); i++)
-    demandRNPs.push_back(tempRnps[i]/NMILESPERPIXEL);
+  {
+	  demandRNPs.push_back(tempRnps[i]/NMILESPERPIXEL);
+  }
   return true;
 }
 
@@ -447,9 +482,7 @@ bool UserInterface::readWeatherData()
     std::cerr << "\nRead In Weather After Setting up the Demand Profile!"<<std::endl;
     return false;
   }
-  int totalNumWeatherFiles;
-  istringstream is(allInputs[currentInput++]);
-  is >> totalNumWeatherFiles;
+  int totalNumWeatherFiles = inputs.getNumWeatherFiles();
   if(totalNumWeatherFiles<=0) 
   {
     std::cout <<  std::endl << "Invalid weather count..." << std::endl;
@@ -459,7 +492,7 @@ bool UserInterface::readWeatherData()
   for(int i=0; i<totalNumWeatherFiles; i++)
   {
     string tempStr;
-    tempStr = allInputs[currentInput++];
+    tempStr = inputs.getWeatherFile(i);
     weatherFileDirectories.push_back(tempStr);					// store the directories of each weather file into the vector
   }
   /***********************************************************************************************************************************/
@@ -476,7 +509,7 @@ bool UserInterface::readWeatherData()
   std::cout << "\nReading weather data files now, please wait..." << std::endl;
   /***********************************************************************************************************************************/
 
-  double weatherCellWidth = (double) ::atof(allInputs[currentInput++].c_str());
+  double weatherCellWidth = inputs.getCellWidth();
   for(int i=0; i<totalNumWeatherFiles; i++)
   {
     std::cout << "Parsing weather file: " << weatherFileDirectories[i] << std::endl;
@@ -546,7 +579,7 @@ bool UserInterface::readDemandProfile()
   if(ctrl_QuadGenerated == QUADRANT_GENERATED)
   {
     string demandProfileDirectory;	// the directory of the demand profile
-    demandProfileDirectory = allInputs[currentInput++];
+    demandProfileDirectory = inputs.getDemandFile();
     demandProfile->reset();	// a brand new demand instance
     if(demandProfile->readInFile(demandProfileDirectory) )
     {
@@ -573,7 +606,9 @@ bool UserInterface::readDemandProfile()
     }
   }
   else
-    std::cerr << "\nPlease generate a quadrant first!" << std::endl;
+  {
+	  std::cerr << "\nPlease generate a quadrant first!" << std::endl;
+  }
   return false;														// the file is NOT read in successfully
 }
 
@@ -590,6 +625,6 @@ void UserInterface::saveTreeInformation()
     std::cerr << "\nPlease generate Operational Flexity Pairs First!"<<std::endl;
     return;
   }
-  routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime, allInputs[currentInput++]);
+  routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime, inputs.getTimestamp() );
   std::cout <<  "\nTree Information successfully written to file.\n";
 }
