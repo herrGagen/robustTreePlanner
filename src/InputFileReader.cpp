@@ -25,12 +25,12 @@ InputFileReader::InputFileReader(std::string inputFileName)
 	
 	unsigned int numDataFiles;
 	in_stream >> numDataFiles;
-	dataFileNames.resize(numDataFiles);
+	weatherFileNames.resize(numDataFiles);
 	for(unsigned int i = 0; i<numDataFiles; i++)
 	{
 		std::string temp;
 		in_stream >> temp;
-		dataFileNames[i] = temp;
+		weatherFileNames[i] = temp;
 	}
 
 	in_stream >> cellWidth;
