@@ -20,6 +20,11 @@ InputFileReader::InputFileReader(std::string inputFileName)
 
 	std::cout << "Input file: " << inputFileName.c_str() << std::endl;
 	in_stream.open(inputFileName.c_str());
+	if(!in_stream.is_open() )
+	{
+		std::cerr << "Input file " << inputFileName << " not on path.  Aborting." << std::endl;
+		std::exit(-1);
+	}
 
 	in_stream >> demandFile;
 	
