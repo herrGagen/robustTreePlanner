@@ -43,10 +43,14 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
   # First pass determines the range of times files can have
   # Could make this more efficient by only checking files from one Ensemble (all Member1's, for instance)
   path.each_child do |file_name|
-    name_ary = file_name.basename.to_s.split("_")
-    time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
-    min_time = time if time < min_time
-    max_time = time if time > max_time
+    begin
+      name_ary = file_name.basename.to_s.split("_")
+      time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
+      min_time = time if time < min_time
+      max_time = time if time > max_time
+    rescue TypeError
+      print "Error parsing a file: ", file_name, "\n"
+    end
   end
   
   raise "Files not in expected location or the filenames do not conform to ``DevProb_time1_time2_MemberX.dat``" if min_time == Time.new(Float::MAX) or max_time == Time.new(Float::MIN)
@@ -91,7 +95,11 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
       w.write("Ensemble " + line)
       line = e.next.split.last.to_f / children_in_offset
       sum += line
-      w.write("Probability " + line.to_s + "\r\n") 
+      
+      # Will changed 2013-05-06
+      # Made this output with a force to output 9 decimals, since before it would use exponential notation.
+      w.write("Probability " + ("%.9f" % line).to_s + "\r\n")
+      # w.write("Probability " + line.to_s + "\r\n") 
 
       line = e.next
       while line.split.first == "#"
@@ -99,8 +107,9 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
       end
 
       begin
-        loop do 
-          w.write(line)
+        loop do
+          w.write(line) if line.split(",").last.to_f >= 0.70
+          # print line.split(","), "\n"
           line = e.next
         end
       rescue StopIteration
@@ -125,6 +134,8 @@ if __FILE__ == $0
   else
     s                   = false
     o                   = false
+    dshift              = false
+    ddrop               = false
     angle               = false
     deviation_threshold = false
     node_edge_threshold = false
@@ -136,14 +147,14 @@ if __FILE__ == $0
     quadrant_size       = false
     lane_width 	        = false
     max_fix_nodes       = false
-    of1                 = false
-    of2                 = false
-    of3                 = false
+
     ARGV.each do |arg|
       # The following lines need ``== true`` because they are being used
       # as flags for themselves! Any non false / nil var will be true-like in an if statement.
       s = arg if s == true
       o = arg if o == true
+      dshift = arg if dshift == true #just boolean 0 or 1, whether or not we want to use demand shifting
+      ddrop = arg if ddrop == true # same as demand shifting, 0 or 1 to indicate whether or not we do it
       angle               = arg if angle                == true
       deviation_threshold = arg if deviation_threshold  == true
       node_edge_threshold = arg if node_edge_threshold  == true
@@ -155,15 +166,17 @@ if __FILE__ == $0
       quadrant_size       = arg if quadrant_size        == true # this is called angle_offset in "create_input.rb"
       lane_width          = arg if lane_width	          == true
       max_fix_nodes       = arg if max_fix_nodes        == true # called num_fix_nodes
-      of1                 = arg if of1                  == true
-      of2                 = arg if of2                  == true
-      of3                 = arg if of3                  == true
+
       if arg == "-s"
         s = true
       elsif arg == "-o"
         o = true
       elsif arg == "-angle"
         angle = true
+      elsif arg == "-demandshift"
+        dshift = true
+      elsif arg == "-demanddrop"
+        ddrop = true
       elsif arg == "-dthresh"
         deviation_threshold = true
       elsif arg == "-nethresh"
@@ -184,14 +197,22 @@ if __FILE__ == $0
         lane_width = true
       elsif arg == "-fixnodes"
         max_fix_nodes = true
-      elsif arg == "-of1"
-        of1 = true
-      elsif arg == "-of2"
-        of2 = true
-      elsif arg == "-of3"
-        of3 = true
       end
     end
+
+    oper_flex = []
+    oper_flex_flag = false
+    ARGV.each do |arg|
+      if arg == "-operflex"
+        oper_flex_flag = true
+      elsif arg.split("").first == "-"
+        oper_flex_flag = false
+      end
+      if oper_flex_flag and arg.split("").first != "-"
+        oper_flex << arg
+      end
+    end
+
     angle = (angle.to_f * Math::PI / 180).to_s if angle
     quadrant_size = (quadrant_size.to_f * Math::PI / 180).to_s if quadrant_size
     print "Angle (converted to radians):  ", angle,                   "\n" if angle
@@ -204,9 +225,9 @@ if __FILE__ == $0
     print "Weather cell width:            ", weather_cell_width,      "\n" if weather_cell_width
     print "Lane width:                    ", lane_width,              "\n" if lane_width
     print "Max Number of Fix Nodes:       ", max_fix_nodes,           "\n" if max_fix_nodes
-    print "Operational Flexibility:       ", of1, " ", of2, " ", of3, "\n" if (of1 or of2 or of3)
+    print "Operational Flexibility:       ", oper_flex,               "\n" if oper_flex != []
     
     main(s, o, temp_weather_name, weather_dir)
-    create_input(angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, of1, of2, of3)
+    create_input(dshift, ddrop, angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, oper_flex)
   end
 end

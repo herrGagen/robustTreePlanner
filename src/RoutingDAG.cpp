@@ -212,10 +212,10 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 					xmlLocation = tempFileName.find(".Xml");
 				}
 
-				// Finally, we have never found a .xml extension, so add one
+				// Finally, we didn't find the .xml extension, so add one
 				if( xmlLocation == std::string::npos )
 				{
-					tempFileName+= ".xml";
+					tempFileName += ".xml";
 				}
                 os.open(tempFileName.c_str(), ios::out);
                 if(os.is_open())
@@ -326,48 +326,52 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 					os << "\n\t\t\t\t<RNP_Level RNP=\"" << radius*NMILESPERPIXEL << "\" probability=\"" << prob << "\"/>";
 				}
 				os << "\n\t\t\t</RNP_Levels>";
+        // 2013-05-01 Rafal suggested we perhaps print a new tag here, <Operational_Flexibility_Rectangles> 
+        os << "\n\t\t\t<Operational_Flexibility_Rectangles>";
 				// print path streching information on the right side of the edge
 				for(int j=0; j<edges[i]->getPathStretchingVecSize(); j++)
 				{
 					double radius;
 					double prob;
 					edges[i]->getPathStretchingResults(j, &radius, &prob);
-					os << "\n\t\t\t<Operational_Flexibility_Rectangle index=\"" << j+1 << "\" width=\"" << radius*NMILESPERPIXEL << "\" units=\"nm\" ";
+					os << "\n\t\t\t\t<Operational_Flexibility_Rectangle index=\"" << j+1 << "\" width=\"" << radius*NMILESPERPIXEL << "\" units=\"nm\" ";
 					os << "probability=\"" << prob << "\""; 
-					os << " position=\"right\" type=\"path_stretch\"/>\n\t\t\t<Rectangle_Coord direction=\"clockwise\">";
+					os << " position=\"right\" type=\"path_stretch\"/>\n\t\t\t\t<Rectangle_Coord direction=\"clockwise\">";
 					/****************************************************************/
 					// print the rectangle information here in clock wise order
 					double x1, y1, x2, y2;									// compute the vertices on the right of the current edge
 					edges[i]->computeRightSideRectangleVertices(radius, &x1, &y1, &x2, &y2);
-					os << "\n\t\t\t\t\t<Coord index=\"1\" lat=\"" << centerLati+latiPerPixel*edges[i]->getHead()->getX() << "\" lon=\"";
+					os << "\n\t\t\t\t\t\t<Coord index=\"1\" lat=\"" << centerLati+latiPerPixel*edges[i]->getHead()->getX() << "\" lon=\"";
 					os << centerLong+longPerPixel*edges[i]->getHead()->getY() << "\"/>";
-					os << "\n\t\t\t\t\t<Coord index=\"2\" lat=\"" << centerLati+latiPerPixel*edges[i]->getTail()->getX() << "\" lon=\"";
+					os << "\n\t\t\t\t\t\t<Coord index=\"2\" lat=\"" << centerLati+latiPerPixel*edges[i]->getTail()->getX() << "\" lon=\"";
 					os << centerLong+longPerPixel*edges[i]->getTail()->getY() << "\"/>";
-					os << "\n\t\t\t\t\t<Coord index=\"3\" lat=\"" << centerLati+latiPerPixel*x1 << "\" lon=\"" << centerLong+longPerPixel*y1 << "\"/>";
-					os << "\n\t\t\t\t\t<Coord index=\"4\" lat=\"" << centerLati+latiPerPixel*x2 << "\" lon=\"" << centerLong+longPerPixel*y2 << "\"/>";
+					os << "\n\t\t\t\t\t\t<Coord index=\"3\" lat=\"" << centerLati+latiPerPixel*x1 << "\" lon=\"" << centerLong+longPerPixel*y1 << "\"/>";
+					os << "\n\t\t\t\t\t\t<Coord index=\"4\" lat=\"" << centerLati+latiPerPixel*x2 << "\" lon=\"" << centerLong+longPerPixel*y2 << "\"/>";
 					/****************************************************************/
-					os << "\n\t\t\t</Rectangle_Coord>";
+					os << "\n\t\t\t\t</Rectangle_Coord>";
 				}
 				// print wiggle room information on the left side of the edge
 				for(int j=0; j<edges[i]->getWiggleRoomVecSize(); j++)
 				{
 					double radius, prob;
 					edges[i]->getWiggleRoomResults(j, &radius, &prob);
-					os << "\n\t\t\t<Operational_Flexibility_Rectangle index=\"" << j+1 << "\" width=\"" << radius*NMILESPERPIXEL << "\" units=\"nm\" probability=\"" << prob << "\""; 
-					os << " position=\"left\" type=\"holding\"/>\n\t\t\t<Rectangle_Coord direction=\"clockwise\">";
+					os << "\n\t\t\t\t<Operational_Flexibility_Rectangle index=\"" << j+1 << "\" width=\"" << radius*NMILESPERPIXEL << "\" units=\"nm\" probability=\"" << prob << "\""; 
+					os << " position=\"left\" type=\"holding\"/>\n\t\t\t\t<Rectangle_Coord direction=\"clockwise\">";
 					/****************************************************************/
 					// print the rectangle information here in clock wise order
 					double x1, y1, x2, y2;									// compute the vertices on the left of the current edge
 					edges[i]->computeLeftSideRectangleVertices(radius, &x1, &y1, &x2, &y2);
-					os << "\n\t\t\t\t\t<Coord index=\"1\" lat=\"" << centerLati+latiPerPixel*x1 << "\" lon=\"" << centerLong+longPerPixel*y1 << "\"/>";
-					os << "\n\t\t\t\t\t<Coord index=\"2\" lat=\"" << centerLati+latiPerPixel*x2 << "\" lon=\"" << centerLong+longPerPixel*y2 << "\"/>";
-					os << "\n\t\t\t\t\t<Coord index=\"3\" lat=\"" << centerLati+latiPerPixel*edges[i]->getTail()->getX() << "\" lon=\"";
+					os << "\n\t\t\t\t\t\t<Coord index=\"1\" lat=\"" << centerLati+latiPerPixel*x1 << "\" lon=\"" << centerLong+longPerPixel*y1 << "\"/>";
+					os << "\n\t\t\t\t\t\t<Coord index=\"2\" lat=\"" << centerLati+latiPerPixel*x2 << "\" lon=\"" << centerLong+longPerPixel*y2 << "\"/>";
+					os << "\n\t\t\t\t\t\t<Coord index=\"3\" lat=\"" << centerLati+latiPerPixel*edges[i]->getTail()->getX() << "\" lon=\"";
 					os << centerLong+longPerPixel*edges[i]->getTail()->getY() << "\"/>";
-					os << "\n\t\t\t\t\t<Coord index=\"4\" lat=\"" << centerLati+latiPerPixel*edges[i]->getHead()->getX() << "\" lon=\"";
+					os << "\n\t\t\t\t\t\t<Coord index=\"4\" lat=\"" << centerLati+latiPerPixel*edges[i]->getHead()->getX() << "\" lon=\"";
 					os << centerLong+longPerPixel*edges[i]->getHead()->getY() << "\"/>";
 					/****************************************************************/
-					os << "\n\t\t\t</Rectangle_Coord>";
+					os << "\n\t\t\t\t</Rectangle_Coord>";
 				}
+        // 2013-05-01 Print </Operational_Flexibility_Rectangles>
+        os << "\n\t\t\t</Operational_Flexibility_Rectangles>";
 				// print the deviation nodes along an edge
 				os << "\n\t\t\t<Off_Nominal_Exit_Points>";
 				for(int j=0; j<edges[i]->getDeviationNodesSize(); j++)
@@ -1004,14 +1008,26 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 		{
 			Node* tempNode = temp->getOutNode(i);
 			Edge* tempEdge = temp->getOutEdge(i);
-			// first test if the new pair of nodes and edges collide with the weather data, if so, then just ignore this pair
+			
+      if ((41.9796 + tempEdge->getHead()->getX() * 0.0333309) >= 42.67 && 
+        (41.9796 + tempEdge->getHead()->getX() * 0.0333309) <= 42.7 &&
+        (-87.9044 + tempEdge->getHead()->getY() * 0.0448367) <= -90.8 &&
+        (-87.9044 + tempEdge->getHead()->getY() * 0.0448367) >= -91.8
+        ) {   
+          // std::cout << "RNP[0]" << tempEdge->rnpValues[0]->probability << "; Result: " << tempEdge->testRNPWithWeatherDataSet(rnp, wData, effectiveThres, routingThres) << "; h.x: " << (41.9796 + tempEdge->getHead()->getX() * 0.0333309) << "; h.y: " << (-87.9044 + tempEdge->getHead()->getY() * 0.0448367) << "; t.x: " << (41.9796 + tempEdge->getTail()->getX() * 0.0333309) << "; t.y: " << (-87.9044 + tempEdge->getTail()->getY() * 0.0448367) << endl;
+      }
+        
+      
+      // first test if the new pair of nodes and edges collide with the weather data, if so, then just ignore this pair
 			if(tempNode->testRadiusWithWeatherDataSet(rnp, wData, effectiveThres, routingThres) ||
-			   tempEdge->testRNPWithWeatherDataSet(rnp, wData, effectiveThres, routingThres))
+			   tempEdge->testRNPWithWeatherDataSet(rnp, wData, effectiveThres, routingThres)) {
 				continue;							// the node is infeasible, look at the next node
+      }
 			// then test if this new edge obviously goes across the previous or next branch, then ignore as well
 			if(tempNode->getLayerIndex()>layerUsedIndexReverseDirection[tempNode->getLayer()] || 
-			   tempNode->getLayerIndex()<layerUsedIndex[tempNode->getLayer()])
+			   tempNode->getLayerIndex()<layerUsedIndex[tempNode->getLayer()]) {
 				continue;
+      }
 			// if the edge was NOT completely a part of the next branch (if it is, we don't care about the indegree) 
 			if(!(onNextBranch(temp, entryIndex) && onNextBranch(tempNode, entryIndex))		// not going along the next branch
 			   && tempNode->getInDegree()==2)		// if the node is currently indegree full, then it's not going to be used again, ignore...	

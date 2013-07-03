@@ -880,7 +880,13 @@ bool Edge::collisionWithWeatherCheck(double w, const std::vector<WeatherData> &w
 {
 	if(wData.size()==0)										// no weather data to test
 	{
+// HEAD
 		return false;											// no intersection with weather data
+/* 
+		if(!collisionTestingHelper(w, wData[i], effectiveThres, testType))				// if there is no collision
+			finalProbability += wData[i]->getProbability();
+ > skim_files
+*/
 	}
 	double finalProbability = collisionWithWeatherDataHelper(w, wData, effectiveThres, testType);
 

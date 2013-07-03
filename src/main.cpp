@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
     for (int i = 0; i < argc; i++)
     {
       std::string argvi = argv[i];
-      std::cout << argvi << "  " << (argvi == "-cinput") << std::endl;
+      std::cout << argvi << std::endl;
       if (argvi == "-cinput")
       {
         inputFile = argv[i+1];

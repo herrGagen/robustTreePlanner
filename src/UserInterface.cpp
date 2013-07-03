@@ -12,6 +12,12 @@
 #include "NodeAndEdge.h"
 #include "InputFileReader.h"
 
+/* Have to update this if we ever allow more than 4 as a parameter for demand_drop
+There is also a 4 that needs to be changed down below, in the declaration of an array called temp_demands[4]
+There is a ruby file (combination.rb) to generate this line */  
+
+int combinations[][4] = { {0,-1,-1,-1,}, {1,-1,-1,-1,}, {2,-1,-1,-1,}, {3,-1,-1,-1,}, {4,-1,-1,-1,}, {5,-1,-1,-1,}, {6,-1,-1,-1,}, {7,-1,-1,-1,}, {8,-1,-1,-1,}, {0,1,-1,-1,}, {0,2,-1,-1,}, {0,3,-1,-1,}, {0,4,-1,-1,}, {0,5,-1,-1,}, {0,6,-1,-1,}, {0,7,-1,-1,}, {0,8,-1,-1,}, {1,2,-1,-1,}, {1,3,-1,-1,}, {1,4,-1,-1,}, {1,5,-1,-1,}, {1,6,-1,-1,}, {1,7,-1,-1,}, {1,8,-1,-1,}, {2,3,-1,-1,}, {2,4,-1,-1,}, {2,5,-1,-1,}, {2,6,-1,-1,}, {2,7,-1,-1,}, {2,8,-1,-1,}, {3,4,-1,-1,}, {3,5,-1,-1,}, {3,6,-1,-1,}, {3,7,-1,-1,}, {3,8,-1,-1,}, {4,5,-1,-1,}, {4,6,-1,-1,}, {4,7,-1,-1,}, {4,8,-1,-1,}, {5,6,-1,-1,}, {5,7,-1,-1,}, {5,8,-1,-1,}, {6,7,-1,-1,}, {6,8,-1,-1,}, {7,8,-1,-1,}, {0,1,2,-1,}, {0,1,3,-1,}, {0,1,4,-1,}, {0,1,5,-1,}, {0,1,6,-1,}, {0,1,7,-1,}, {0,1,8,-1,}, {0,2,3,-1,}, {0,2,4,-1,}, {0,2,5,-1,}, {0,2,6,-1,}, {0,2,7,-1,}, {0,2,8,-1,}, {0,3,4,-1,}, {0,3,5,-1,}, {0,3,6,-1,}, {0,3,7,-1,}, {0,3,8,-1,}, {0,4,5,-1,}, {0,4,6,-1,}, {0,4,7,-1,}, {0,4,8,-1,}, {0,5,6,-1,}, {0,5,7,-1,}, {0,5,8,-1,}, {0,6,7,-1,}, {0,6,8,-1,}, {0,7,8,-1,}, {1,2,3,-1,}, {1,2,4,-1,}, {1,2,5,-1,}, {1,2,6,-1,}, {1,2,7,-1,}, {1,2,8,-1,}, {1,3,4,-1,}, {1,3,5,-1,}, {1,3,6,-1,}, {1,3,7,-1,}, {1,3,8,-1,}, {1,4,5,-1,}, {1,4,6,-1,}, {1,4,7,-1,}, {1,4,8,-1,}, {1,5,6,-1,}, {1,5,7,-1,}, {1,5,8,-1,}, {1,6,7,-1,}, {1,6,8,-1,}, {1,7,8,-1,}, {2,3,4,-1,}, {2,3,5,-1,}, {2,3,6,-1,}, {2,3,7,-1,}, {2,3,8,-1,}, {2,4,5,-1,}, {2,4,6,-1,}, {2,4,7,-1,}, {2,4,8,-1,}, {2,5,6,-1,}, {2,5,7,-1,}, {2,5,8,-1,}, {2,6,7,-1,}, {2,6,8,-1,}, {2,7,8,-1,}, {3,4,5,-1,}, {3,4,6,-1,}, {3,4,7,-1,}, {3,4,8,-1,}, {3,5,6,-1,}, {3,5,7,-1,}, {3,5,8,-1,}, {3,6,7,-1,}, {3,6,8,-1,}, {3,7,8,-1,}, {4,5,6,-1,}, {4,5,7,-1,}, {4,5,8,-1,}, {4,6,7,-1,}, {4,6,8,-1,}, {4,7,8,-1,}, {5,6,7,-1,}, {5,6,8,-1,}, {5,7,8,-1,}, {6,7,8,-1,}, {0,1,2,3,}, {0,1,2,4,}, {0,1,2,5,}, {0,1,2,6,}, {0,1,2,7,}, {0,1,2,8,}, {0,1,3,4,}, {0,1,3,5,}, {0,1,3,6,}, {0,1,3,7,}, {0,1,3,8,}, {0,1,4,5,}, {0,1,4,6,}, {0,1,4,7,}, {0,1,4,8,}, {0,1,5,6,}, {0,1,5,7,}, {0,1,5,8,}, {0,1,6,7,}, {0,1,6,8,}, {0,1,7,8,}, {0,2,3,4,}, {0,2,3,5,}, {0,2,3,6,}, {0,2,3,7,}, {0,2,3,8,}, {0,2,4,5,}, {0,2,4,6,}, {0,2,4,7,}, {0,2,4,8,}, {0,2,5,6,}, {0,2,5,7,}, {0,2,5,8,}, {0,2,6,7,}, {0,2,6,8,}, {0,2,7,8,}, {0,3,4,5,}, {0,3,4,6,}, {0,3,4,7,}, {0,3,4,8,}, {0,3,5,6,}, {0,3,5,7,}, {0,3,5,8,}, {0,3,6,7,}, {0,3,6,8,}, {0,3,7,8,}, {0,4,5,6,}, {0,4,5,7,}, {0,4,5,8,}, {0,4,6,7,}, {0,4,6,8,}, {0,4,7,8,}, {0,5,6,7,}, {0,5,6,8,}, {0,5,7,8,}, {0,6,7,8,}, {1,2,3,4,}, {1,2,3,5,}, {1,2,3,6,}, {1,2,3,7,}, {1,2,3,8,}, {1,2,4,5,}, {1,2,4,6,}, {1,2,4,7,}, {1,2,4,8,}, {1,2,5,6,}, {1,2,5,7,}, {1,2,5,8,}, {1,2,6,7,}, {1,2,6,8,}, {1,2,7,8,}, {1,3,4,5,}, {1,3,4,6,}, {1,3,4,7,}, {1,3,4,8,}, {1,3,5,6,}, {1,3,5,7,}, {1,3,5,8,}, {1,3,6,7,}, {1,3,6,8,}, {1,3,7,8,}, {1,4,5,6,}, {1,4,5,7,}, {1,4,5,8,}, {1,4,6,7,}, {1,4,6,8,}, {1,4,7,8,}, {1,5,6,7,}, {1,5,6,8,}, {1,5,7,8,}, {1,6,7,8,}, {2,3,4,5,}, {2,3,4,6,}, {2,3,4,7,}, {2,3,4,8,}, {2,3,5,6,}, {2,3,5,7,}, {2,3,5,8,}, {2,3,6,7,}, {2,3,6,8,}, {2,3,7,8,}, {2,4,5,6,}, {2,4,5,7,}, {2,4,5,8,}, {2,4,6,7,}, {2,4,6,8,}, {2,4,7,8,}, {2,5,6,7,}, {2,5,6,8,}, {2,5,7,8,}, {2,6,7,8,}, {3,4,5,6,}, {3,4,5,7,}, {3,4,5,8,}, {3,4,6,7,}, {3,4,6,8,}, {3,4,7,8,}, {3,5,6,7,}, {3,5,6,8,}, {3,5,7,8,}, {3,6,7,8,}, {4,5,6,7,}, {4,5,6,8,}, {4,5,7,8,}, {4,6,7,8,}, {5,6,7,8,} };
+
 // the constructor sets all the control variables to their initial status
 UserInterface::UserInterface()
 {
@@ -133,7 +139,9 @@ void UserInterface::printQuadrantAndDemandInfo()
     }
   }
   else
+  {
     std::cout << "\nThe quadrant is not generated yet!"<<std::endl;
+  }
 }
 
 // display the quadrant infomation and prompt the users if they want to edit the information
@@ -212,9 +220,9 @@ bool UserInterface::generateTree()
     if (lane_width > 0) 
 	{
       for (unsigned int i = 0; i < demandRNPs.size(); i++) 
-	  {
+  	  {
         if (demandRNPs[i] > 0) 
-		{
+	    	{
           demandRNPs[i] = lane_width;
         }
       }
@@ -230,6 +238,8 @@ bool UserInterface::generateTree()
     int maxFixNodes = inputs.getNumFixedNodes(); // a negative parameter is used sometimes to indicate no limit
     std::cout << "START GENERATING DAG" << std::endl;
 
+    int demand_shift = 1;
+    int demand_drop  = 8;
 
     if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherData, routingDAG, quadrantAngleOffset, maxFixNodes))
     {
@@ -240,23 +250,169 @@ bool UserInterface::generateTree()
       ctrl_RoutingDAGGenerated = ROUTINGDAG_GENERATED;
       std::cout << std::endl << "Generating Tree..." << std::endl;
       // generate the tree here
-      std::cout << "START GENERATING TREE" << std::endl;
+// =======
+      std::cout << "START GENERATING TREE" << endl << "Demand RNPs: ";
+      for (int i = 0; i < demandRNPs.size(); i++) {
+        std::cout << demandRNPs[i] << "  ";
+      }
+      std::cout << std::endl;
+
       if(!routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold))
       {
-        std::cerr <<  std::endl << "There Does NOT Exist A Merge Tree!"<<std::endl;
-        return false;
+        // Will added some code 04/2013 to add a demand shifting scheme to hopefully reduce tree generation failure
+
+        int demand_shift_index = 0;
+        bool demand_shift_success = false;
+        if (demand_shift == 1) {
+          std::cout << endl << "Beginning demand shifting." << endl;
+          std::cout << "Variables: demand_shift " << demand_shift << "; demand drop " << demand_drop << "; demand_shift_index " << demand_shift_index << "; demand_shift_success " << demand_shift_success << endl;
+          /* BEWARE: POTENTIAL BUG (due to Will not being certain what Shang's code does)
+          It is possible that you can only attempt to generate a tree once before needing to redo everything.
+          If this is the case, we're in trouble.
+
+          It shouldn't be an issue, there is a 'resetTree()' method called at the beginning of the definition of 
+          generateTree(), but it is a possible concern.
+          */
+
+          /* We will try two techniques to make the tree more robust:
+          (1) We will try shifting the demand up one or down one, and then generating the tree. If that fails, we will try
+          (2) Deleting one demand node at a time, and then try generating the tree.
+
+          The next while loop is part (1)*/
+          while (demand_shift_index < demandRNPs.size() && !demand_shift_success ) {
+
+            if (demand_shift_index > 0 && demandRNPs[demand_shift_index - 1] == 0 && !demand_shift_success) {
+              // Swap the values of demandRNPs at the current index and the one below
+              demandRNPs[demand_shift_index - 1] = demandRNPs[demand_shift_index];
+              demandRNPs[demand_shift_index] = 0;
+
+              // If the tree is generated successfully, exit this block gracefully
+              if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
+                demand_shift_success = true;
+                std::cout << endl << "A downward swap generated a tree on the following index: " << demand_shift_index << endl;
+              }
+
+              // Swap them back
+              demandRNPs[demand_shift_index] = demandRNPs[demand_shift_index - 1];
+              demandRNPs[demand_shift_index - 1] = 0;
+
+            }
+            if (demand_shift_index + 1 < demandRNPs.size() && demandRNPs[demand_shift_index + 1] == 0 && !demand_shift_success) {
+              // Swap the values of demandRNPs at the current index and the one above
+              demandRNPs[demand_shift_index + 1] = demandRNPs[demand_shift_index];
+              demandRNPs[demand_shift_index] = 0;
+
+              // If the tree is generated successfully, exit this block gracefully
+              if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
+                demand_shift_success = true;
+                std::cout << endl << "An upward swap generated a tree on the following index: " << demand_shift_index << endl;
+              }
+
+              // Swap them back
+              demandRNPs[demand_shift_index] = demandRNPs[demand_shift_index + 1];
+              demandRNPs[demand_shift_index + 1] = 0;
+            }
+            demand_shift_index++;
+          }
+        }
+        if (demand_drop >= 1 && !demand_shift_success) {
+          /* Begin phase (2) of the demand shifting, aka demand_drop */
+          std::cout << endl <<  "Demand shifting unsuccessful, beginning demand dropping." << endl;
+
+          int comb_i = 0; // an index of combinations
+          int k = 0; // k is the last positive element
+          float temp_demands[4]; // This 4 needs to be changed if combinations is ever changed -- HARDCODED
+          // the below 255 is the length of ``combinations`` -- HARDCODED
+          while (k < demand_drop && comb_i < 255 && !demand_shift_success) {
+
+            for (int j = 0; j < 4; ++j) {
+              temp_demands[j] = 0;
+            }
+
+            // std::cout << endl;
+            for (int j = 0; j < 4; ++j) {
+              if (demandRNPs[combinations[comb_i][j]] > 0) {
+                temp_demands[j] = demandRNPs[combinations[comb_i][j]];
+                demandRNPs[combinations[comb_i][j]] = 0;
+              }
+              else {
+                // We could break out of the loop, but then we also need to reset demandRNPs values
+                // break;
+              }
+              // HARDCODED VALUE
+              if (j == 3) {
+                if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
+                  demand_shift_success = true;
+                  std::cout << endl << "A demand drop generated a tree on the following indices: ";
+                  for(int i = 0; i <= k; ++i) {
+                    std::cout << combinations[comb_i][i] << " ";
+                  }
+                  std::cout << endl;
+
+                  std::cout << endl << "Demand RNPs after the drop:" << endl;
+                  for(int i = 0; i < demandRNPs.size(); i++) {
+                    std::cout << demandRNPs[i] << " ";
+                  }
+                  std::cout << endl;
+                }
+                else {
+                  // reset all of the demandRNPs values -- HARDCODED
+                  /*
+                  std::cout << "Demand RNPS: ";
+                  for(int i = 0; i < demandRNPs.size(); i++) {
+                  std::cout << demandRNPs[i] << " ";
+                  }
+                  */
+                  for (int j = 0; j < 4; ++j) {
+                    demandRNPs[combinations[comb_i][j]] = temp_demands[j];
+                    if (demandRNPs[combinations[comb_i][j]] < 0.00000001) {
+                      demandRNPs[combinations[comb_i][j]] = 0;
+                    }
+                  }
+                }
+              }
+            }
+            // Find the new k value, which is the last positive number in the array -- HARDCODED
+            for (int j = 0; j < 4; ++j) {
+              if (combinations[comb_i][j] < 0) {
+                k = j - 1;
+                break;
+
+                if (j == 3) { k = 3; } // j would go on to being 4, but can't because of the loop condition
+              }
+            }
+            ++comb_i;
+          }
+          /*
+          float temp_demand;
+          while (demand_shift_index < demandRNPs.size() && !demand_shift_success) {
+          if (demandRNPs[demand_shift_index] > 0) {
+          temp_demand = demandRNPs[demand_shift_index];
+          demandRNPs[demand_shift_index] = 0;
+
+          if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
+          demand_shift_success = true;
+          std::cout << "A demand drop generated a tree on the following index: " << demand_shift_index << endl;
+          }
+
+          demandRNPs[demand_shift_index] = temp_demand;
+          }
+          demand_shift_index++;
+          }
+          */
+        }
+
+        if (!demand_shift_success) {
+          cerr<< endl << "There Does NOT Exist A Merge Tree!"<<endl;
+          exit(0);
+          return false;
+        }
       }
-      else 
-      {
-        std::cout << std::endl << "FINISHED BOTTOMMOST FILL TREE" << std::endl;
-        std::cout <<  std::endl << "A bottommost routing Tree is generated!" << std::endl;
-        return true;
-      }
+      std::cout << endl << "FINISHED BOTTOMMOST FILL TREE" << endl;
+      std::cout<< endl << "A bottommost routing Tree is generated!" << endl;
+      return true;
     }	// an error message will pop up if failed to generate the DAG
-    else 
-	{ 
-		std::cout << "Failed to generate the DAG."; 
-	}
+    else { std::cout << "Failed to generate the DAG."; }
   }
   // else, then the weather data and demand profile have to be read in first
   else std::cerr << "\nPlease read in or generate the demand profile and weather data first."<<std::endl;
@@ -320,6 +476,22 @@ void UserInterface::inputOperationalFlexibility()
   delete []radii;
   ctrl_OperFlexGenerated = OPER_FLEX_GENERATED;
   std::cout << "\nOperational flexibility pairs successfully generated for the tree."<<std::endl;
+/* =======
+
+  // XYZ WILL changed this on 2013-04-30
+  // Cleaning code up and making the number of operational flexibility parameters variable
+  int numOperFlexParams = ::atoi(allInputs[currentInput++].c_str());
+
+  float* radii = new float[inputs.numOperFlexParams];
+  for (int i = 0; i < numOperFlexParams; ++i) {
+    radii[i] = ::atof(allInputs[currentInput++].c_str());
+  }
+  routingDAG->generateOperFlexPairs(radii, numOperFlexParams, weatherData, deviationThreshold);	// generate the pairs of operational flexibility values	
+  delete []radii;
+  ctrl_OperFlexGenerated = OPER_FLEX_GENERATED;
+  std::cout<<"\nOperational flexibility pairs successfully generated for the tree."<<endl;
+>>>>>>> skim_files
+*/
 }
 
 // generate the demand profile for testing
@@ -342,7 +514,7 @@ bool UserInterface::inputDemand()
     else
     {
 		std::cout << "\nInvalid Value...";
-	}
+  	}
   }
   string tempDemands;
   cin.ignore(1000 ,'\n');													// clear the buffer, ignore the leftover characters
@@ -357,11 +529,11 @@ bool UserInterface::inputDemand()
     else if (!quadrant->demandFeasible(demandRNPs))		// the new demands are stored in the demandRNPs vector but cannot be accomodated by the quadrant
     {
 		std::cout << "\nThe quadrant cannot accomodate the new demands...";
-	}
+  	}
     else
     {
 		break;
-	}
+	  }
   }
   ctrl_DemandReadIn = DEMAND_READ_IN;
   // when demand or weather data is changed, the routingDAG must be regenerated based on the new demand/weather data
@@ -518,8 +690,8 @@ bool UserInterface::readWeatherData()
     {
       is.close();
       std::string currentFile = weatherFileDirectories[i];
-      WeatherData tempWeather;
-      if(!tempWeather.readInFileData(currentFile, 
+      WeatherData* tempWeather = new WeatherData();
+      if(!tempWeather->readInFileData(currentFile, 
         rangeMinLati-1, 
         rangeMinLong-1, 
         rangeMaxLati+1, 
@@ -530,11 +702,11 @@ bool UserInterface::readWeatherData()
       }
 
 	  // convert the weather cells to screen OPENGL coordinate system 
-      tempWeather.convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
+      tempWeather->convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
 
-      weatherData.push_back(tempWeather);		// push the newly read in weather data into the storing vector
-      minAlt = min(minAlt, (double)tempWeather.getMinAlt());
-      maxAlt = max(maxAlt, (double)tempWeather.getMaxAlt());
+      weatherData.push_back(*tempWeather);		// push the newly read in weather data into the storing vector
+      minAlt = min(minAlt, (double)tempWeather->getMinAlt());
+      maxAlt = max(maxAlt, (double)tempWeather->getMaxAlt());
     }
     else
     {
@@ -626,5 +798,8 @@ void UserInterface::saveTreeInformation()
     return;
   }
   routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime, inputs.getTimestamp() );
-  std::cout <<  "\nTree Information successfully written to file.\n";
+  std::cout << "latiPerPixel: " << latiPerPixel << "; centerLati: " << centerLati << std::endl;
+  std::cout << "longPerPixel: " << longPerPixel << "; centerLong: " << centerLong << std::endl;
+  std::cout<< "\nTree Information successfully written to file.\n";
 }
+
