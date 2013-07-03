@@ -54,8 +54,8 @@ private:
 private:
 	/*********************************************************************************************/
 	// functions used to generate routing graph structures
-	bool generateEntryAndFixNodes(vector<float> rnps, int n, float effectiveThres, float routingThres, const vector<WeatherData*> &wData, RoutingDAG* rDAG, double quadAngleOffset, int numFixNodes);
-	void generateRoutingDAGInternalNodes(RoutingDAG* rDAG, vector<float> rnps, int n, double quadAngleOffset);
+	bool generateEntryAndFixNodes(vector<double> rnps, double effectiveThres, double routingThres, const vector<WeatherData> &wData, RoutingDAG* rDAG, double quadAngleOffset, int numFixNodes);
+	void generateRoutingDAGInternalNodes(RoutingDAG* rDAG, vector<double> rnps, double quadAngleOffset);
 	/*********************************************************************************************/
 };
 

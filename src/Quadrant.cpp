@@ -201,7 +201,7 @@ bool Quadrant::generateDAG(vector<double> rnps, int n, double effectiveThres, do
 }
 
 // given a size n double array of entry points' rnps, and a weatherdata set, and the DAG structure that we are going to put the points in
-bool Quadrant::generateEntryAndFixNodes(vector<double> rnps, double effectiveThres, double routingThres, const vector<WeatherData> &wData, RoutingDAG *rDAG, double quadAngleOffset, unsigned int maxFixNodes)
+bool Quadrant::generateEntryAndFixNodes(vector<double> rnps, double effectiveThres, double routingThres, const vector<WeatherData> &wData, RoutingDAG *rDAG, double quadAngleOffset, int maxFixNodes)
 {
   std::cout << "Max Number of Fix Nodes: " << maxFixNodes << std::endl;
 	if(!demandFeasible(rnps))
