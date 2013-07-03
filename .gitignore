@@ -20,6 +20,8 @@ build/*
 Data/*
 Release/*
 CWAMEnsembles/*
+0600/*
+DEBUG/*
 Prototype\ Mac.xcodeproj/*
 old_outputs/*
 inputs.txt
@@ -31,3 +33,5 @@ inputs.txt
 *.opensdf
 *.sdf
 *.suo
+*.txt
+*.bat
