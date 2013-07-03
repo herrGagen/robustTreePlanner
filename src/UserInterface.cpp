@@ -227,7 +227,7 @@ bool UserInterface::generateTree()
     std::cout << std::endl;
 
     std::cout << "Max Fix Nodes: " << inputs.getNumFixedNodes() << std::endl;
-    unsigned int maxFixNodes = inputs.getNumFixedNodes();
+    int maxFixNodes = inputs.getNumFixedNodes(); // a negative parameter is used sometimes to indicate no limit
     std::cout << "START GENERATING DAG" << std::endl;
 
 

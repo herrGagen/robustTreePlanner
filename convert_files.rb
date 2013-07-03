@@ -119,7 +119,7 @@ end
 
 if __FILE__ == $0
   require './create_input'
-  if ARGV.length % 2 == 1
+  if false # ARGV.length % 2 == 1
     puts "Must provide one flag for each of the two possible parameters."
     puts "eg: ruby convert_files.rb -s 15 -o 30 -dthresh 0.8 -nethresh 0.8"
   else
