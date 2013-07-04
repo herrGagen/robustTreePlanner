@@ -38,13 +38,15 @@ class InputFileReader
 {
 private:
 	std::string demandFile; /**< Path to demand file (i.e. demand.nom) */
-        std::vector<std::string> weatherFileNames;  /**< Paths to weather files */
+    std::vector<std::string> weatherFileNames;  /**< Paths to weather files */
 	double cellWidth; /**< Please describe this variable */
 	double quadrantAngle;/**< Please describe this variable */
 	double deviationThreshold; /**< Please describe this variable */
 	double nodeEdgeThreshold; /**< Please describe this variable */
 	double angleOffset; /**< Please describe this variable */
 	double laneWidth; /**< Please describe this variable */
+	unsigned demandShift; /**< Please describe this variable */
+	unsigned int demandDrop; /**< Please describe this variable */
 	unsigned int numFixedNodes; /**< Please describe this variable */
 	std::vector<double> operFlex; /**< Please describe this variable */
 	std::string timestamp; /**< When the input file was created */
@@ -62,6 +64,8 @@ public:
 	double getAngleOffset() const { return angleOffset; }
 	double getLaneWidth() const { return laneWidth; }
 	unsigned int getNumFixedNodes() const { return numFixedNodes; }
+	unsigned int getDemandShift() const { return demandShift; }
+	unsigned int getDemandDrop() const { return demandDrop; }
 	std::vector<double> getOperFlex() const { return operFlex; }
 	std::string getTimestamp() const { return timestamp; }
 };

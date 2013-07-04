@@ -241,8 +241,8 @@ bool UserInterface::generateTree()
     int maxFixNodes = inputs.getNumFixedNodes(); // a negative parameter is used sometimes to indicate no limit
     std::cout << "START GENERATING DAG" << std::endl;
 
-    int demand_shift = 1;
-    int demand_drop  = 8;
+    unsigned int demand_shift = inputs.getDemandShift();
+    unsigned int demand_drop  = inputs.getDemandDrop();
 
     if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherData, routingDAG, quadrantAngleOffset, maxFixNodes))
     {
@@ -326,12 +326,12 @@ bool UserInterface::generateTree()
           /* Begin phase (2) of the demand shifting, aka demand_drop */
           std::cout << std::endl <<  "Demand shifting unsuccessful, beginning demand dropping." << std::endl;
 
-          int comb_i = 0; // an index of combinations
-          int k = 0; // k is the last positive element
           double temp_demands[4]; // This 4 needs to be changed if combinations is ever changed -- HARDCODED
           // the below 255 is the length of ``combinations`` -- HARDCODED
-          while (k < demand_drop && comb_i < 255 && !demand_shift_success) {
-
+          for (unsigned int k = 0, comb_i = 0; 
+			  k < demand_drop && comb_i < 255 && !demand_shift_success;
+			  comb_i++ ) 
+		  {
             for (int j = 0; j < 4; ++j) {
               temp_demands[j] = 0;
             }
@@ -352,7 +352,7 @@ bool UserInterface::generateTree()
 				{
                   demand_shift_success = true;
                   std::cout << std::endl << "A demand drop generated a tree on the following indices: ";
-                  for(int i = 0; i <= k; ++i) 
+                  for(unsigned int i = 0; i <= k; i++) 
 				  {
                     std::cout << combinations[comb_i][i] << " ";
                   }
@@ -367,13 +367,6 @@ bool UserInterface::generateTree()
                 }
                 else 
 				{
-                  // reset all of the demandRNPs values -- HARDCODED
-                  /*
-                  std::cout << "Demand RNPS: ";
-                  for(int i = 0; i < demandRNPs.size(); i++) {
-                  std::cout << demandRNPs[i] << " ";
-                  }
-                  */
                   for (int j = 0; j < 4; ++j) 
 				  {
                     demandRNPs[combinations[comb_i][j]] = temp_demands[j];
@@ -399,7 +392,6 @@ bool UserInterface::generateTree()
 				} 
               }
             }
-            ++comb_i;
           }
         }
 

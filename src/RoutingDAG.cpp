@@ -1583,8 +1583,8 @@ void RoutingDAG::generateOperFlexPairs(const std::vector<double> &radii, const s
 		{
 			Edge* tempEdge = tempNode->getOutEdge(tempNode->getTreeOutEdgeIndex());
 			// we are going to recompute operational flxity pairs, before doing so, clear the vectors
-			tempEdge->reset();						// clear the edge's operational flxity related vectors
-			tempNode->clearFreeRadiusVector();		// clear the node's operational flxity related vectors		
+			tempEdge->reset();						// clear the edge's operational felxity related vectors
+			tempNode->clearFreeRadiusVector();		// clear the node's operational felxity related vectors		
 			// insert operational flexibility pairs of the node and its outgoing tree edge
 			for(unsigned int j=0; j<radii.size(); j++)
 			{

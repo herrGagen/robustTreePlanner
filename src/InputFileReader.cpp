@@ -46,6 +46,8 @@ InputFileReader::InputFileReader(std::string inputFileName)
 	in_stream >> angleOffset;
 	in_stream >> laneWidth;
 	in_stream >> numFixedNodes;
+	in_stream >> demandShift;
+	in_stream >> demandDrop;
 	unsigned int numOperFlex;
 	in_stream >> numOperFlex;
 	operFlex.resize(numOperFlex);
