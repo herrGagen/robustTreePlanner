@@ -1008,26 +1008,20 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 		{
 			Node* tempNode = temp->getOutNode(i);
 			Edge* tempEdge = temp->getOutEdge(i);
-			
-      if ((41.9796 + tempEdge->getHead()->getX() * 0.0333309) >= 42.67 && 
-        (41.9796 + tempEdge->getHead()->getX() * 0.0333309) <= 42.7 &&
-        (-87.9044 + tempEdge->getHead()->getY() * 0.0448367) <= -90.8 &&
-        (-87.9044 + tempEdge->getHead()->getY() * 0.0448367) >= -91.8
-        ) {   
-          // std::cout << "RNP[0]" << tempEdge->rnpValues[0]->probability << "; Result: " << tempEdge->testRNPWithWeatherDataSet(rnp, wData, effectiveThres, routingThres) << "; h.x: " << (41.9796 + tempEdge->getHead()->getX() * 0.0333309) << "; h.y: " << (-87.9044 + tempEdge->getHead()->getY() * 0.0448367) << "; t.x: " << (41.9796 + tempEdge->getTail()->getX() * 0.0333309) << "; t.y: " << (-87.9044 + tempEdge->getTail()->getY() * 0.0448367) << endl;
-      }
-        
+			       
       
       // first test if the new pair of nodes and edges collide with the weather data, if so, then just ignore this pair
 			if(tempNode->testRadiusWithWeatherDataSet(rnp, wData, effectiveThres, routingThres) ||
-			   tempEdge->testRNPWithWeatherDataSet(rnp, wData, effectiveThres, routingThres)) {
+			   tempEdge->testRNPWithWeatherDataSet(rnp, wData, effectiveThres, routingThres)) 
+			{
 				continue;							// the node is infeasible, look at the next node
-      }
+			}
 			// then test if this new edge obviously goes across the previous or next branch, then ignore as well
 			if(tempNode->getLayerIndex()>layerUsedIndexReverseDirection[tempNode->getLayer()] || 
-			   tempNode->getLayerIndex()<layerUsedIndex[tempNode->getLayer()]) {
+			   tempNode->getLayerIndex()<layerUsedIndex[tempNode->getLayer()]) 
+			{
 				continue;
-      }
+			}
 			// if the edge was NOT completely a part of the next branch (if it is, we don't care about the indegree) 
 			if(!(onNextBranch(temp, entryIndex) && onNextBranch(tempNode, entryIndex))		// not going along the next branch
 			   && tempNode->getInDegree()==2)		// if the node is currently indegree full, then it's not going to be used again, ignore...	
@@ -1035,17 +1029,25 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 			if(onNextBranch(tempNode, entryIndex) && !onNextBranch(temp, entryIndex))		// if merging into the next branch
 			{
 				if(testnextBranchTillCurrentLayerEdge(tempEdge, rnp, entryIndex))			// if it crosses part of the next branch(with larger entry index)
+				{
 					continue;
+				}
 				if(testDistanceTooCloseToMergingNodesOnNextBranch(tempNode, entryIndex))	// if it does NOT satisfy the min distane between merging nodes constraint
+				{
 					continue;
+				}
 				// if the new rnp is too large when merging, then we cannot used this node as a merging node(once merged, cannot depart later)
 				if(!testRemainingBranchWhileMerging(tempNode, wData, rnp, effectiveThres, routingThres))	
+				{
 					continue;
+				}
 			}
 			// if the start of the current edge is already a part of the previous branch, then the new node must also be a node in the previous branch
 			// the reason is that once two branches merges together, they have to be together till the fix node
 			if(onNextBranch(temp, entryIndex) && tempNode!=nextNodeOfGivenNodeOnNextBranch(temp, entryIndex))
-				continue;
+			{
+					continue;
+			}
 			// the new tree branch sits in between the next branch and the previous branch in the bottommost tree, it is allowed to use nodes
 			// in the previous and next branches as long as they are not full in indegree(for next branch only)
 			bool pushIntoQueue = false;				// if the node is finally going to be pushed into the queue
@@ -1053,13 +1055,22 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 			if(onNextBranch(tempNode, entryIndex))	// if the node is on next branch (has layerIndex number larger than the current)
 				pushIntoQueue = true;
 			// if the node is NOT on the next or previous branch, and does not collide with the next branch or previous branch
-			else if(!onNextBranch(tempNode, entryIndex) && !onPreviousBranch(tempNode, entryIndex) && !testNextBranchNode(tempNode, rnp, entryIndex) && 
-					!testNextBranchEdge(tempEdge, rnp, entryIndex) && !testPreviousBranchNode(tempNode, rnp, entryIndex) && 
-					!testPreviousBranchEdge(tempEdge, rnp, entryIndex))	
+			else if(!onNextBranch(tempNode, entryIndex) && 
+					!onPreviousBranch(tempNode, entryIndex) && 
+					!testNextBranchNode(tempNode, rnp, entryIndex) && 
+					!testNextBranchEdge(tempEdge, rnp, entryIndex) && 
+					!testPreviousBranchNode(tempNode, rnp, entryIndex) && 
+					!testPreviousBranchEdge(tempEdge, rnp, entryIndex) )	
+			{
 				pushIntoQueue = true;
+			}
 			// the new node is allowed to be on the previous branch, but cannot cross it
-			else if(onPreviousBranch(tempNode, entryIndex) && !testNextBranchNode(tempNode, rnp, entryIndex) &&!testNextBranchEdge(tempEdge, rnp, entryIndex))
+			else if(onPreviousBranch(tempNode, entryIndex) && 
+					!testNextBranchNode(tempNode, rnp, entryIndex) &&
+					!testNextBranchEdge(tempEdge, rnp, entryIndex))
+			{
 				pushIntoQueue= true;				// (has layerIndex number smaller than the current)
+			}
 			// if the node is proved to be a feasible choice, push the node into the queue, and update its distance info if the new distance is better
 			if(pushIntoQueue)
 			{
@@ -1089,7 +1100,7 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 				// next round, then every 3rd and 2nd branches will try to merge into their corresponding 1st branch. until topMostTendency is entry.size(), where
 				// each branch will try to merge into the first branch. This is used to deal with the bottleneck cases and urge branches to merge early
 				// the new branch will try to merge into the next branch as early possible, and in the best(shortest) way
-				if((entries.size()-entryIndex-1)%topMostTendency!=0)
+				if((entries.size()-entryIndex-1)%topMostTendency != 0)
 				{
 					if(onNextBranch(tempNode, entryIndex) && !onNextBranch(temp, entryIndex) && earlyMergeNode==NULL)	// this will only be entered once
 					{
