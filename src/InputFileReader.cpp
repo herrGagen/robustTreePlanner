@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 #include "InputFileReader.h"
 
@@ -45,9 +46,14 @@ InputFileReader::InputFileReader(std::string inputFileName)
 	in_stream >> angleOffset;
 	in_stream >> laneWidth;
 	in_stream >> numFixedNodes;
-	in_stream >> operFlex1;
-	in_stream >> operFlex2;
-	in_stream >> operFlex3;
+	unsigned int numOperFlex;
+	in_stream >> numOperFlex;
+	operFlex.resize(numOperFlex);
+	for(unsigned int i = 0; i < numOperFlex; i++)
+	{
+		in_stream >> operFlex[i];
+	}
+	std::sort(operFlex.begin(), operFlex.end() );
 	in_stream >> timestamp;
 	in_stream.close();
 }

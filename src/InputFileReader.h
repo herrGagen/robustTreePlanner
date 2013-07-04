@@ -27,7 +27,8 @@
    number of fixed nodes
    operational flexibility 1
    operational flexibility 2
-   operational flexibility 3
+   ...
+   operational flexibility n
    timestamp
 
    When that format changes (like you decide that input.txt should be an XML file)
@@ -45,9 +46,7 @@ private:
 	double angleOffset; /**< Please describe this variable */
 	double laneWidth; /**< Please describe this variable */
 	unsigned int numFixedNodes; /**< Please describe this variable */
-	int operFlex1; /**< Please describe this variable */
-	int operFlex2; /**< Please describe this variable */
-	int operFlex3; /**< Please describe this variable */
+	std::vector<double> operFlex; /**< Please describe this variable */
 	std::string timestamp; /**< When the input file was created */
 public:
 	InputFileReader(std::string inputFileName);
@@ -63,9 +62,7 @@ public:
 	double getAngleOffset() const { return angleOffset; }
 	double getLaneWidth() const { return laneWidth; }
 	unsigned int getNumFixedNodes() const { return numFixedNodes; }
-	int getOperFlex1() const { return operFlex1; }
-	int getOperFlex2() const { return operFlex2; }
-	int getOperFlex3() const { return operFlex3; }
+	std::vector<double> getOperFlex() const { return operFlex; }
 	std::string getTimestamp() const { return timestamp; }
 };
 

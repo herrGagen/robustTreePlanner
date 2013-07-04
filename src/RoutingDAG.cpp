@@ -1564,7 +1564,7 @@ bool RoutingDAG::testDistanceTooCloseToMergingNodesOnCurrentBranch(Node* toBeDec
 
 /***************************************************************************************************************************************************************/
 // after the tree is generated, for each node and edge in the tree, calculate their operational flxibilities
-void RoutingDAG::generateOperFlexPairs(double* radii, int length, vector<WeatherData> &wData, double effectiveThres)
+void RoutingDAG::generateOperFlexPairs(const std::vector<double> &radii, const std::vector<WeatherData> &wData, double effectiveThres)
 {
 	if(status==TREE_NOT_GENERATED)
 	{
@@ -1586,7 +1586,7 @@ void RoutingDAG::generateOperFlexPairs(double* radii, int length, vector<Weather
 			tempEdge->reset();						// clear the edge's operational flxity related vectors
 			tempNode->clearFreeRadiusVector();		// clear the node's operational flxity related vectors		
 			// insert operational flexibility pairs of the node and its outgoing tree edge
-			for(int j=0; j<length; j++)
+			for(unsigned int j=0; j<radii.size(); j++)
 			{
 				double tempProb = tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres);
 				tempNode->insertFreeRadiusVec(radii[j], tempProb);
@@ -1600,36 +1600,36 @@ void RoutingDAG::generateOperFlexPairs(double* radii, int length, vector<Weather
 			/***************************************************************************************************************/
 			// generate the deviation node for the edge, each edge has at most 3 deviation nodes, 
 			// the minimum interval between nodes is preset to be rnp*2; Each node has its own operational flexibility pairs
-			double edgeLength = tempEdge->getLength();
+			double edgelength = tempEdge->getLength();
 			double currentRNP = tempEdge->getDrawingRNP();
-			if(edgeLength>=8*currentRNP)										// generate the nodes at 1/4 position from head to tail
+			if(edgelength>=8*currentRNP)										// generate the nodes at 1/4 position from head to tail
 			{
 				Node* temp = new Node((tempEdge->getHead()->getX()*3+tempEdge->getTail()->getX())/4, (tempEdge->getHead()->getY()*3+tempEdge->getTail()->getY())/4,
 									  (tempEdge->getHead()->getZ()*3+tempEdge->getTail()->getZ())/4);
 				// compute the operational flxibility pairs of each generated deviation node
-				for(int j=0; j<length; j++)
+				for(unsigned int j=0; j<radii.size(); j++)
 				{
 					temp->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres));
 				}
 				tempEdge->insertOperFlexDeviationCandidateNode(temp);
 			}
-			if(edgeLength>4*currentRNP)										// generate the nodes at 1/2 position from head to tail
+			if(edgelength>4*currentRNP)										// generate the nodes at 1/2 position from head to tail
 			{
 				Node* temp = new Node((tempEdge->getHead()->getX()+tempEdge->getTail()->getX())/2, (tempEdge->getHead()->getY()+tempEdge->getTail()->getY())/2,
 									  (tempEdge->getHead()->getZ()+tempEdge->getTail()->getZ())/2);
 				// compute the operational flxibility pairs of each generated deviation node
-				for(int j=0; j<length; j++)
+				for(unsigned int j=0; j<radii.size(); j++)
 				{
 					temp->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres));
 				}
 				tempEdge->insertOperFlexDeviationCandidateNode(temp);
 			}
-			if(edgeLength>=8*currentRNP)										// generate the nodes at 3/4 position from head to tail
+			if(edgelength>=8*currentRNP)										// generate the nodes at 3/4 position from head to tail
 			{
 				Node* temp = new Node((tempEdge->getHead()->getX()+3*tempEdge->getTail()->getX())/4, (tempEdge->getHead()->getY()+3*tempEdge->getTail()->getY())/4,
 									  (tempEdge->getHead()->getZ()+3*tempEdge->getTail()->getZ())/4);
 				// compute the operational flxibility pairs of each generated deviation node
-				for(int j=0; j<length; j++)
+				for(unsigned int j=0; j<radii.size(); j++)
 				{
 					temp->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres));
 				}
@@ -1643,7 +1643,7 @@ void RoutingDAG::generateOperFlexPairs(double* radii, int length, vector<Weather
 	for(unsigned int i=0; i<fixes.size(); i++)
 	{
 		Node* tempNode = fixes[i];
-		for(int j=0; j<length; j++)
+		for(unsigned int j=0; j<radii.size(); j++)
 		{
 			tempNode->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres));
 		}

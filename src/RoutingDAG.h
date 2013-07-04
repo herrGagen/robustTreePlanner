@@ -44,7 +44,7 @@ public:
 	void setNodesReadInStatus(int status);
 	int  getStatus();
 	bool generateEdgeSet();
-	void generateOperFlexPairs(double *radii, int length, vector<WeatherData> &wData, double effectiveThres);
+	void generateOperFlexPairs(const std::vector<double> &radii, const std::vector<WeatherData> &wData, double effectiveThres);
 public:
 	bool outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, std::string &startTime, std::string &endTime, std::string &outputName);
 private:
