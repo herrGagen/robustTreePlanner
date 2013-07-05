@@ -139,7 +139,7 @@ bool WeatherData::handleInputData()
 	maxProbDev = minProbDev = probDeviation[0];
 	// get the range of each data components from the vectors
 	bool inputFormatError = false;				// no error supposedly
-	for(int i=0; i<numPoints; i++)
+	for(unsigned int i=0; i<numPoints; i++)
 	{
 		if(xCoors[i]>360 || xCoors[i]<-360 || yCoors[i]>360 || yCoors[i]<-360)
 		{
@@ -204,7 +204,7 @@ bool WeatherData::testIndex(const int* readingIndex, const int *fileSize)
 // after the conversion, compute the cellWidth/cellHeight value
 void WeatherData::convertLatiLongHeightToXY(double cX, double cY, double latiPerPix, double longPerPix, double weatherCellWidth)
 {
-	for(int i=0; i<numPoints; i++)
+	for(unsigned int i=0; i<numPoints; i++)
 	{
 		xCoors[i] = (xCoors[i]-cX)/latiPerPix;
 		yCoors[i] = (yCoors[i]-cY)/longPerPix;
@@ -228,7 +228,7 @@ double WeatherData::getMinDevThres() const
 }
 
 // the number of weather cells in the weather data
-int WeatherData::size() const
+unsigned int WeatherData::size() const
 {
 	return numPoints;
 }
@@ -268,9 +268,9 @@ double WeatherData::getMaxAlt() const
 
 // given an index, return the corresponding weather cell's data, including its (x, y, z) and probability of deviation 
 // as well as the cell's width and height(these 2 parameters are fixed among all cells)
-bool WeatherData::getCellData(int index, double* x, double* y, double* alt, double* probDev, double* cWidth, double* cHeight) const
+bool WeatherData::getCellData(unsigned int index, double* x, double* y, double* alt, double* probDev, double* cWidth, double* cHeight) const
 {
-	if(index>=numPoints || index<0)
+	if(index >= numPoints || index<0)
 	{
 		return false;
 	}

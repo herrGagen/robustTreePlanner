@@ -53,10 +53,16 @@ void Node::clearFreeRadiusVector()
 	freeRadius.clear();
 }
 
-// test if the radius r ball centered at current node conflict with the weather data set, actually only do 2d testing if there z coordinates collide with each other
-// effectiveThres means if a weather cell's deviation probability is below this value, it's going to be considered as NULL
-// routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
-// if the value < routingThres, then it is considered an obstacle 
+/**
+	\brief test if the radius r ball centered at current node conflict with the weather data set
+	
+	This actually only does 2d testing if their z coordinates collide with each other
+
+	\param effectiveThres if a weather cell's deviation probability is below this value, it's going to be considered as NULL
+	\param routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
+
+	\retval True if collision occurs
+	*/
 bool Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres)
 {
 	if(getWeatherCollisionStatus(r) == WEATHER_COLLISION)			// if was tested to be colliding with the weather
@@ -74,7 +80,8 @@ bool Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData>
 	double finalProbability = 0;
 	for(unsigned int i=0; i<wData.size(); i++)						// test the weather data members one by one
 	{
-		if(!testRadiusWithWeatherData(r, wData[i], effectiveThres))			// if there is no intersection, means this weather data is "clear"
+		// if there is no intersection, means this weather data is "clear"
+		if(!testRadiusWithWeatherData(r, wData[i], effectiveThres))			
 		{
 			finalProbability += wData[i].getProbability();					// add 1*probability of the weather data
 		}
@@ -110,31 +117,49 @@ double Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherDat
 }
 
 
-// test if the radius r ball centered at current node conflict with the weatherdata, actually only do 2d testing if there z coordinates collide with each other
+/**
+\brief test if the radius r ball centered at current node conflict with the weatherdata
+
+  Actually only do 2d testing if their z coordinates collide with each other
+
+*/
 bool Node::testRadiusWithWeatherData(double r, const WeatherData &wData, double thres)
 {
 	if(wData.size() == 0)
 		{
 			return false;					// if the weather data does not exist, then just return false
 	}
-	unsigned int numCells = wData.size();
 	double x1;
 	double y1;
 	double z1;
 	double cellWidth;
 	double cellHeight;
 	double deviationProbability;
-	for(unsigned int i=0; i<numCells; i++)
+	for(unsigned int i=0; i<wData.size() ; i++)
 	{
 		// if successfully read out all the cell data, the bottomleft corner of the cell is (x1, y1, z1)
 		if(wData.getCellData(i, &x1, &y1, &z1, &deviationProbability, &cellWidth, &cellHeight))	
 		{
-			if(deviationProbability<=thres)		// if the cell is not severe enough, simply skip
+			if(deviationProbability <= thres)		// if the cell is not severe enough, simply skip
 			{
 				continue;						// test the next one							
 			}
-			if(z<=z1 || z>=z1+cellHeight)		// if the ranges in z direction have no overlap, then skip
+			if(z < z1 || z > z1+cellHeight)		// if the ranges in z direction have no overlap, then skip
 			{
+#ifdef DEBUG_HEIGHTS
+				static double lastZ = z;
+				static double lastZ1 = z1;
+				static double lastCellHeight = cellHeight;
+				if(	z != lastZ ||
+					z1 != lastZ1 ||
+					cellHeight != lastCellHeight)
+				{
+					std::cout << "Weather heights: " << z1 << ", " << z << ", " << z1+cellHeight << std::endl;					
+					lastZ = z;
+					lastZ1 = z1;
+					lastCellHeight = cellHeight;
+				}
+#endif
 				continue;
 			}
 			else
@@ -152,8 +177,10 @@ bool Node::testRadiusWithWeatherData(double r, const WeatherData &wData, double 
 // test intersection between a disk whose center is (xC, yC), radius r, with a square, whose bottomleft corner is (x, y), side length c
 bool Node::collisionBetweenDiskAndSquare(double xc, double yc, double r, double x, double y, double c)
 {
+
 	// test the bounding volume of x and y directions
-	if(xc+r<=x || xc-r>=x+c || yc+r<=y || yc-r>=y+c)				// if the bounding boxes are impossible to collide with each other
+	// Check if the bounding boxes don't collide 
+	if(xc+r<=x || xc-r>=x+c || yc+r<=y || yc-r>=y+c)				
 	{
 		return false;
 	}
@@ -171,19 +198,23 @@ bool Node::collisionBetweenDiskAndSquare(double xc, double yc, double r, double 
 		return true;
 	}
 	// next, if they collide with each other, the disk must intersect with one of the edges
-	if(abs(x-xc)<=r && (sqrt(r*r-(x-xc)*(x-xc))+yc<=y || yc-sqrt(r*r-(x-xc)*(x-xc))>=y+c))			// the intersections are not with in the range of the edge (x, y)<->(x, y+c)
+	// the intersections are not with in the range of the edge (x, y)<->(x, y+c)
+	if(abs(x-xc)<=r && ( sqrt(r*r-(x-xc)*(x-xc))+yc<=y || yc-sqrt(r*r-(x-xc)*(x-xc))>=y+c) )			
 	{
 		return false;
 	}
-	if(abs(xc-(x+c))<=r && (sqrt(r*r-(x+c-xc)*(x+c-xc))+yc<=y || yc-sqrt(r*r-(x+c-xc)*(x+c-xc))>=y+c))	// the intersections are not with in the range of the edge (x+c, y)<-> (x+c, y+c)
+	// the intersections are not with in the range of the edge (x+c, y)<-> (x+c, y+c)
+	if(abs(xc-(x+c))<=r && (sqrt(r*r-(x+c-xc)*(x+c-xc))+yc<=y || yc-sqrt(r*r-(x+c-xc)*(x+c-xc))>=y+c))	
 	{
 		return false;
 	}
-	if(abs(y-yc)<=r && (sqrt(r*r-(y-yc)*(y-yc))+xc<=x || xc-sqrt(r*r-(y-yc)*(y-yc))>=x+c))			// the intersections are not with in the range of the edge (x, y)<-> (x+c, y)
+	// the intersections are not with in the range of the edge (x, y)<-> (x+c, y)
+	if(abs(y-yc)<=r && (sqrt(r*r-(y-yc)*(y-yc))+xc<=x || xc-sqrt(r*r-(y-yc)*(y-yc))>=x+c))			
 	{
 		return false;
 	}
-	if(abs((y+c)-yc)<=r && (sqrt(r*r-(y+c-yc)*(y+c-yc))+xc<=x || xc-sqrt(r*r-(y+c-yc)*(y+c-yc))>=x+c))	// the intersections are not with in the range of the edge (x, y+c)<-> (x+c, y+c)
+	// the intersections are not with in the range of the edge (x, y+c)<-> (x+c, y+c)
+	if(abs((y+c)-yc)<=r && (sqrt(r*r-(y+c-yc)*(y+c-yc))+xc<=x || xc-sqrt(r*r-(y+c-yc)*(y+c-yc))>=x+c))	
 	{
 		return false;
 	}

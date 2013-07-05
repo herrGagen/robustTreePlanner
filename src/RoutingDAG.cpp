@@ -607,10 +607,12 @@ bool RoutingDAG::generateTree(const vector<WeatherData> &wData, vector<double> r
 		return false;
 	}
 	for(unsigned int i=0; i<entries.size(); i++)						// first make sure that all the entry nodes are themselves weather obstacle free
+	{
 		if(entries[i]->testRadiusWithWeatherDataSet(rnp[i], wData, effectiveThres, routingThres))
 		{
 			return false;	
 		}
+	}
 	// then start testing branches coming out of each entry node
 	for(unsigned int i=0; i<entries.size(); i++)
 	{
@@ -649,7 +651,10 @@ bool RoutingDAG::generateTree(const vector<WeatherData> &wData, vector<double> r
 bool RoutingDAG::routeBranch(Node *start, unsigned int entryIndex, const vector<WeatherData> &wData, double rnp, double effectiveThres, double routingThres)
 {
 	// if there is no entry demand at all from this entry node, then simply return true
-	if(rnp==0)	return true;
+	if(rnp==0)	
+	{
+			return true;
+	}
 	/**************************************************************************************************************************/
 	stack<Node*> tempStack;											// a stack that is used to do the DFS starting at node start
 	tempStack.push(start);											// push the start node itself into the stack
@@ -666,7 +671,9 @@ bool RoutingDAG::routeBranch(Node *start, unsigned int entryIndex, const vector<
 			// if the new outgoing node/edge pair conflict with weather, then just ignore
 			if(tempEdge->testRNPWithWeatherDataSet(rnp, wData, effectiveThres, routingThres) ||
 			   tempNode->testRadiusWithWeatherDataSet(rnp, wData, effectiveThres, routingThres))
+			{
 				continue;
+			}
 			// we explore the node only if it's on the right side of the existing tree(bottommost filling, so cannot cross previous branches)
 			if(tempNode->getLayerIndex()>layerUsedIndex[tempNode->getLayer()])
 			{
@@ -874,6 +881,23 @@ void RoutingDAG::updateLayerUsedIndexVector(unsigned int entryIndex)
 	}
 }
 
+void RoutingDAG::areAllNodesFarFromWeather( const vector<WeatherData> &wData, 
+											double rad, 
+											double effectiveThresh, 
+											double routingThresh )
+{
+	unsigned int collisionCount = 0;
+	for(unsigned int j = 0; j < entries.size()+nodes.size()+fixes.size(); j++)
+	{
+			Node* tempNode = fetchNode( j );
+			if( tempNode->testRadiusWithWeatherDataSet(rad, wData, effectiveThresh, routingThresh) )
+			{
+				collisionCount++;
+			}
+	}
+	std::cout << collisionCount << " nodes intersect with the weather data set out of " << entries.size()+nodes.size()+fixes.size() << std::endl;
+}
+
 /***************************************************************************************************************************************************************/
 // after the bottommost tree is generated, tauten its branches so that it looks much better using Dijkstra algorithm on DAG
 // in the front of this function, no feasibility needs to be tested (other than if the bottommost tree was generated already) 
@@ -980,7 +1004,9 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 										 double effectiveThres, double routingThres, int topMostTendency)
 {
 	if(start->getDrawingRNP()==0)			// if there is no demand from the current entry node, then no branch is coming out of it, return
+	{
 		return true;
+	}
 	deque<Node*> tempQueue;					// the queue used for breath first search in Dijkstra algorithm for a DAG
 	// decide which is the node to end the current branch ( we may meet at most 3 fix nodes, the one we pick is the one that has the minimum distance
 	Node* endingFixNode = NULL;													

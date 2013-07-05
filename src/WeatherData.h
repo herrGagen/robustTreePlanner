@@ -27,10 +27,10 @@ public:
 	void reset();
 	double getMaxDevThres() const;
 	double getMinDevThres() const;
-	int size() const;
+	unsigned int size() const;
 	void setProbability(double prob);
 	double getProbability() const;
-	bool getCellData(int index, double* x, double* y, double* alt, double* probDeviation, double* cWidth, double* cHeight) const;
+	bool getCellData(unsigned int index, double* x, double* y, double* alt, double* probDeviation, double* cWidth, double* cHeight) const;
 	void convertLatiLongHeightToXY(double cX, double cY, double latiPerPix, double longPerPix, double weatherCellWidth);
 	double getMinAlt() const;
 	double getMaxAlt() const;
@@ -38,7 +38,7 @@ private:
 	bool handleInputData();			// in case the input file has format problem
 	bool testIndex(const int* readingIndex, const int* fileSize);				// test if we are going out of the range of the file, meaning file format error
 private:
-	int numPoints;					// the number of points, hence weather cells(squares)
+	unsigned int numPoints;					// the number of points, hence weather cells(squares)
 	std::vector<double> xCoors;			// the std::vector to store x positions of the weather cells
 	std::vector<double> yCoors;			// the std::vector to store y positions of the weather cells
 	std::vector<double> altitudes;		// the std::vector to store altitudes of the weather cells

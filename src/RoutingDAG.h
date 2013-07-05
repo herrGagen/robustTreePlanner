@@ -106,6 +106,12 @@ private:
 	bool testDistanceTooCloseToMergingNodesOnCurrentBranch(Node* toBeDecided, Node* current, unsigned int entryIndex);
 	Node* nextNodeOfGivenNodeOnNextBranch(Node* current, unsigned int entryIndex);
 	Node* nextNodeOfGivenNodeOnCurrentBranch(Node* current, unsigned int entryIndex);
+
+public:
+	void areAllNodesFarFromWeather( const vector<WeatherData> &wData, 
+											double rad, 
+											double effectiveThresh, 
+											double routingThresh );
 };
 
 #endif

@@ -47,7 +47,7 @@ private:
 	double laneWidth; /**< Please describe this variable */
 	unsigned demandShift; /**< Please describe this variable */
 	unsigned int demandDrop; /**< Please describe this variable */
-	unsigned int numFixedNodes; /**< Please describe this variable */
+	int numFixedNodes; /**< Please describe this variable */
 	std::vector<double> operFlex; /**< Please describe this variable */
 	std::string timestamp; /**< When the input file was created */
 public:
@@ -63,7 +63,7 @@ public:
 	double getNodeEdgeThreshold() const { return nodeEdgeThreshold; }
 	double getAngleOffset() const { return angleOffset; }
 	double getLaneWidth() const { return laneWidth; }
-	unsigned int getNumFixedNodes() const { return numFixedNodes; }
+	int getNumFixedNodes() const { return numFixedNodes; }
 	unsigned int getDemandShift() const { return demandShift; }
 	unsigned int getDemandDrop() const { return demandDrop; }
 	std::vector<double> getOperFlex() const { return operFlex; }
