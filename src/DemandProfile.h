@@ -23,17 +23,17 @@ public:
 	bool readInFile(std::string fileName);
 	bool readInNewFormatDemandFile();
 	void reset();
-	void getDemandInfo(double* cX, double* cY, double* laPerPixel, double* loPerPixel, string* timeStart, string* timeEnd);
+	void getDemandInfo(double* cX, double* cY, double* laPerPixel, double* loPerPixel, std::string* timeStart, std::string* timeEnd);
 	void getRange(double* minLati, double* minLong, double* maxLati, double* maxLong);
-	void generateDemandVector(vector<double> &demandRNPs, double startingAngle, double endingAngle, double nmilesPerPixel);
+	void generateDemandVector(std::vector<double> &demandRNPs, double startingAngle, double endingAngle, double nmilesPerPixel);
 	
 	// most x,y pairs we are talking about in this class are actually lati/long pairs
 private:
-	vector<double> xCoors;	/**< the x coordinates of the aircraft (latitudes) */
-	vector<double> yCoors;	/**< the y coordinates of the aircraft (longitudes) */
-	vector<double> rnp; /**< the rnp of each aircraft */
-	string timeStart; /**< Simulation starting time */
-        string timeEnd;   /**< Simulation ending time */
+	std::vector<double> xCoors;	/**< the x coordinates of the aircraft (latitudes) */
+	std::vector<double> yCoors;	/**< the y coordinates of the aircraft (longitudes) */
+	std::vector<double> rnp; /**< the rnp of each aircraft */
+	std::string timeStart; /**< Simulation starting time */
+        std::string timeEnd;   /**< Simulation ending time */
 	double centerX;	// the x coordinate of the airport(latitude)
 	double centerY;	// the y coordinate of the airport(longitude)
 	double latiPerPixel; // conversion from latitude to pixel in x direction

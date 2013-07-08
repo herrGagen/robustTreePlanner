@@ -22,8 +22,6 @@
 
 #define PI 3.14159265						// the value of PI
 
-using namespace std;
-
 #ifndef USERINTERFACE_H
 #define USERINTERFACE_H
 
@@ -49,7 +47,7 @@ private:
 	void inputOperationalFlexibility();		// ask user to input parameters related to operational flexity
 	bool inputDemand();						// ask the user to input demand information
 	void printQuadrantAndDemandInfo();		// use standard output to print the quadrant information on the screen
-	bool inputDemandValid(string &input, int numDemands);		// tell if the user input demand is valid or not
+	bool inputDemandValid(std::string &input, int numDemands);		// tell if the user input demand is valid or not
 	/****************************************************************************************************************************/
 	// tree generating related functions
 	bool generateTree();					// generate a bottommost robust tree
@@ -58,10 +56,10 @@ private:
 private:
 	InputFileReader inputs;
 	Quadrant* quadrant;						// the quadrant in the routing context
-	vector<WeatherData> weatherData;		// a set of weather data files
+	std::vector<WeatherData> weatherData;		// a set of weather data files
 	DemandProfile* demandProfile;			// demand profile information
 	RoutingDAG* routingDAG;					// key component, the routing DAG structure
-	vector<double> demandRNPs;				// the vector storing RNP values for each entry node
+	std::vector<double> demandRNPs;				// the std::vector storing RNP values for each entry node
 	double deviationThreshold;				// the threshold that a weather cell is considered hazardous
 	double nodeEdgeThreshold;				// the threshold that we consider a thick edge or disk to be clear of weather
 	/****************************************************************************************************************************/
@@ -77,7 +75,7 @@ private:
 private: 
 	double centerLati,centerLong;			// the lati/long value of the center point (0, 0)
 	double latiPerPixel, longPerPixel;		// lati/long that a single pixel represents
-	string startTime, endTime;				// the time range of simulation
+	std::string startTime, endTime;				// the time range of simulation
 };
 
 #endif

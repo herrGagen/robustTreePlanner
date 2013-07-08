@@ -3,7 +3,7 @@
 
 int main(int argc, char* argv[])
 {
-  string inputFile = "inputs.txt";
+  std::string inputFile = "inputs.txt";
   if (argc > 1)
   {
     for (int i = 0; i < argc; i++)

@@ -48,11 +48,11 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 	reset();											// first reset the vectors to empty, then read in
 
 	const char *fname = fileName.c_str();
-	ifstream dataStream(fname, ifstream::in );
+	std::ifstream dataStream(fname, std::ifstream::in );
 	size_t fileSize = 0;
-	dataStream.seekg(0, ios_base::end);
+	dataStream.seekg(0, std::ios_base::end);
 	fileSize = (size_t)dataStream.tellg();
-	dataStream.seekg(0, ios_base::beg);
+	dataStream.seekg(0, std::ios_base::beg);
 
 	// Due to incompatability across multiple platforms, this section is being 
 	// redone with more modern c++ tools than pointers, and strcomp()
@@ -90,7 +90,7 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 		double values[4]; // Storage for tempX, tempY, tempAltitude, tempProbability		
 		size_t beginNumber = thisLine.find_first_of("-.0123456789",0);
 		// Just a double check to ensure we aren't feeding the parser garbage lines.
-		if(beginNumber == string::npos)
+		if(beginNumber == std::string::npos)
 		{
 			break;
 		}

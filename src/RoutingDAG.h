@@ -25,16 +25,14 @@
 #include <vector>
 #include "NodeAndEdge.h"
 
-using namespace std;
-
 class RoutingDAG
 {
 public:
 	RoutingDAG();
 	~RoutingDAG();
 	// the key function, routing algorithm, used to generate a tree from a prebuilt graph
-	bool generateTree(const vector<WeatherData> &wData, vector<double> rnp, double effectiveThres, double routingThres);
-	bool generateTautenedTree(const vector<WeatherData> &wData, vector<double> rnp, double effectiveThres, double routingThres);
+	bool generateTree(const std::vector<WeatherData> &wData, std::vector<double> rnp, double effectiveThres, double routingThres);
+	bool generateTautenedTree(const std::vector<WeatherData> &wData, std::vector<double> rnp, double effectiveThres, double routingThres);
 	void resetTree();
 	void reset();
 	void setminimumDistanceBetweenMergingNodes(double dis);
@@ -50,14 +48,14 @@ public:
 private:
 	unsigned int numLayers;
 	// the entry nodes have to be in the order aligned along the outer boundary of the quadrant, with enough RNP separating them
-	vector<Node*> entries;
-	vector<Node*> nodes;
-	vector<Node*> fixes;
-	vector<Edge*> edges;
+	std::vector<Node*> entries;
+	std::vector<Node*> nodes;
+	std::vector<Node*> fixes;
+	std::vector<Edge*> edges;
 	// one number for each layer in the DAG, denoting which nodes are unavailable (Bottom most Filling), initialized to -1
-	vector<int> layerStartingIndex;					// in the nodes vector, this helper vector records the starting position of each new layer 
-	vector<int> layerUsedIndex;						// size is the number of layers
-	vector<int> layerUsedIndexReverseDirection;		// when tautening the tree, we need one more usedIndex vector on the other side of the branch
+	std::vector<int> layerStartingIndex;					// in the nodes std::vector, this helper std::vector records the starting position of each new layer 
+	std::vector<int> layerUsedIndex;						// size is the number of layers
+	std::vector<int> layerUsedIndexReverseDirection;		// when tautening the tree, we need one more usedIndex std::vector on the other side of the branch
 private:
 	int status;										// if a tree is generated
 	int nodesReadIn;								// if the nodes of the DAG are ready
@@ -65,8 +63,8 @@ private:
 	int treeShapeStatus;							// if its bottommost tree or tautened tree
 	double minimumDistanceBetweenMergingNodes;		// the minimum distance in between 2 merging nodes along a single branch
 private:
-	bool routeBranch(Node *start, unsigned int entryIndex, const vector<WeatherData> &wData, double rnp, double effectiveThres, double routingThres);
-	bool testRemainingBranchWhileMerging(Node *start, const vector<WeatherData> &wData, double rnp, double effectiveThres, double routingThres);
+	bool routeBranch(Node *start, unsigned int entryIndex, const std::vector<WeatherData> &wData, double rnp, double effectiveThres, double routingThres);
+	bool testRemainingBranchWhileMerging(Node *start, const std::vector<WeatherData> &wData, double rnp, double effectiveThres, double routingThres);
 	void setTreeBranchUp(Node* current, Node* start, double rnp);
 	void setTreeBranchUpMerging(Node* start, double rnp);
 	void treeBranchPostProcessing(Node* start, double rnp);
@@ -88,7 +86,7 @@ private:
 	// helper functions when tautening the tree branches
 	void updateLayerUsedIndexVector(unsigned int entryIndex);
 	int findFeasibleNextEntryNode(unsigned int entryIndex);
-	bool routeTautenedTreeBranch(Node *start, unsigned int entryIndex, const vector<WeatherData> &wData, double rnp, 
+	bool routeTautenedTreeBranch(Node *start, unsigned int entryIndex, const std::vector<WeatherData> &wData, double rnp, 
 								 double effectiveThres, double routingThres, int topMostTendency);
 	bool onNextBranch(Node* current, unsigned int entryIndex);
 	bool testNextBranchNode(Node* current, double rnp, unsigned int entryIndex);
@@ -108,7 +106,7 @@ private:
 	Node* nextNodeOfGivenNodeOnCurrentBranch(Node* current, unsigned int entryIndex);
 
 public:
-	bool areAllNodesFarFromWeather( const vector<WeatherData> &wData, 
+	bool areAllNodesFarFromWeather( const std::vector<WeatherData> &wData, 
 											double rad, 
 											double effectiveThresh, 
 											double routingThresh );

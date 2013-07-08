@@ -67,11 +67,11 @@ bool DemandProfile::readInFile(std::string fileName)
           size_t beginNumber = thisLine.find_first_of("-.0123456789",found);
           size_t endNumber = thisLine.find_first_not_of("-.0123456789", beginNumber);
 	
-          timeStart = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str(); // store it in the timeStart string
+          timeStart = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str(); // store it in the timeStart std::string
           beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
           endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
           endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
-          timeEnd   = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str(); // store it in the timeStart string
+          timeEnd   = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str(); // store it in the timeStart std::string
         }
 
       // Look for CENTER_LOCATION and store following 2 numbers in centerX, centerY
@@ -79,11 +79,11 @@ bool DemandProfile::readInFile(std::string fileName)
         {
           size_t beginNumber = thisLine.find_first_of("-.0123456789",0);
           size_t endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
-          centerX = (double) ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() ); // store it in the timeStart string
+          centerX = (double) ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() ); // store it in the timeStart std::string
           beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
           endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
           endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
-          centerY   = (double) ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() ); // store it in the timeStart string
+          centerY   = (double) ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() ); // store it in the timeStart std::string
         }
 
       // Look for BEGIN_FLIGHTS to signal that we're in the correct location for flight data
@@ -97,16 +97,16 @@ bool DemandProfile::readInFile(std::string fileName)
   /*
     Flight data is in the next portion of the file, between the "tags" BEGIN_FLIGHTS, END_FLIGHTS
     and is in the format:
-    Unique ID,ACID,RNP Level,Airport Range Entry Time,Airport Range Entry Lat,Airport Range Entry Lon, Dept. Airport,Arr. Airport,Flight Plan String
+    Unique ID,ACID,RNP Level,Airport Range Entry Time,Airport Range Entry Lat,Airport Range Entry Lon, Dept. Airport,Arr. Airport,Flight Plan std::string
     Unique ID ==> Ignore
     ACID ==> Ignore
-    RNP Level ==> vector<double>  rnp (note, the entries are all integers)
+    RNP Level ==> std::vector<double>  rnp (note, the entries are all integers)
     Airport Range Entry Time ==> Ignore
-    Airport Range Entry Lat ==> vector xCoors
-    Airport Range Entry Lon ==> vector yCoors
+    Airport Range Entry Lat ==> std::vector xCoors
+    Airport Range Entry Lon ==> std::vector yCoors
     Dept. Airport ==> Ignore
     Arr. Airport ==> Ignore
-    Flight Plan String ==> Ignore
+    Flight Plan std::string ==> Ignore
   */
   std::string tempString;
   double tempdouble = 0;
@@ -237,7 +237,7 @@ void DemandProfile::reset()
 
 // thsi function is called when reading in weather data. The function is used to do data conversion, from
 // the read in weather cell in lati/long to their x/y positions. 
-void DemandProfile::getDemandInfo(double* cX, double* cY, double* laPerPixel, double* loPerPixel, string* timeS, string* timeE)
+void DemandProfile::getDemandInfo(double* cX, double* cY, double* laPerPixel, double* loPerPixel, std::string* timeS, std::string* timeE)
 {
   *cX = centerX;
   *cY = centerY;
@@ -278,7 +278,7 @@ void DemandProfile::generateDemandVector(std::vector<double> &demand, double sta
               if(angle>startingAngle && angle<=endingAngle)
                 {
                   int tempIndex = int((angle-startingAngle)/angleIncrement);
-                  demandRNPS[tempIndex] = max(demandRNPS[tempIndex], rnp[i]);	 // compute the max rnp value for this range of entry node
+                  demandRNPS[tempIndex] = std::max(demandRNPS[tempIndex], rnp[i]);	 // compute the std::max rnp value for this range of entry node
                 }
             }
           else												// starting and ending angle are on different sides of the positive x axis
@@ -286,7 +286,7 @@ void DemandProfile::generateDemandVector(std::vector<double> &demand, double sta
               if(angle>startingAngle || angle<endingAngle-2*PI)
                 {
                   int tempIndex = angle>=startingAngle ? int((angle-startingAngle)/angleIncrement) :  int((angle+2*PI-startingAngle)/angleIncrement);
-                  demandRNPS[tempIndex] = max(demandRNPS[tempIndex], rnp[i]);	 // compute the max rnp value for this range of entry node
+                  demandRNPS[tempIndex] = std::max(demandRNPS[tempIndex], rnp[i]);	 // compute the std::max rnp value for this range of entry node
                 }
             }			
         }
@@ -294,6 +294,6 @@ void DemandProfile::generateDemandVector(std::vector<double> &demand, double sta
   // convert to opengl coordinate system and in the project, rnp is half the lane width
   for(unsigned int i=0; i<NUM_ENTRY_NODES_PER_QUADRANT; i++)		
     {
-    demand.push_back(demandRNPS[i]/(2*nmilesPerPixel));						// store them into the resulting vector
+    demand.push_back(demandRNPS[i]/(2*nmilesPerPixel));						// store them into the resulting std::vector
     }
 }

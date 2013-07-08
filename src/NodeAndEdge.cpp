@@ -199,22 +199,22 @@ bool Node::collisionBetweenDiskAndSquare(double xc, double yc, double r, double 
 	}
 	// next, if they collide with each other, the disk must intersect with one of the edges
 	// the intersections are not with in the range of the edge (x, y)<->(x, y+c)
-	if(abs(x-xc)<=r && ( sqrt(r*r-(x-xc)*(x-xc))+yc<=y || yc-sqrt(r*r-(x-xc)*(x-xc))>=y+c) )			
+	if(std::abs(x-xc)<=r && ( sqrt(r*r-(x-xc)*(x-xc))+yc<=y || yc-sqrt(r*r-(x-xc)*(x-xc))>=y+c) )			
 	{
 		return false;
 	}
 	// the intersections are not with in the range of the edge (x+c, y)<-> (x+c, y+c)
-	if(abs(xc-(x+c))<=r && (sqrt(r*r-(x+c-xc)*(x+c-xc))+yc<=y || yc-sqrt(r*r-(x+c-xc)*(x+c-xc))>=y+c))	
+	if(std::abs(xc-(x+c))<=r && (sqrt(r*r-(x+c-xc)*(x+c-xc))+yc<=y || yc-sqrt(r*r-(x+c-xc)*(x+c-xc))>=y+c))	
 	{
 		return false;
 	}
 	// the intersections are not with in the range of the edge (x, y)<-> (x+c, y)
-	if(abs(y-yc)<=r && (sqrt(r*r-(y-yc)*(y-yc))+xc<=x || xc-sqrt(r*r-(y-yc)*(y-yc))>=x+c))			
+	if(std::abs(y-yc)<=r && (sqrt(r*r-(y-yc)*(y-yc))+xc<=x || xc-sqrt(r*r-(y-yc)*(y-yc))>=x+c))			
 	{
 		return false;
 	}
 	// the intersections are not with in the range of the edge (x, y+c)<-> (x+c, y+c)
-	if(abs((y+c)-yc)<=r && (sqrt(r*r-(y+c-yc)*(y+c-yc))+xc<=x || xc-sqrt(r*r-(y+c-yc)*(y+c-yc))>=x+c))	
+	if(std::abs((y+c)-yc)<=r && (sqrt(r*r-(y+c-yc)*(y+c-yc))+xc<=x || xc-sqrt(r*r-(y+c-yc)*(y+c-yc))>=x+c))	
 	{
 		return false;
 	}
@@ -978,8 +978,8 @@ bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double
 				// first, the vertex that is near the smaller z of the 2 points, test is z drops in between the 2 endpoints or below the lower of the 2 points
 				if(z>std::min(z1, z2) && z<std::max(z1, z2))					// if z is inbetween the segment
 				{
-					tempx2 = x1+(x2-x1)*abs(z-z1)/abs(z2-z1);
-					tempy2 = y1+(y2-y1)*abs(z-z1)/abs(z2-z1);
+					tempx2 = x1+(x2-x1)*std::abs(z-z1)/std::abs(z2-z1);
+					tempy2 = y1+(y2-y1)*std::abs(z-z1)/std::abs(z2-z1);
 				}
 				else												// meaning z is even smaller than std::min(z1, z2)
 				{
@@ -989,8 +989,8 @@ bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double
 				// first, the vertex that is near the larger z of the 2 points
 				if(z+cellHeight>std::min(z1, z2) && z+cellHeight<std::max(z1, z2))					// if z+cellHeight is inbetween the segment
 				{
-					tempx1 = x1+(x2-x1)*abs(z+cellHeight-z1)/abs(z2-z1);
-					tempy1 = y1+(y2-y1)*abs(z+cellHeight-z1)/abs(z2-z1);
+					tempx1 = x1+(x2-x1)*std::abs(z+cellHeight-z1)/std::abs(z2-z1);
+					tempy1 = y1+(y2-y1)*std::abs(z+cellHeight-z1)/std::abs(z2-z1);
 				}
 				else												// meaning z is even greater than std::max(z1, z2)
 				{
@@ -1067,10 +1067,10 @@ bool Edge::collisionBetweenRectangleAndSquare(double x1, double y1, double x2, d
 	}
 	// test the small bounding box next, no overlapping, then return false
 	double longestEdgeLength = sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));				// a omputation that will be used many times
-	if(std::min(x1, x2)-w*abs(y1-y2)/longestEdgeLength>x+c ||
-		std::max(x1, x2)+w*abs(y1-y2)/longestEdgeLength<x ||
-		std::min(y1, y2)-w*abs(x1-x2)/longestEdgeLength>y+c ||
-		std::max(y1, y2)+w*abs(x1-x2)/longestEdgeLength<y)
+	if(std::min(x1, x2)-w*std::abs(y1-y2)/longestEdgeLength>x+c ||
+		std::max(x1, x2)+w*std::abs(y1-y2)/longestEdgeLength<x ||
+		std::min(y1, y2)-w*std::abs(x1-x2)/longestEdgeLength>y+c ||
+		std::max(y1, y2)+w*std::abs(x1-x2)/longestEdgeLength<y)
 		return false;
 	// next test the 4 edges of the rectangle to see if any of the 4 edges is a full line separator
 	double temp1, temp2, temp3, temp4, temp5, slope;
@@ -1098,23 +1098,23 @@ bool Edge::collisionBetweenRectangleAndSquare(double x1, double y1, double x2, d
 			return false;							// vertices of the square are one side, the rectangle is on the other, then true
 		}
 	}
-	// 3. line equation: y-(y1+w*sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))/abs(x1-x2)) = ((y2-y1)/(x2-x1))*(x-x1)
+	// 3. line equation: y-(y1+w*sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))/std::abs(x1-x2)) = ((y2-y1)/(x2-x1))*(x-x1)
 	if(x1-x2!=0)
 	{
 		slope = (y2-y1)/(x2-x1);
-		temp1 = y-(y1+w*longestEdgeLength/abs(x1-x2)) - slope*(x-x1);
-		temp2 = y+c-(y1+w*longestEdgeLength/abs(x1-x2)) - slope*(x-x1);
-		temp3 = y-(y1+w*longestEdgeLength/abs(x1-x2)) - slope*(x+c-x1);
-		temp4 = y+c-(y1+w*longestEdgeLength/abs(x1-x2)) - slope*(x+c-x1);	// temp5 must be negative this time, when we apply (x1, y1) in the equation
+		temp1 = y-(y1+w*longestEdgeLength/std::abs(x1-x2)) - slope*(x-x1);
+		temp2 = y+c-(y1+w*longestEdgeLength/std::abs(x1-x2)) - slope*(x-x1);
+		temp3 = y-(y1+w*longestEdgeLength/std::abs(x1-x2)) - slope*(x+c-x1);
+		temp4 = y+c-(y1+w*longestEdgeLength/std::abs(x1-x2)) - slope*(x+c-x1);	// temp5 must be negative this time, when we apply (x1, y1) in the equation
 		if(temp1>=0 && temp2>=0 && temp3>=0 && temp4>=0)
 		{
 			return false;							// vertices of the square are one side, the rectangle is on the other, then true
 		}
-		// 4. line equation: y-(y1-w*sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))/abs(x1-x2)) = ((y2-y1)/(x2-x1))*(x-x1)
-		temp1 = y-(y1-w*longestEdgeLength/abs(x1-x2)) - slope*(x-x1);
-		temp2 = y+c-(y1-w*longestEdgeLength/abs(x1-x2)) - slope*(x-x1);
-		temp3 = y-(y1-w*longestEdgeLength/abs(x1-x2)) - slope*(x+c-x1);
-		temp4 = y+c-(y1-w*longestEdgeLength/abs(x1-x2)) - slope*(x+c-x1);	// temp5 must be positive this time, when we apply (x1, y1) in the equation
+		// 4. line equation: y-(y1-w*sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))/std::abs(x1-x2)) = ((y2-y1)/(x2-x1))*(x-x1)
+		temp1 = y-(y1-w*longestEdgeLength/std::abs(x1-x2)) - slope*(x-x1);
+		temp2 = y+c-(y1-w*longestEdgeLength/std::abs(x1-x2)) - slope*(x-x1);
+		temp3 = y-(y1-w*longestEdgeLength/std::abs(x1-x2)) - slope*(x+c-x1);
+		temp4 = y+c-(y1-w*longestEdgeLength/std::abs(x1-x2)) - slope*(x+c-x1);	// temp5 must be positive this time, when we apply (x1, y1) in the equation
 		if(temp1>=0 && temp2>=0 && temp3>=0 && temp4<=0)
 		{
 			return false;							// vertices of the square are one side, the rectangle is on the other, then true
@@ -1186,8 +1186,8 @@ bool Edge::collisionWithEdgeHelper(double w, double ix1, double iy1, double iz1,
 	}
 	// test the distance between 2 lines, distance formula between 2 lines
 	double vec[3] = {(y2-y1)*(iz2-iz1)-(z2-z1)*(iy2-iy1), (z2-z1)*(ix2-ix1)-(x2-x1)*(iz2-iz1), (x2-x1)*(iy2-iy1)-(y2-y1)*(ix2-ix1)};
-	// the distance is abs((ix1-x1)*vec[0]+(iy1-y1)*vec[1]+(iz1-z1)*vec[2])/sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]
-	if (abs((ix1-x1)*vec[0]+(iy1-y1)*vec[1]+(iz1-z1)*vec[2])/sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2])>=tWidth)
+	// the distance is std::abs((ix1-x1)*vec[0]+(iy1-y1)*vec[1]+(iz1-z1)*vec[2])/sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]
+	if (std::abs((ix1-x1)*vec[0]+(iy1-y1)*vec[1]+(iz1-z1)*vec[2])/sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2])>=tWidth)
 	{
 		return false;
 	}

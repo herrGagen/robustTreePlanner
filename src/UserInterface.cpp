@@ -165,10 +165,10 @@ bool UserInterface::editQuadrant()
 		if(angle!=0) angle = angle*PI/180;
 		std::cout << "\nThe inner radius of the quadrant is (in nm, enter 0 to skip):";
 		cin>>ir;
-		if(ir!=0)	ir = abs(ir)/NMILESPERPIXEL;
+		if(ir!=0)	ir = std::abs(ir)/NMILESPERPIXEL;
 		std::cout << "\nThe outer radius of the quadrant is (in nm, enter 0 to skip):";
 		cin>>ora;
-		if(ora!=0)	ora = abs(ora)/NMILESPERPIXEL;
+		if(ora!=0)	ora = std::abs(ora)/NMILESPERPIXEL;
 		std::cout << "\nThe inner altitude of the quadrant is (in feet, enter 0 to skip):";
 		cin>>ih;
 		if(ih!=0)	ih = (ih-ALTITUDE_AT_BASE_PLANE)/ALTITUDE_PER_PIXEL;
@@ -498,7 +498,7 @@ bool UserInterface::inputDemand()
 			std::cout << "\nInvalid Value...";
 		}
 	}
-	string tempDemands;
+	std::string tempDemands;
 	cin.ignore(1000 ,'\n');													// clear the buffer, ignore the leftover characters
 	while(true)
 	{
@@ -508,7 +508,7 @@ bool UserInterface::inputDemand()
 		{
 			std::cout << "\nInvalid Input...";
 		}
-		else if (!quadrant->demandFeasible(demandRNPs))		// the new demands are stored in the demandRNPs vector but cannot be accomodated by the quadrant
+		else if (!quadrant->demandFeasible(demandRNPs))		// the new demands are stored in the demandRNPs std::vector but cannot be accomodated by the quadrant
 		{
 			std::cout << "\nThe quadrant cannot accomodate the new demands...";
 		}
@@ -526,8 +526,8 @@ bool UserInterface::inputDemand()
 	return true;
 }
 
-// test if the user input demand vector is valid input or not, if so, update the demandRNPs vector
-bool UserInterface::inputDemandValid(string &input, int numDemands)
+// test if the user input demand std::vector is valid input or not, if so, update the demandRNPs std::vector
+bool UserInterface::inputDemandValid(std::string &input, int numDemands)
 {
 	int numCommas = 0;
 	int numPoints = 0;
@@ -578,13 +578,13 @@ bool UserInterface::inputDemandValid(string &input, int numDemands)
 		rnpInputsCStr[i] = input.at(i);
 	}
 	rnpInputsCStr[input.length()] = '\0';						// almost sure that the input format is correct
-	vector<double> tempRnps;
+	std::vector<double> tempRnps;
 	int index = 0;
 	int wordStartingIndex = 0;
 	int length = strlen(rnpInputsCStr);
 	while(index<=length)
 	{
-		if(rnpInputsCStr[index]!=',' && rnpInputsCStr[index]!='\0')		// parse the string by separators
+		if(rnpInputsCStr[index]!=',' && rnpInputsCStr[index]!='\0')		// parse the std::string by separators
 		{
 			index++;
 		}
@@ -618,7 +618,7 @@ bool UserInterface::inputDemandValid(string &input, int numDemands)
 			wordStartingIndex = ++index;
 		}
 	}
-	demandRNPs.clear();											// copy the temporarily stored rnp values into the demand vector
+	demandRNPs.clear();											// copy the temporarily stored rnp values into the demand std::vector
 	for(unsigned int i=0; i<tempRnps.size(); i++)
 	{
 		demandRNPs.push_back(tempRnps[i]/NMILESPERPIXEL);
@@ -642,12 +642,12 @@ bool UserInterface::readWeatherData()
 		std::cout <<  std::endl << "Invalid weather count..." << std::endl;
 		return false;
 	}
-	vector<string> weatherFileDirectories;
+	std::vector<string> weatherFileDirectories;
 	for(int i=0; i<totalNumWeatherFiles; i++)
 	{
-		string tempStr;
+		std::string tempStr;
 		tempStr = inputs.getWeatherFile(i);
-		weatherFileDirectories.push_back(tempStr);					// store the directories of each weather file into the vector
+		weatherFileDirectories.push_back(tempStr);					// store the directories of each weather file into the std::vector
 	}
 	/***********************************************************************************************************************************/
 	weatherData.clear();
@@ -656,10 +656,10 @@ bool UserInterface::readWeatherData()
 	double rangeMaxLati;
 	double rangeMaxLong;
 	// get the range of the weather data by knowing the range of the demand profile, so those unrelated weather
-	// data cells are trimed (not read into the memory of the storing vector at all)
+	// data cells are trimed (not read into the memory of the storing std::vector at all)
 	demandProfile->getRange(&rangeMinLati, &rangeMinLong, &rangeMaxLati, &rangeMaxLong);
 	double minAlt = 10000;
-	double maxAlt = 0;			// get the min and max altitude of all weather files in order to set the quadrant
+	double maxAlt = 0;			// get the min and std::max altitude of all weather files in order to set the quadrant
 	std::cout << "\nReading weather data files now, please wait..." << std::endl;
 	/***********************************************************************************************************************************/
 
@@ -686,9 +686,9 @@ bool UserInterface::readWeatherData()
 			// convert the weather cells to screen OPENGL coordinate system 
 			tempWeather->convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
 
-			weatherData.push_back(*tempWeather);		// push the newly read in weather data into the storing vector
+			weatherData.push_back(*tempWeather);		// push the newly read in weather data into the storing std::vector
 			minAlt = min(minAlt, (double)tempWeather->getMinAlt());
-			maxAlt = max(maxAlt, (double)tempWeather->getMaxAlt());
+			maxAlt = std::max(maxAlt, (double)tempWeather->getMaxAlt());
 		}
 		else
 		{
@@ -704,7 +704,7 @@ bool UserInterface::readWeatherData()
 		std::cout << i << "   " << weatherData[i].getProbability() << std::endl;
 	}
 	// the total probability of the weather files is not 1
-	if(abs(totalProbabilityOfWeatherFiles-1.0) > 0.1)			
+	if(std::abs(totalProbabilityOfWeatherFiles-1.0) > 0.1)			
 	{
 		std::cerr <<  "\nThe total probability of the weather data files is not 1."<<std::endl;
 		std::cout << "Current Probability: " << totalProbabilityOfWeatherFiles << std::endl;
@@ -732,7 +732,7 @@ bool UserInterface::readDemandProfile()
 	/************************************************************************************************/
 	if(ctrl_QuadGenerated == QUADRANT_GENERATED)
 	{
-		string demandProfileDirectory;	// the directory of the demand profile
+		std::string demandProfileDirectory;	// the directory of the demand profile
 		demandProfileDirectory = inputs.getDemandFile();
 		demandProfile->reset();	// a brand new demand instance
 		if(demandProfile->readInFile(demandProfileDirectory) )

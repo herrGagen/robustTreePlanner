@@ -163,7 +163,7 @@ int Quadrant::getLiftStatus()
 }
 
 // decide if a group of demand for entry nodes is feasible or not, return true is feasilbe
-bool Quadrant::demandFeasible(vector<double> &rnps)
+bool Quadrant::demandFeasible(std::vector<double> &rnps)
 {
 	// first compute the maximum, minimum and sum of the rnp values	
 	double rnpSum, minrnp, maxrnp;
@@ -188,7 +188,7 @@ bool Quadrant::demandFeasible(vector<double> &rnps)
 // effectiveThres means if a weather cell's deviation probability is below this value, it's going to be considered as NULL
 // routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
 // if the value < routingThres, then it is considered an obstacle 
-bool Quadrant::generateDAG(vector<double> rnps, int n, double effectiveThres, double routingThres, const vector<WeatherData> &wData, RoutingDAG* rDAG, double qAngleOffset, int numFixNodes)
+bool Quadrant::generateDAG(std::vector<double> rnps, int n, double effectiveThres, double routingThres, const std::vector<WeatherData> &wData, RoutingDAG* rDAG, double qAngleOffset, int numFixNodes)
 {
 	std::cout << "Generating DAG..." << std::endl;
 	if(!generateEntryAndFixNodes(rnps, effectiveThres, routingThres, wData, rDAG, qAngleOffset, numFixNodes))
@@ -201,7 +201,7 @@ bool Quadrant::generateDAG(vector<double> rnps, int n, double effectiveThres, do
 }
 
 // given a size n double array of entry points' rnps, and a weatherdata set, and the DAG structure that we are going to put the points in
-bool Quadrant::generateEntryAndFixNodes(vector<double> rnps, double effectiveThres, double routingThres, const vector<WeatherData> &wData, RoutingDAG *rDAG, double quadAngleOffset, unsigned int maxFixNodes)
+bool Quadrant::generateEntryAndFixNodes(std::vector<double> rnps, double effectiveThres, double routingThres, const std::vector<WeatherData> &wData, RoutingDAG *rDAG, double quadAngleOffset, unsigned int maxFixNodes)
 {
   std::cout << "Max Number of Fix Nodes: " << maxFixNodes << std::endl;
 	if(!demandFeasible(rnps))
@@ -260,7 +260,7 @@ bool Quadrant::generateEntryAndFixNodes(vector<double> rnps, double effectiveThr
 				// store the fix nodes information in the array
 
 				anglesOfFixNodes[numFixNodes] = currentAngleRight;
-				currentAngleLeft = max(currentAngleLeft, currentAngleRight + angleIncrement);
+				currentAngleLeft = std::max(currentAngleLeft, currentAngleRight + angleIncrement);
 				currentAngleRight -= angleIncrement;
 				numFixNodes++;
 				if(numFixNodes>=maxFixNodes)
@@ -282,7 +282,7 @@ bool Quadrant::generateEntryAndFixNodes(vector<double> rnps, double effectiveThr
 			{
 				nodeArrayToBeInsertedIntoTheDAG[numFixNodes] = tempNode2;		// store the fix nodes information in the array
 				anglesOfFixNodes[numFixNodes] = currentAngleLeft;
-				currentAngleRight = min(currentAngleRight, currentAngleLeft - angleIncrement);
+				currentAngleRight = std::min(currentAngleRight, currentAngleLeft - angleIncrement);
 				currentAngleLeft += angleIncrement;
 				numFixNodes ++;
 				if(numFixNodes==3)												// already got enough fix nodes
@@ -329,7 +329,7 @@ bool Quadrant::generateEntryAndFixNodes(vector<double> rnps, double effectiveThr
 }
 
 // this function generated all the nodes in the DAG, but the edges are not generated, which have to be done by the generateEdgeSet() function defined in RoutingDAG.h
-void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, vector<double> rnps, double quadAngleOffset)
+void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, std::vector<double> rnps, double quadAngleOffset)
 {
 	unsigned int numLayers = 0;
 	double minrnp = *max_element(rnps.begin(), rnps.end());
