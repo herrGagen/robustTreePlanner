@@ -53,7 +53,7 @@ public:
 	bool setLayerIndex(int ilayerIndex);
 	int getLayer();
 	int getLayerIndex();
-	bool treeNodeOrNot();
+	bool isTreeNode();
 	
 	// basic get and set functions
 public:

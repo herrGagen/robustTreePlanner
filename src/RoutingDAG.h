@@ -108,7 +108,7 @@ private:
 	Node* nextNodeOfGivenNodeOnCurrentBranch(Node* current, unsigned int entryIndex);
 
 public:
-	void areAllNodesFarFromWeather( const vector<WeatherData> &wData, 
+	bool areAllNodesFarFromWeather( const vector<WeatherData> &wData, 
 											double rad, 
 											double effectiveThresh, 
 											double routingThresh );

@@ -430,17 +430,29 @@ bool UserInterface::tautenTree()
 		return false;
 	}
 	std::cout << "\nWe are tautening the bottommost tree branches now, please wait...";
+#if defined(DEBUG_TAUTENING)
 	std::cout << "\nBefore tautening" << std::endl;
-	routingDAG->areAllNodesFarFromWeather( weatherData, 
-											2, 
-											deviationThreshold, 
-											nodeEdgeThreshold );
+	for(double rad = .1; rad<25; rad *=2)
+	{
+		std::cout << "Radius tested: " << rad << '\t';
+		routingDAG->areAllNodesFarFromWeather( weatherData, 
+												rad, 
+												deviationThreshold, 
+												nodeEdgeThreshold );
+	}
+#endif
 	bool retval =  routingDAG->generateTautenedTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold);
+#if defined(DEBUG_TAUTENING)
 	std::cout << "\nAfter tautening" << std::endl;
-	routingDAG->areAllNodesFarFromWeather( weatherData, 
-											2, 
-											deviationThreshold, 
-											nodeEdgeThreshold );
+	for(double rad = .1; rad<25; rad *=2)
+	{
+		std::cout << "Radius tested: " << rad << '\t';
+		routingDAG->areAllNodesFarFromWeather( weatherData, 
+												rad, 
+												deviationThreshold, 
+												nodeEdgeThreshold );
+	}
+#endif
 	return retval;
 }
 

@@ -242,7 +242,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 		for(unsigned int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
 		{
 			Node* temp = fetchNode(i);
-			if(temp->treeNodeOrNot()) // if we have a tree node
+			if(temp->isTreeNode()) // if we have a tree node
 			{
 				// the position in indexToFetchNodeIndexVec is the index value of the node, the stored value is the one used in fetchNode(int i) function
 				indexToFetchNodeIndexVec.push_back(i);
@@ -725,7 +725,7 @@ bool RoutingDAG::routeBranch(Node *start, unsigned int entryIndex, const vector<
 			// note that once merged into the brach of the tree, it cannot deviate out from the branch 
 			// and this never happens for the first branch of the tree, because layerUsedIndex vector is all set to -1
 			if(tempNode->getNodeType()!=FIX_NODE &&	tempNode->getLayerIndex()==layerUsedIndex[tempNode->getLayer()] && 
-			   tempNode->treeNodeOrNot() && tempNode->getInDegree()<2 && onPreviousBranch(tempNode, entryIndex) &&
+			   tempNode->isTreeNode() && tempNode->getInDegree()<2 && onPreviousBranch(tempNode, entryIndex) &&
 			   !testPreviousBranchTillCurrentLayerEdge(tempEdge, rnp, entryIndex))		// test if the edge collide with part of previous branch (till current layer)
 			{																			// test the minimum distance between 2 merging nodes constraint
 				if(testDistanceTooCloseToMergingNodesOnPreviousBranch(tempNode, entryIndex))
@@ -881,22 +881,6 @@ void RoutingDAG::updateLayerUsedIndexVector(unsigned int entryIndex)
 	}
 }
 
-void RoutingDAG::areAllNodesFarFromWeather( const vector<WeatherData> &wData, 
-											double rad, 
-											double effectiveThresh, 
-											double routingThresh )
-{
-	unsigned int collisionCount = 0;
-	for(unsigned int j = 0; j < entries.size()+nodes.size()+fixes.size(); j++)
-	{
-			Node* tempNode = fetchNode( j );
-			if( tempNode->testRadiusWithWeatherDataSet(rad, wData, effectiveThresh, routingThresh) )
-			{
-				collisionCount++;
-			}
-	}
-	std::cout << collisionCount << " nodes intersect with the weather data set out of " << entries.size()+nodes.size()+fixes.size() << std::endl;
-}
 
 /***************************************************************************************************************************************************************/
 // after the bottommost tree is generated, tauten its branches so that it looks much better using Dijkstra algorithm on DAG
@@ -904,6 +888,7 @@ void RoutingDAG::areAllNodesFarFromWeather( const vector<WeatherData> &wData,
 // because the function is only called after the bottommost tree is generated
 bool RoutingDAG::generateTautenedTree(const vector<WeatherData> &wData, vector<double> rnp, double effectiveThres, double routingThres)
 {
+
 	if(status == TREE_NOT_GENERATED)		// this is not actually going to happen because the same test was always conducted before calling this function
 	{
 		std::cerr << "\nPlease generate the bottommost tree before tautening its branches!" << std::endl;
@@ -1003,7 +988,7 @@ bool compareNodes(Node* n1, Node* n2)
 bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, const vector<WeatherData> &wData, double rnp, 
 										 double effectiveThres, double routingThres, int topMostTendency)
 {
-	if(start->getDrawingRNP()==0)			// if there is no demand from the current entry node, then no branch is coming out of it, return
+	if( rnp == 0 || start->getDrawingRNP() == 0 )			// if there is no demand from the current entry node, then no branch is coming out of it, return
 	{
 		return true;
 	}
@@ -1183,7 +1168,7 @@ void RoutingDAG::setTreeBranchUpForTreeTautening(Node* current, Node* start, dou
 	while(current!=start)
 	{
 		// if the current new edge is part of the previous branch, then it means we are NOT adding an indegree on the current node
-		if(!(current->treeNodeOrNot() && current->getPrevTreeNode()->treeNodeOrNot()))
+		if(!(current->isTreeNode() && current->getPrevTreeNode()->isTreeNode()))
 		{
 			current->addInDegree();										// one more edge is coming in	
 		}
@@ -1685,4 +1670,33 @@ void RoutingDAG::generateOperFlexPairs(const std::vector<double> &radii, const s
 			tempNode->insertFreeRadiusVec(radii[j], tempNode->testRadiusWithWeatherDataSet(radii[j], wData, effectiveThres));
 		}
 	}
+}
+
+/**
+	\brief Checks if all nodes in our current tree are far from weather
+
+	\param wData All weather cells we will check against.
+	\param rad Minumum distance all tree nodes must be from weather
+	\param effectiveThresh Threshold for whether we consider weather an obstacle
+	\param routingThresh How likely an event is to occur before we avoid it.
+*/
+bool RoutingDAG::areAllNodesFarFromWeather( const vector<WeatherData> &wData, 
+											double rad, 
+											double effectiveThresh, 
+											double routingThresh )
+{
+	unsigned int collisionCount = 0;
+	for(unsigned int j = 0; j < entries.size()+nodes.size()+fixes.size(); j++)
+	{
+			Node* tempNode = fetchNode( j );
+			if(tempNode->isTreeNode() )
+			{
+				if( tempNode->testRadiusWithWeatherDataSet(rad, wData, effectiveThresh, routingThresh) )
+				{	
+					collisionCount++;
+				}
+			}
+	}
+	std::cout << collisionCount << " nodes intersect with the weather data set out of " << entries.size()+nodes.size()+fixes.size() << std::endl;
+	return( collisionCount == 0 );
 }

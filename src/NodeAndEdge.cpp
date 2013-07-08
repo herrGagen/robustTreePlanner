@@ -327,7 +327,7 @@ int Node::getLayerIndex()
 }
 
 // test if the node is a node in the tree
-bool Node::treeNodeOrNot()
+bool Node::isTreeNode()
 {
 	if(treeNode == TREE_NODE)
 	{
