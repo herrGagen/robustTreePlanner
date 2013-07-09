@@ -107,7 +107,7 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
           line = e.next
         end
       rescue StopIteration
-        print "Current File is not weather: ", filename, "\n"
+        print "Current File is not weather: ", file_name, "\n"
         break
       ensure
         w.close unless w.closed?
