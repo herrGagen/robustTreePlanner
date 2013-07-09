@@ -85,41 +85,51 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
 #       print time, "  ", writeable_name, "\n"
       w = File.new(writeable_name, 'a')
       temp = File.new(file_name, 'r')
-      e = temp.each_line
-      
-      # Need to find the Ensemble member number and  probability to write out
-      4.times { e.next } # Burn through first 4 rows of the ensemble file (we don't need them)
-      line = e.next
-      line.slice!(0, 2)
-      # print "LINE: ", line, "\n"
-      w.write("Ensemble " + line)
-      line = e.next.split.last.to_f / children_in_offset
-      sum += line
-      
-      # Will changed 2013-05-06
-      # Made this output with a force to output 9 decimals, since before it would use exponential notation.
-      w.write("Probability " + ("%.9f" % line).to_s + "\r\n")
-      # w.write("Probability " + line.to_s + "\r\n") 
-
-      line = e.next
-      while line.split.first == "#"
-        line = e.next
-      end
-
       begin
-        loop do
-          w.write(line) if line.split(",").last.to_f >= 0.70
-          # print line.split(","), "\n"
+        e = temp.each_line
+      
+        # Need to find the Ensemble member number and  probability to write out
+        4.times { e.next } # Burn through first 4 rows of the ensemble file (we don't need them)
+        line = e.next
+        line.slice!(0, 2)
+        # print "LINE: ", line, "\n"
+        w.write("Ensemble " + line)
+        line = e.next.split.last.to_f / children_in_offset
+        sum += line
+      
+        # Will changed 2013-05-06
+        # Made this output with a force to output 9 decimals, since before it would use exponential notation.
+        w.write("Probability " + ("%.9f" % line).to_s + "\r\n")
+        # w.write("Probability " + line.to_s + "\r\n") 
+
+        line = e.next
+        while line.split.first == "#"
           line = e.next
         end
       rescue StopIteration
+        print "Current File is not weather: ", filename, "\n"
         break
       ensure
-        w.close
-        temp.close
+        w.close unless w.closed?
+        File.delete(writeable_name)
+        temp.close unless temp.closed?
+      end 
+      unless w.closed? or temp.closed?
+        begin
+          loop do
+            w.write(line) if line.split(",").last.to_f >= 0.70
+            # print line.split(","), "\n"
+            line = e.next
+          end
+        rescue StopIteration
+          break
+        ensure
+          w.close unless w.closed?
+          temp.close unless temp.closed?
+        end
+        
+        id += 1
       end
-      
-      id += 1
     end
   end  
 
