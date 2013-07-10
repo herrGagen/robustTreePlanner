@@ -22,21 +22,21 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
   results_string      = "results_start_" + starting_time.to_s + "_offset_" + offset_in_minutes.to_s unless results_string
   results             = Pathname.new(Dir.pwd) + "Data" + results_string
   puts results
-  
+
   weather_dir         = "CWAMEnsembles" unless weather_dir
-  
+
   offset_in_minutes = offset_in_minutes.to_i
   starting_time = starting_time.to_i
-  
+
   # Delete existing directory -- make sure nothing valuable is stored here
   FileUtils.remove_dir(results, force = true)
   FileUtils.mkdir(results)
-  
-  
+
+
   # path = Pathname.new(Dir.pwd) # gives current directory
   puts Dir.pwd
   path = Pathname.new(Dir.pwd) + weather_dir
-  
+
   min_time = Time.new(Float::MAX)
   max_time = Time.new(Float::MIN)
 
@@ -45,81 +45,93 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
   path.each_child do |file_name|
     begin
       name_ary = file_name.basename.to_s.split("_")
-      time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
-      min_time = time if time < min_time
-      max_time = time if time > max_time
+      extension = name_ary.last.split(".").last
+      if extension == "txt"
+        time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
+        min_time = time if time < min_time
+        max_time = time if time > max_time
+      end
     rescue TypeError
       print "Error parsing a file: ", file_name, "\n"
     end
   end
-  
+
   raise "Files not in expected location or the filenames do not conform to ``DevProb_time1_time2_MemberX.dat``" if min_time == Time.new(Float::MAX) or max_time == Time.new(Float::MIN)
   time_upper_bound = min_time + offset_in_minutes * SECONDS_PER_MINUTE + starting_time * SECONDS_PER_MINUTE
   time_lower_bound = min_time + starting_time * SECONDS_PER_MINUTE
 
-  
+  print "Time upper bound: ", time_upper_bound, "\n"
+  print "Time lower bound: ", time_lower_bound, "\n"
   # Second pass determines how many members of each Ensemble are within the time constraints.
   children_in_offset = 0
-  member_name = path.children.first.basename.to_s.split("_")[3]
+
+  member_name = nil
   path.each_child do |file_name|
     name_ary = file_name.basename.to_s.split("_")
-    if name_ary[3] == member_name
-      time = DateTime.parse(name_ary[2]).to_time
-      if time <= time_upper_bound and time >= time_lower_bound
-        children_in_offset += 1
+    extension = name_ary.last.split(".").last
+    if extension == "txt"
+      member_name ||= name_ary[3]
+      if name_ary[3] == member_name
+        time = DateTime.parse(name_ary[2]).to_time
+        print time, "\n"
+        if time <= time_upper_bound and time >= time_lower_bound
+          children_in_offset += 1
+        end
       end
     end
   end
 
-  print "Children in offset: ", children_in_offset, "\n" # I'm worried this value is incorrect  
+  print "Children in offset: ", children_in_offset, "\n"
 
   # Third pass writes files to a format readable by the C code
   sum = 0
   id = 0
   path.each_child do |file_name|
     name_ary = file_name.basename.to_s.split("_")
-#     print file_name
-    time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
-    if time <= time_upper_bound and time >= time_lower_bound
-      writeable_name = Pathname.new(results) + (id.to_s + ".dat")
-#       print time, "  ", writeable_name, "\n"
-      w = File.new(writeable_name, 'a')
-      temp = File.new(file_name, 'r')
-      e = temp.each_line
-      
-      # Need to find the Ensemble member number and  probability to write out
-      4.times { e.next } # Burn through first 4 rows of the ensemble file (we don't need them)
-      line = e.next
-      line.slice!(0, 2)
-      # print "LINE: ", line, "\n"
-      w.write("Ensemble " + line)
-      line = e.next.split.last.to_f / children_in_offset
-      sum += line
-      
-      # Will changed 2013-05-06
-      # Made this output with a force to output 9 decimals, since before it would use exponential notation.
-      w.write("Probability " + ("%.9f" % line).to_s + "\r\n")
-      # w.write("Probability " + line.to_s + "\r\n") 
+    extension = name_ary.last.split(".").last if name_ary.last
+    if extension == "txt"
+      # print file_name
+      time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
+      if time <= time_upper_bound and time >= time_lower_bound
+        writeable_name = Pathname.new(results) + (id.to_s + ".dat")
+        # print time, "  ", writeable_name, "\n"
+        w = File.new(writeable_name, 'a')
+        temp = File.new(file_name, 'r')
+        e = temp.each_line
 
-      line = e.next
-      while line.split.first == "#"
+        # Need to find the Ensemble member number and  probability to write out
+        4.times { e.next } # Burn through first 4 rows of the ensemble file (we don't need them)
         line = e.next
-      end
+        line.slice!(0, 2)
+        # print "LINE: ", line, "\n"
+        w.write("Ensemble " + line)
+        line = e.next.split.last.to_f / children_in_offset
+        sum += line
 
-      begin
-        loop do
-          w.write(line) if line.split(",").last.to_f >= 0.70
-          # print line.split(","), "\n"
+        # Made this output with a force to output 9 decimals, since before it would use exponential notation.
+        w.write("Probability " + ("%.9f" % line).to_s + "\r\n")
+
+        line = e.next
+        while line.split.first == "#"
           line = e.next
         end
-      rescue StopIteration
-        break
-      ensure
-        w.close
-        temp.close
+        unless w.closed? or temp.closed?
+          begin
+            loop do
+              w.write(line) if line.split(",").last.to_f >= 0.70
+              # print line.split(","), "\n"
+              line = e.next
+            end
+          rescue StopIteration
+            break
+          ensure
+            w.close unless w.closed?
+            temp.close unless temp.closed?
+          end
+
+          id += 1
+        end
       end
-      
-      id += 1
     end
   end  
 
@@ -226,7 +238,7 @@ if __FILE__ == $0
     print "Lane width:                    ", lane_width,              "\n" if lane_width
     print "Max Number of Fix Nodes:       ", max_fix_nodes,           "\n" if max_fix_nodes
     print "Operational Flexibility:       ", oper_flex,               "\n" if oper_flex != []
-    
+
     main(s, o, temp_weather_name, weather_dir)
     create_input(dshift, ddrop, angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, oper_flex)
   end
