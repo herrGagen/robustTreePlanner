@@ -177,7 +177,7 @@ void RoutingDAG::setminimumDistanceBetweenMergingNodes(double dis)
 
 // output the tree information into a .tre ASCII file
 // parametres are used to convert screen coordinates to lati/longs, and the time range of testing is also passed in as parameters
-bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, std::string &startTime, std::string &endTime, std::string &outputName)
+bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, const std::string &startTime, const std::string &endTime, const std::string &outputName)
 {
 	if(status==TREE_NOT_GENERATED)
 	{
@@ -891,7 +891,15 @@ bool RoutingDAG::generateTautenedTree(const std::vector<WeatherData> &wData, std
 	std::vector<double> tempRNP = rnp;
 	std::sort(tempRNP.begin(), tempRNP.end() );
 	std::vector<double>::iterator lowestNonZero = std::lower_bound(tempRNP.begin(), tempRNP.end(), .001);
-	double minWeatherRadius = *lowestNonZero;
+	double minWeatherRadius;
+	if(lowestNonZero == tempRNP.end() )
+	{
+		minWeatherRadius = 5;
+	}
+	else
+	{
+		minWeatherRadius = *lowestNonZero;
+	}
 
 	if(status == TREE_NOT_GENERATED)		// this is not actually going to happen because the same test was always conducted before calling this function
 	{
