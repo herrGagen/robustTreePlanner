@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 
+#include <geometry.hpp>
 
 /********************************************************************************************************************************************/
 // class Node
@@ -65,6 +66,7 @@ void Node::clearFreeRadiusVector()
 	*/
 bool Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres)
 {
+  /*
 	if(getWeatherCollisionStatus(r) == WEATHER_COLLISION)			// if was tested to be colliding with the weather
 	{
 		return true;
@@ -73,6 +75,7 @@ bool Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData>
 	{
 		return false;										
 	}
+  */
 	if(wData.size()==0)									// there is no weather read in
 	{
 		return false;										// the ball is considered to be clear of weather obstacle
@@ -835,7 +838,8 @@ void Edge::insertOperFlexDeviationCandidateNode(Node *temp)
 // test the rnp on both side of THIS edge with the weatherDataSet (a set of boxes)
 bool Edge::testRNPWithWeatherDataSet(double rnp, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres)
 {
-	if(getWeatherCollisionStatus(rnp) == WEATHER_COLLISION)			// if was tested to be colliding with the weather
+	/*
+  if(getWeatherCollisionStatus(rnp) == WEATHER_COLLISION)			// if was tested to be colliding with the weather
 	{
 		return true;
 	}
@@ -843,6 +847,7 @@ bool Edge::testRNPWithWeatherDataSet(double rnp, const std::vector<WeatherData> 
 	{
 		return false;
 	}
+  */
 	if(wData.size()==0)	
 	{
 		return false;
@@ -911,16 +916,9 @@ bool Edge::collisionWithWeatherCheck(double w, const std::vector<WeatherData> &w
 {
 	if(wData.size()==0)										// no weather data to test
 	{
-// HEAD
 		return false;											// no intersection with weather data
-/* 
-		if(!collisionTestingHelper(w, wData[i], effectiveThres, testType))				// if there is no collision
-			finalProbability += wData[i]->getProbability();
- > skim_files
-*/
-	}
+  }
 	double finalProbability = collisionWithWeatherDataHelper(w, wData, effectiveThres, testType);
-
 	if(finalProbability < routingThres)							// compare the probability of clear weather with the routing required probability
 	{
 		return true;											// the weather is too severe
@@ -946,8 +944,11 @@ double Edge::collisionWithWeatherDataHelper(double w, const std::vector<WeatherD
 	return finalProbability;
 }
 
+#define DEBUGGING
+/**
 // test rnp, pathStretching or Wiggle airspace are basically the same, only difference is the rectangle that we try to test
-// parameter testType means the type we are testing, 1 for rnp, 2 for pathStretching, 3 for Wiggle Airspace
+ \param testType means the type we are testing, 1 for rnp, 2 for pathStretching, 3 for Wiggle Airspace
+*/
 bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double thres, int testType)
 {
 	unsigned int numCells = wData.size();
@@ -966,6 +967,7 @@ bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double
 			{
 				continue;						// test the next one	
 			}
+
 			if(std::min(z1, z2)>=z+cellHeight || std::max(z1, z2)<=z)
 			{
 				continue;						// the ranges in z direction have no overlap, then skip
@@ -973,8 +975,14 @@ bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double
 			else
 			{
 				// there is overlap in z direction, therefore, test only the part of the edge that overlaps with the box in z direction
-				double tempx1, tempy1, tempx2, tempy2;				// define the 2 endpoints of the part of the edge
-				if(z1==z2)	z1 = z2+0.0001;							// z1 and z2 should be different, otherwise may cause confusion
+				double tempx1; 
+        double tempy1;
+        double tempx2;
+        double tempy2;				// define the 2 endpoints of the part of the edge
+				if(z1==z2)
+          {
+            z1 = z2+0.0001;							// z1 and z2 should be different, otherwise may cause confusion
+        }
 				// first, the vertex that is near the smaller z of the 2 points, test is z drops in between the 2 endpoints or below the lower of the 2 points
 				if(z>std::min(z1, z2) && z<std::max(z1, z2))					// if z is inbetween the segment
 				{
@@ -997,11 +1005,24 @@ bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double
 					tempx1 = (std::min(z1, z2)==z1)? x2 : x1;
 					tempy1 = (std::min(z1, z2)==z1)? y2 : y1;
 				}
-				if(testType == 1)
+#if defined(DEBUGGING)
+				if(true)
+#else
+        if(testType == 1)
+#endif
 				{
 					// test RNP only: the order of the 2 points is not important
 					// now the segment (tempx1, tempy1)<->(tempx2, tempy2) is the part of the original edge that we are interested in detecting collision
-					if(collisionBetweenRectangleAndSquare(tempx1, tempy1, tempx2, tempy2, width, x, y, cellWidth))	// if it intersects with the current cell
+
+#if defined(DEBUGGING)
+          if( (std::abs(x-tempx1) < 10 && std::abs(y-tempy1) < 10) ||
+              (std::abs(x-tempx2) < 10 && std::abs(y-tempy2) < 10) )
+          {
+            std::cout << "Break here" << std::endl;
+          }
+#endif
+
+          if(collisionBetweenRectangleAndSquare(tempx1, tempy1, tempx2, tempy2, width, x, y, cellWidth))	// if it intersects with the current cell
 					{
 						return true;																// then there is intersection
 					}
@@ -1057,9 +1078,16 @@ bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double
 	return false;
 }
 
+#if defined(USE_OLD_COLLISION_CODE)
 // test the intersection between rectangle: center segments(x1, y1)->(x2, y2), width w*2, with square: bottomleft corner (x, y), side length c
 bool Edge::collisionBetweenRectangleAndSquare(double x1, double y1, double x2, double y2, double w, double x, double y, double c)
 {
+#if defined(DEBUGGING)
+  if(x1 == x2 && y1 == y2)
+  {
+    std::cout << "Hah!" << std::endl;
+  }
+#endif
 	// test the large bounding box first, note that w is actually half of the total width
 	if(std::min(x1, x2)-w>x+c || std::max(x1, x2)+w<x || std::min(y1, y2)-w>y+c || std::max(y1, y2)+w<y)
 	{
@@ -1122,6 +1150,51 @@ bool Edge::collisionBetweenRectangleAndSquare(double x1, double y1, double x2, d
 	}
 	// no separating line is found, so they do collide
 	return true;
+}
+#endif
+
+/**
+  \brief Test if a rectangle intersects with an axis aligned square
+
+  (x1,y1) -> (x2,y2) is the backbone of the rectangle with a halfwidth of lineWidth
+  square's bottom left corner is (squareX, squareY) and side length c
+*/
+bool Edge::collisionBetweenRectangleAndSquare(double x1, double y1, double x2, double y2, double lineWidth, double squareX, double squareY, double c)
+{
+  double lineSlope = (y2 - y1) / (x2 - x1);
+  double perpendicularSlope = -1 / lineSlope;
+  std::vector<std::pair<double, double> > rectPoints(4);
+
+  double cornerX;
+  double cornerY;
+
+  // Must declare points in clockwise order to get collision correct
+  cornerX = x1 - lineWidth / (1 + perpendicularSlope);
+  cornerY = y1 - lineWidth * perpendicularSlope / (1 + perpendicularSlope);
+  rectPoints[0] = std::pair<double, double>(cornerX, cornerY);
+
+  cornerX = x1 + lineWidth / (1 + perpendicularSlope);
+  cornerY = y1 + lineWidth * perpendicularSlope / (1 + perpendicularSlope);
+  rectPoints[1] = std::pair<double, double>(cornerX, cornerY);
+
+  cornerX = x2 + lineWidth / (1 + perpendicularSlope);
+  cornerY = y2 + lineWidth * perpendicularSlope / (1 + perpendicularSlope);
+  rectPoints[2] = std::pair<double, double>(cornerX, cornerY);
+
+  cornerX = x2 - lineWidth / (1 + perpendicularSlope);
+  cornerY = y2 - lineWidth * perpendicularSlope / (1 + perpendicularSlope);
+  rectPoints[3] = std::pair<double, double>(cornerX, cornerY);
+
+  std::vector<std::pair<double, double> > squarePoints(4);
+  squarePoints[0] = std::pair<double, double> (squareX, squareY);
+  squarePoints[1] = std::pair<double, double> (squareX, squareY+c);
+  squarePoints[2] = std::pair<double, double> (squareX+c, squareY+c);
+  squarePoints[3] = std::pair<double, double> (squareX+c, squareY);
+
+  template <typename T1, typename T2>
+bool intersects(const T1& a, const T2& b,
+                bool consider_touch = true)
+
 }
 
 // test if THIS edge collides with another edge

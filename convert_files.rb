@@ -118,7 +118,7 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
         unless w.closed? or temp.closed?
           begin
             loop do
-              w.write(line) if line.split(",").last.to_f >= 0.70
+              w.write(line) if line.split(",").last.to_f >= 0.7
               # print line.split(","), "\n"
               line = e.next
             end

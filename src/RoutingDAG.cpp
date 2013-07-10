@@ -247,8 +247,11 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 				// the position in indexToFetchNodeIndexVec is the index value of the node, the stored value is the one used in fetchNode(int i) function
 				indexToFetchNodeIndexVec.push_back(i);
 				treeNodeIndex++;
+        
 				os << "\n\t\t<Node index=\"" << treeNodeIndex << "\" latitude=\"" << centerLati+temp->getX()*latiPerPixel << "\" longitude=\""
 				 << centerLong+temp->getY()*longPerPixel << "\" altitude=\"" << ALTITUDE_AT_BASE_PLANE+ALTITUDE_PER_PIXEL*temp->getZ() << "\" alt_unit=\"ft\" ";
+        /* os << "\n\t\t<Node index=\"" << treeNodeIndex << "\" latitude=\"" << temp->getX() << "\" longitude=\""
+				 << temp->getY() << "\" altitude=\"" << ALTITUDE_AT_BASE_PLANE+ALTITUDE_PER_PIXEL*temp->getZ() << "\" alt_unit=\"ft\" "; */ // Removing the transformation
 				switch(temp->getNodeType())								// print the node type
 				{
 					case ENTRY_NODE:
@@ -315,7 +318,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 				indexToTreeEdgeIndexVec.push_back(i);						// the position in the edges std::vector to its printed index
 				treeEdgeIndex++;
 				os << "\n\t\t<Arc index=\"1" << treeEdgeIndex << "\" start_node=\"" << tempIndexHead << "\" end_node=\"" << tempIndexTail << "\" cost=\"";
-				os << edges[i]->getLength()*NMILESPERPIXEL << "\" cost_unit=\"nm\">";
+				os << edges[i]->getLength()*NMILESPERPIXEL << "\" cost_unit=\"nm\"" << " RealIndex=\"" << i << "\">";
 				// print rnp operational flexity pairs
 				os << "\n\t\t\t<RNP_Levels>";
 				for(int j=0; j<edges[i]->getRNPVecSize(); j++)
@@ -1014,24 +1017,28 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 	while(!tempQueue.empty())
 	{
 		sort(tempQueue.begin(), tempQueue.end(), compareNodes);		// sort the queue so that the nodes with lower layer comes out first. DAG shortest path algorithm
-		Node* temp = tempQueue.front();				// pop the first node of the queue and point to it by temp Pointer
+		Node* frontNode = tempQueue.front();				// pop the first node of the queue and point to it by temp Pointer
 		tempQueue.pop_front();
 		/****************************************************************************************************************/
 		/* this happens only when we already have a merging node to merge into the "next" branch. We end the current branch routing here because
 		 when temp is earlyMergeNode, we are sure that we have the minimum distance from the current entry node to earlyMergeNode.
 		 More details see the last if statement in the while loop*/
-		if(earlyMergeNode && temp==earlyMergeNode)
+		if(earlyMergeNode && frontNode==earlyMergeNode)
 		{
 			setTreeBranchUpMergingForTreeTautening(earlyMergeNode, rnp);
 			setTreeBranchUpForTreeTautening(earlyMergeNode, start, rnp);
 			return true;
 		}
 		/****************************************************************************************************************/
-		for(unsigned int i=0; i<temp->getOutSize(); i++)		// iterate thru each adjacent node and edge of the current node
+		for(unsigned int i=0; i<frontNode->getOutSize(); i++)		// iterate thru each adjacent node and edge of the current node
 		{
-			Node* tempNode = temp->getOutNode(i);
-			Edge* tempEdge = temp->getOutEdge(i);
-			       
+			Node* tempNode = frontNode->getOutNode(i);
+			Edge* tempEdge = frontNode->getOutEdge(i);
+			
+      if(i == 0)
+      {
+        std::cout << "Breaking!" << std::endl;
+      }
       
       // first test if the new pair of nodes and edges collide with the weather data, if so, then just ignore this pair
 			if(tempNode->testRadiusWithWeatherDataSet(rnp, wData, effectiveThres, routingThres) ||
@@ -1046,10 +1053,10 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 				continue;
 			}
 			// if the edge was NOT completely a part of the next branch (if it is, we don't care about the indegree) 
-			if(!(onNextBranch(temp, entryIndex) && onNextBranch(tempNode, entryIndex))		// not going along the next branch
+			if(!(onNextBranch(frontNode, entryIndex) && onNextBranch(tempNode, entryIndex))		// not going along the next branch
 			   && tempNode->getInDegree()==2)		// if the node is currently indegree full, then it's not going to be used again, ignore...	
 				continue;
-			if(onNextBranch(tempNode, entryIndex) && !onNextBranch(temp, entryIndex))		// if merging into the next branch
+			if(onNextBranch(tempNode, entryIndex) && !onNextBranch(frontNode, entryIndex))		// if merging into the next branch
 			{
 				if(testnextBranchTillCurrentLayerEdge(tempEdge, rnp, entryIndex))			// if it crosses part of the next branch(with larger entry index)
 				{
@@ -1067,7 +1074,7 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 			}
 			// if the start of the current edge is already a part of the previous branch, then the new node must also be a node in the previous branch
 			// the reason is that once two branches merges together, they have to be together till the fix node
-			if(onNextBranch(temp, entryIndex) && tempNode!=nextNodeOfGivenNodeOnNextBranch(temp, entryIndex))
+			if(onNextBranch(frontNode, entryIndex) && tempNode!=nextNodeOfGivenNodeOnNextBranch(frontNode, entryIndex))
 			{
 					continue;
 			}
@@ -1097,10 +1104,10 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 			// if the node is proved to be a feasible choice, push the node into the queue, and update its distance info if the new distance is better
 			if(pushIntoQueue)
 			{
-				if(tempNode->getDistance()>temp->getDistance()+tempEdge->getLength())	// update the distance info
+				if(tempNode->getDistance()>frontNode->getDistance()+tempEdge->getLength())	// update the distance info
 				{
-					tempNode->setDistance(temp->getDistance()+tempEdge->getLength());
-					tempNode->setPrevTreeNode(temp);
+					tempNode->setDistance(frontNode->getDistance()+tempEdge->getLength());
+					tempNode->setPrevTreeNode(frontNode);
 					tempNode->setPrevTreeEdge(tempEdge);
 				}
 				// note after a node is popped out from the queue, it won't have the chance to go into the queue again, because it's a DAG
@@ -1125,7 +1132,7 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 				// the new branch will try to merge into the next branch as early possible, and in the best(shortest) way
 				if((entries.size()-entryIndex-1)%topMostTendency != 0)
 				{
-					if(onNextBranch(tempNode, entryIndex) && !onNextBranch(temp, entryIndex) && earlyMergeNode==NULL)	// this will only be entered once
+					if(onNextBranch(tempNode, entryIndex) && !onNextBranch(frontNode, entryIndex) && earlyMergeNode==NULL)	// this will only be entered once
 					{
 						earlyMergeNode = tempNode;
 					}
