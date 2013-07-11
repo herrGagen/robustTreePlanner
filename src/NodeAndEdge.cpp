@@ -1,9 +1,7 @@
 #include "NodeAndEdge.h"
 #include <cmath>
 #include <iostream>
-
-#include <geometry.hpp>
-
+#include <algorithm>
 /********************************************************************************************************************************************/
 // class Node
 
@@ -1153,47 +1151,130 @@ bool Edge::collisionBetweenRectangleAndSquare(double x1, double y1, double x2, d
 }
 #endif
 
-/**
-  \brief Test if a rectangle intersects with an axis aligned square
+namespace{
 
-  (x1,y1) -> (x2,y2) is the backbone of the rectangle with a halfwidth of lineWidth
-  square's bottom left corner is (squareX, squareY) and side length c
+bool isSquareOnOneSideOfEdge(double edgeX1, 
+							double edgeY1, 
+							double edgeX2, 
+							double edgeY2 , 
+							double squareX, 
+							double squareY, 
+							double c)
+{
+
+	// Find a ray orthogonal to the edge: [-\delta Y, \delta X]	
+	double orthRayX = (edgeY1 - edgeY2);
+	double orthRayY = (edgeX2 - edgeX1);
+
+	// Dot that ray with a line segment from the start of the edge to each point.
+	double dotProd = orthRayX*( squareX - edgeX1) + 
+					  orthRayY*(squareY - edgeY1);
+	double nextDotProd;
+
+	// Now test the other three edges, if we're ever on opposite sides, this isn't a separating edge
+	nextDotProd = orthRayX*( squareX + c - edgeX1) + 
+				  orthRayY*(squareY - edgeY1);
+	if(nextDotProd* dotProd < 0)
+	{
+		return false;
+	}
+	nextDotProd = orthRayX*( squareX + c - edgeX1) + 
+				  orthRayY*(squareY + c - edgeY1);
+	if(nextDotProd* dotProd < 0)
+	{
+		return false;
+	}
+
+		nextDotProd = orthRayX*( squareX - edgeX1) + 
+					  orthRayY*(squareY + c - edgeY1);
+	if(nextDotProd* dotProd < 0)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+}
+/**
+\brief Test if a rectangle intersects with an axis aligned square
+
+(x1,y1) -> (x2,y2) is the backbone of the rectangle with a halfwidth of lineWidth
+square's bottom left corner is (squareX, squareY) and side length c
 */
 bool Edge::collisionBetweenRectangleAndSquare(double x1, double y1, double x2, double y2, double lineWidth, double squareX, double squareY, double c)
 {
-  double lineSlope = (y2 - y1) / (x2 - x1);
-  double perpendicularSlope = -1 / lineSlope;
-  std::vector<std::pair<double, double> > rectPoints(4);
 
-  double cornerX;
-  double cornerY;
+	/* We are going to check for interstction using the following method
+	1- See if x range overlaps
+	2- See if y range overlaps
+	3- For each edge of the rectangle, see if all points of the square are on the same side.
+	*/
+	std::vector< double > rectX(4);
+	std::vector< double > rectY(4);
 
-  // Must declare points in clockwise order to get collision correct
-  cornerX = x1 - lineWidth / (1 + perpendicularSlope);
-  cornerY = y1 - lineWidth * perpendicularSlope / (1 + perpendicularSlope);
-  rectPoints[0] = std::pair<double, double>(cornerX, cornerY);
+	// Nearly horizontal lines break our rectangle corner generation algorithm
+	// Which relies on -1/slope
+	if(std::abs(y2-y1) < .001 )
+	{
+		rectX[0] = rectX[1] = x1;
+		rectX[2] = rectX[3] = x2;
+		rectY[0] = y1 - lineWidth;
+		rectY[1] = y1 + lineWidth;
+		rectY[2] = y2 + lineWidth;
+		rectY[3] = y2 - lineWidth;
+	}
+	else
+	{
 
-  cornerX = x1 + lineWidth / (1 + perpendicularSlope);
-  cornerY = y1 + lineWidth * perpendicularSlope / (1 + perpendicularSlope);
-  rectPoints[1] = std::pair<double, double>(cornerX, cornerY);
+		double perpendicularSlope = -1*(x2 - x1) / (y2 - y1);
 
-  cornerX = x2 + lineWidth / (1 + perpendicularSlope);
-  cornerY = y2 + lineWidth * perpendicularSlope / (1 + perpendicularSlope);
-  rectPoints[2] = std::pair<double, double>(cornerX, cornerY);
+		rectX[0] = x1 - lineWidth / (1 + perpendicularSlope);
+		rectY[0] = y1 - lineWidth * perpendicularSlope / (1 + perpendicularSlope);
 
-  cornerX = x2 - lineWidth / (1 + perpendicularSlope);
-  cornerY = y2 - lineWidth * perpendicularSlope / (1 + perpendicularSlope);
-  rectPoints[3] = std::pair<double, double>(cornerX, cornerY);
+		rectX[1] = x1 + lineWidth / (1 + perpendicularSlope);
+		rectY[1]= y1 + lineWidth * perpendicularSlope / (1 + perpendicularSlope);
 
-  std::vector<std::pair<double, double> > squarePoints(4);
-  squarePoints[0] = std::pair<double, double> (squareX, squareY);
-  squarePoints[1] = std::pair<double, double> (squareX, squareY+c);
-  squarePoints[2] = std::pair<double, double> (squareX+c, squareY+c);
-  squarePoints[3] = std::pair<double, double> (squareX+c, squareY);
+		rectX[2] = x2 + lineWidth / (1 + perpendicularSlope);
+		rectY[2] = y2 + lineWidth * perpendicularSlope / (1 + perpendicularSlope);
 
-  template <typename T1, typename T2>
-bool intersects(const T1& a, const T2& b,
-                bool consider_touch = true)
+		rectX[3] = x2 - lineWidth / (1 + perpendicularSlope);
+		rectY[3] = y2 - lineWidth * perpendicularSlope / (1 + perpendicularSlope);
+	}
+
+	double rectMinX = *( std::min_element( rectX.begin(), rectX.end() ) );
+	double rectMaxX = *( std::max_element( rectX.begin(), rectX.end() ) );
+
+	double rectMinY = *( std::min_element( rectY.begin(), rectY.end() ) );
+	double rectMaxY = *( std::max_element( rectY.begin(), rectY.end() ) );
+
+	double squareMinX = squareX;
+	double squareMaxX = squareX + c;
+	double squareMinY = squareY;
+	double squareMaxY = squareY + c;
+
+	// Objects don't overlap unless x ranges overlap
+	if( squareMinX > rectMaxX || squareMaxX < rectMinX )
+	{
+		return false;
+	}
+
+	// Objects don't overlap unless y ranges overlap
+	if( squareMinY > rectMaxY || squareMaxY < rectMinY )
+	{
+		return false;
+	}
+
+	// Objects don't overlap if a separating edge exists
+	for(int i = 0; i<4; i++)
+	{
+		unsigned int nextInd = (i+1)%4;
+		if(isSquareOnOneSideOfEdge(rectX[i],rectY[i],rectX[nextInd],rectY[nextInd],squareX, squareY, c) )
+		{
+			return true;
+		}
+	}
+	return false;
 
 }
 
