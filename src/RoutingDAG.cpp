@@ -279,7 +279,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 		// output all the operational flexibility deviation nodes information for each edge
 		for(unsigned int i=0; i<edges.size(); i++)
 		{
-			if(edges[i]->treeEdgeOrNot())
+			if(edges[i]->isTreeEdge())
 			{
 				for(int j = 0; j<edges[i]->getDeviationNodesSize(); j++)		// output each deviation node information
 				{
@@ -308,7 +308,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 		os << "\n\t<Arcs>";
 		for(unsigned int i=0; i<edges.size(); i++)
 		{
-			if(edges[i]->treeEdgeOrNot())
+			if(edges[i]->isTreeEdge())
 			{
 				// get the head node's printed index, in the indexToFetchNodeIndexVec std::vector, where the position in the std::vector is the index-1
 				int unifiedIndexHead = getFetchNodeIndex(edges[i]->getHead());	// the head's unified index
@@ -845,7 +845,7 @@ void RoutingDAG::treeBranchPostProcessing(Node* start, double rnp)			// the node
 	{
 		for(unsigned int i=0; i<temp->getOutSize(); i++)
 		{
-			if(temp->getOutEdge(i)->treeEdgeOrNot())			// if we find a tree edge
+			if(temp->getOutEdge(i)->isTreeEdge())			// if we find a tree edge
 			{
 				temp->setTreeOutEdgeIndex(i);
 				break;			// break out of the for loop so that we get to the next level in the tree
@@ -1167,7 +1167,7 @@ void RoutingDAG::treeBranchPostProcessingForTreeTautening(Node* start, double rn
 		layerUsedIndexReverseDirection[temp->getLayer()] = std::min(layerUsedIndexReverseDirection[temp->getLayer()], temp->getLayerIndex());
 		for(unsigned int i=0; i<temp->getOutSize(); i++)
 		{
-			if(temp->getOutEdge(i)->treeEdgeOrNot())			// if we find a tree edge
+			if(temp->getOutEdge(i)->isTreeEdge())			// if we find a tree edge
 			{
 				temp->setTreeOutEdgeIndex(i);
 				break;			// break out of the for loop so that we get to the next level in the tree

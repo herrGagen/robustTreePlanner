@@ -169,7 +169,7 @@ public:
 	Node* getTail();
 	double getLength();
 	void reset();
-	bool treeEdgeOrNot();
+	bool isTreeEdge();
 	void resetTreeStatus();
 public:
 	// information of RNP testing, path stretching testing and wiggle room testing results, oprational flexibility

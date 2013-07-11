@@ -635,7 +635,7 @@ Node* Edge::getTail()
 	return tailNode;
 }	
 
-bool Edge::treeEdgeOrNot()
+bool Edge::isTreeEdge()
 {
 	if(treeEdge==TREE_EDGE)
 	{
