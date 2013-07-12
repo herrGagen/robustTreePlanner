@@ -62,9 +62,9 @@ void Node::clearFreeRadiusVector()
 
 	\retval True if collision occurs
 	*/
-bool Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres)
+bool Node::isAnyWeatherCloserThanRadiusR(double r, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres)
 {
-  /*
+#if defined(DISABLE_COLLISION_CACHING)  
 	if(getWeatherCollisionStatus(r) == WEATHER_COLLISION)			// if was tested to be colliding with the weather
 	{
 		return true;
@@ -73,45 +73,38 @@ bool Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData>
 	{
 		return false;										
 	}
-  */
-	if(wData.size()==0)									// there is no weather read in
+#endif
+	if(wDataSets.size()==0)									// there is no weather read in
 	{
 		return false;										// the ball is considered to be clear of weather obstacle
 	}
-	double finalProbability = 0;
-	for(unsigned int i=0; i<wData.size(); i++)						// test the weather data members one by one
-	{
-		// if there is no intersection, means this weather data is "clear"
-		if(!testRadiusWithWeatherData(r, wData[i], effectiveThres))			
-		{
-			finalProbability += wData[i].getProbability();					// add 1*probability of the weather data
-		}
-	}
+	double finalProbability = probabilityThatNodeIsClear(r,wDataSets, effectiveThres);
+
 	if(finalProbability < routingThres)						// the probability that the weather is clear is not large enough
 	{
 		insertWeatherCollisionStatus(r, WEATHER_COLLISION);			// there is collision with the current weather data
-		return true;										// the weathers are too severe
+		return true;										// the weather is too severe
 	}
 	insertWeatherCollisionStatus(r, WEATHER_FREE);
-	return false;											// the ball is considered to be clear of weather obstacle
+	return false;											// the node is considered to be clear of weather obstacle
 }
 
 // overloaded function which does the same but returns the value of the final probability (for probability output)
 // return the probability that the cell is clear
-double Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, double effectiveThres)
+double Node::probabilityThatNodeIsClear(double r, const std::vector<WeatherData> &wDataSets, double effectiveThres)
 {
-	if(wData.size()==0)									// there is no weather read in
+	if(wDataSets.size()==0)									// there is no weather read in
 	{
 		return 1;											// there is no weather, therefore, there is 1 prabability that it's clear
 	}
 	double finalProbability = 0;
-	for(unsigned int i=0; i<wData.size(); i++)						// test the weather data members one by one
+	for(unsigned int i=0; i<wDataSets.size(); i++)						// test the weather data members one by one
 	{
 
 		// if there is no intersection, means this weather data is "clear"
-		if(!testRadiusWithWeatherData(r, wData[i], effectiveThres))
+		if(!isThisWeatherSetCloserThanRadiusR(r, wDataSets[i], effectiveThres))
 		{
-			finalProbability += wData[i].getProbability();					// add 1*probability of the weather data
+			finalProbability += wDataSets[i].getProbability();					// add 1*probability of the weather data
 		}
 	}
 	return finalProbability;
@@ -124,7 +117,7 @@ double Node::testRadiusWithWeatherDataSet(double r, const std::vector<WeatherDat
   Actually only do 2d testing if their z coordinates collide with each other
 
 */
-bool Node::testRadiusWithWeatherData(double r, const WeatherData &wData, double thres)
+bool Node::isThisWeatherSetCloserThanRadiusR(double r, const WeatherData &wData, double thres)
 {
 	if(wData.size() == 0)
 		{
@@ -834,9 +827,9 @@ void Edge::insertOperFlexDeviationCandidateNode(Node *temp)
 }
 
 // test the rnp on both side of THIS edge with the weatherDataSet (a set of boxes)
-bool Edge::testRNPWithWeatherDataSet(double rnp, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres)
+bool Edge::isAnyWeatherWithinLaneWidthW(double rnp, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres)
 {
-	/*
+#if !defined(DISABLE_COLLISION_CACHING)	
   if(getWeatherCollisionStatus(rnp) == WEATHER_COLLISION)			// if was tested to be colliding with the weather
 	{
 		return true;
@@ -845,12 +838,12 @@ bool Edge::testRNPWithWeatherDataSet(double rnp, const std::vector<WeatherData> 
 	{
 		return false;
 	}
-  */
-	if(wData.size()==0)	
+#endif
+	if(wDataSets.size()==0)	
 	{
 		return false;
 	}
-	if(collisionWithWeatherCheck(rnp, wData, effectiveThres, routingThres, 1))
+	if(collisionWithWeatherCheck(rnp, wDataSets, effectiveThres, routingThres, 1))
 	{
 		insertWeatherCollisionStatus(rnp, WEATHER_COLLISION);
 		return true;
@@ -859,64 +852,64 @@ bool Edge::testRNPWithWeatherDataSet(double rnp, const std::vector<WeatherData> 
 	return false;
 }
 // test the right side of THIS edge with the WeatherDataSet (a set of boxes), the width of the rectangle is passed into the function as parameter width
-bool Edge::testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres)
+bool Edge::testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres)
 {
-	if(wData.size()==0)	
+	if(wDataSets.size()==0)	
 	{
 		return false;
 	}
-	return collisionWithWeatherCheck(width, wData, effectiveThres, routingThres, 2);
+	return collisionWithWeatherCheck(width, wDataSets, effectiveThres, routingThres, 2);
 }
 // test the left side of THIS edge with the WeatherDataSet (a set of boxes)
-bool Edge::testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres)
+bool Edge::testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres)
 {
-	if(wData.size()==0)
+	if(wDataSets.size()==0)
 	{
 		return false;
 	}
-	return collisionWithWeatherCheck(width, wData, effectiveThres, routingThres, 3);
+	return collisionWithWeatherCheck(width, wDataSets, effectiveThres, routingThres, 3);
 }
 
 // overloaded function to test the probability that THIS edge is clear of obstacles
-double Edge::testRNPWithWeatherDataSet(double rnp, const std::vector<WeatherData> &wData, double effectiveThres)
+double Edge::sumOfProbOfAllWeatherCloserThanLaneWidthW(double rnp, const std::vector<WeatherData> &wDataSets, double effectiveThres)
 {
-	if(wData.size()==0)	
+	if(wDataSets.size()==0)	
 	{
 		return 1;
 	}
-	return collisionWithWeatherDataHelper(rnp, wData, effectiveThres, 1);
+	return probabilityThatEdgeIsClear(rnp, wDataSets, effectiveThres, 1);
 }
 
 // overloaded function to test the probability that the right side of THIS edge is clear of obstacles
-double Edge::testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres)
+double Edge::testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wDataSets, double effectiveThres)
 {
-	if(wData.size()==0)	
+	if(wDataSets.size()==0)	
 	{
 		return 1;
 	}
-	return collisionWithWeatherDataHelper(width, wData, effectiveThres, 2);
+	return probabilityThatEdgeIsClear(width, wDataSets, effectiveThres, 2);
 }
 
 // overloaded function to test the probability that the left side of THIS edge is clear of obstacles
-double Edge::testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres)
+double Edge::testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wDataSets, double effectiveThres)
 {
-	if(wData.size()==0)
+	if(wDataSets.size()==0)
 	{
 		return 1;
 	}
-	return collisionWithWeatherDataHelper(width, wData, effectiveThres, 3);
+	return probabilityThatEdgeIsClear(width, wDataSets, effectiveThres, 3);
 }
 
 // test rnp, pathStretching or Wiggle airspace are basically the same, only difference is the rectangle that we try to test
 // parameter testType means the type we are testing, 1 for rnp, 2 for pathStretching, 3 for Wiggle Airspace. 
 // test the values with a set of weather data files stored in a std::vector of weatherdata pointers
-bool Edge::collisionWithWeatherCheck(double w, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres, int testType)
+bool Edge::collisionWithWeatherCheck(double w, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres, int testType)
 {
-	if(wData.size()==0)										// no weather data to test
+	if(wDataSets.size()==0)										// no weather data to test
 	{
 		return false;											// no intersection with weather data
   }
-	double finalProbability = collisionWithWeatherDataHelper(w, wData, effectiveThres, testType);
+	double finalProbability = probabilityThatEdgeIsClear(w, wDataSets, effectiveThres, testType);
 	if(finalProbability < routingThres)							// compare the probability of clear weather with the routing required probability
 	{
 		return true;											// the weather is too severe
@@ -925,31 +918,31 @@ bool Edge::collisionWithWeatherCheck(double w, const std::vector<WeatherData> &w
 }
 
 // Returns the final probability value (used for output)
-double Edge::collisionWithWeatherDataHelper(double w, const std::vector<WeatherData> &wData, double effectiveThres, int testType)
+double Edge::probabilityThatEdgeIsClear(double distFromEdge, const std::vector<WeatherData> &wDataSets, double effectiveThres, int testType)
 {
-	if(wData.size()==0)										// no weather data to test
+	if(wDataSets.size()==0)										// no weather data to test
 	{
 		return 1;											// no intersection with weather data
 	}
-	double finalProbability = 0;								// the total probability of all the weather files
-	for(unsigned int i=0; i<wData.size(); i++)
+	double finalProbability = 0;							// the total probability of all impacted weather
+	for(unsigned int i=0; i<wDataSets.size(); i++)
 	{
-		if( !collisionTestingHelper(w, wData[i], effectiveThres, testType) )				// if there is no collision
+		if( !collidesWithWeatherDataSet(distFromEdge, wDataSets[i], effectiveThres, testType) )	 // if there is no collision
 		{
-			finalProbability += wData[i].getProbability();
+			finalProbability += wDataSets[i].getProbability();
 		}
 	}												// the weather is clear
 	return finalProbability;
 }
 
-#define DEBUGGING
 /**
-// test rnp, pathStretching or Wiggle airspace are basically the same, only difference is the rectangle that we try to test
+   test rnp, pathStretching or Wiggle airspace are basically the same, only difference is the rectangle that we try to test
+ 
  \param testType means the type we are testing, 1 for rnp, 2 for pathStretching, 3 for Wiggle Airspace
 */
-bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double thres, int testType)
+bool Edge::collidesWithWeatherDataSet(double width, const WeatherData &wSet, double thres, int testType)
 {
-	unsigned int numCells = wData.size();
+	unsigned int numCells = wSet.size();
 	double x;
 	double y;
 	double z;
@@ -959,7 +952,7 @@ bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double
 	for(unsigned int i=0; i<numCells; i++)
 	{
 		// if successfully read out all the cell data, the bottomleft corner of the cell is (x, y, z)
-		if(wData.getCellData(i, &x, &y, &z, &deviationProbability, &cellWidth, &cellHeight))	
+		if(wSet.getCellData(i, &x, &y, &z, &deviationProbability, &cellWidth, &cellHeight))	
 		{
 			if(deviationProbability<=thres)		// if the cell is not severe enough, simply skip
 			{
@@ -973,10 +966,10 @@ bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double
 			else
 			{
 				// there is overlap in z direction, therefore, test only the part of the edge that overlaps with the box in z direction
-				double tempx1; 
-        double tempy1;
-        double tempx2;
-        double tempy2;				// define the 2 endpoints of the part of the edge
+				double tempX1; 
+        double tempY1;
+        double tempX2;
+        double tempY2;				// define the 2 endpoints of the part of the edge
 				if(z1==z2)
           {
             z1 = z2+0.0001;							// z1 and z2 should be different, otherwise may cause confusion
@@ -984,24 +977,24 @@ bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double
 				// first, the vertex that is near the smaller z of the 2 points, test is z drops in between the 2 endpoints or below the lower of the 2 points
 				if(z>std::min(z1, z2) && z<std::max(z1, z2))					// if z is inbetween the segment
 				{
-					tempx2 = x1+(x2-x1)*std::abs(z-z1)/std::abs(z2-z1);
-					tempy2 = y1+(y2-y1)*std::abs(z-z1)/std::abs(z2-z1);
+					tempX2 = x1+(x2-x1)*std::abs(z-z1)/std::abs(z2-z1);
+					tempY2 = y1+(y2-y1)*std::abs(z-z1)/std::abs(z2-z1);
 				}
 				else												// meaning z is even smaller than std::min(z1, z2)
 				{
-					tempx2 = (std::min(z1, z2)==z1)? x1 : x2;
-					tempy2 = (std::min(z1, z2)==z1)? y1 : y2;
+					tempX2 = (std::min(z1, z2)==z1)? x1 : x2;
+					tempY2 = (std::min(z1, z2)==z1)? y1 : y2;
 				}
 				// first, the vertex that is near the larger z of the 2 points
 				if(z+cellHeight>std::min(z1, z2) && z+cellHeight<std::max(z1, z2))					// if z+cellHeight is inbetween the segment
 				{
-					tempx1 = x1+(x2-x1)*std::abs(z+cellHeight-z1)/std::abs(z2-z1);
-					tempy1 = y1+(y2-y1)*std::abs(z+cellHeight-z1)/std::abs(z2-z1);
+					tempX1 = x1+(x2-x1)*std::abs(z+cellHeight-z1)/std::abs(z2-z1);
+					tempY1 = y1+(y2-y1)*std::abs(z+cellHeight-z1)/std::abs(z2-z1);
 				}
 				else												// meaning z is even greater than std::max(z1, z2)
 				{
-					tempx1 = (std::min(z1, z2)==z1)? x2 : x1;
-					tempy1 = (std::min(z1, z2)==z1)? y2 : y1;
+					tempX1 = (std::min(z1, z2)==z1)? x2 : x1;
+					tempY1 = (std::min(z1, z2)==z1)? y2 : y1;
 				}
 #if defined(DEBUGGING)
 				if(true)
@@ -1010,17 +1003,17 @@ bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double
 #endif
 				{
 					// test RNP only: the order of the 2 points is not important
-					// now the segment (tempx1, tempy1)<->(tempx2, tempy2) is the part of the original edge that we are interested in detecting collision
+					// now the segment (tempX1, tempY1)<->(tempX2, tempY2) is the part of the original edge that we are interested in detecting collision
 
 #if defined(DEBUGGING)
-          if( (std::abs(x-tempx1) < 10 && std::abs(y-tempy1) < 10) ||
-              (std::abs(x-tempx2) < 10 && std::abs(y-tempy2) < 10) )
+          if( (std::abs(x-tempX1) < 10 && std::abs(y-tempY1) < 10) ||
+              (std::abs(x-tempX2) < 10 && std::abs(y-tempY2) < 10) )
           {
             std::cout << "Break here" << std::endl;
           }
 #endif
 
-          if(collisionBetweenRectangleAndSquare(tempx1, tempy1, tempx2, tempy2, width, x, y, cellWidth))	// if it intersects with the current cell
+          if(collisionBetweenRectangleAndSquare(tempX1, tempY1, tempX2, tempY2, width, x, y, cellWidth))	// if it intersects with the current cell
 					{
 						return true;																// then there is intersection
 					}
@@ -1029,21 +1022,23 @@ bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double
 				{
 					if(std::min(z1, z2)==z1)					// the edge must be from head to tail in order to talk about RIGHT or LEFT size of the edge
 					{									// to keep the direction, swap the 2 endpoints of the part of THIS edge that we are interested in
-						double swap1 = tempx1;			double swap2 = tempy1;
-						tempx1 = tempx2;				tempy1 = tempy2;
-						tempx2 = swap1;					tempy2 = swap2;
+						double swap1 = tempX1;			double swap2 = tempY1;
+						tempX1 = tempX2;				tempY1 = tempY2;
+						tempX2 = swap1;					tempY2 = swap2;
 					}
-					double vectorLength = sqrt((tempx1-tempx2)*(tempx1-tempx2)+(tempy1-tempy2)*(tempy1-tempy2));
+					double vectorLength = sqrt((tempX1-tempX2)*(tempX1-tempX2)+(tempY1-tempY2)*(tempY1-tempY2));
+#if !defined(DEBUGGING) & !defined(DISABLE_HALF_WIDTH)
 					width = width/2;
+#endif
 					// test path stretching on the right side of THIS edge (x1, y1, z1) to (x2, y2, z2)
 					// now test the right side of this edge, where the new center line is defined by points 
 					// (x1 + (y2-y1)*width/vectorLength, y1+(x1-x2)*width/vectorLength) and (x2 + (y2-y1)*width/vectorLength, y2+(x1-x2)*width/vectorLength)
 					if(testType == 2)
 					{
-						if(collisionBetweenRectangleAndSquare(tempx1+(tempy2-tempy1)*width/vectorLength, 
-							tempy1+(tempx1-tempx2)*width/vectorLength, 
-							tempx2+(tempy2-tempy1)*width/vectorLength, 
-							tempy2+(tempx1-tempx2)*width/vectorLength, 
+						if(collisionBetweenRectangleAndSquare(tempX1+(tempY2-tempY1)*width/vectorLength, 
+							tempY1+(tempX1-tempX2)*width/vectorLength, 
+							tempX2+(tempY2-tempY1)*width/vectorLength, 
+							tempY2+(tempX1-tempX2)*width/vectorLength, 
 							width, 
 							x, 
 							y, 
@@ -1057,10 +1052,10 @@ bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double
 					// (x1 + (y1-y2)*width/vectorLength, y1+(x2-x1)*width/vectorLength) and (x2 + (y1-y2)*width/vectorLength, y2+(x2-x1)*width/vectorLength)
 					if(testType == 3)
 					{
-						if(collisionBetweenRectangleAndSquare(tempx1+(tempy1-tempy2)*width/vectorLength, 
-							tempy1+(tempx2-tempx1)*width/vectorLength, 
-							tempx2+(tempy1-tempy2)*width/vectorLength, 
-							tempy2+(tempx2-tempx1)*width/vectorLength, 
+						if(collisionBetweenRectangleAndSquare(tempX1+(tempY1-tempY2)*width/vectorLength, 
+							tempY1+(tempX2-tempX1)*width/vectorLength, 
+							tempX2+(tempY1-tempY2)*width/vectorLength, 
+							tempY2+(tempX2-tempX1)*width/vectorLength, 
 							width, 
 							x, 
 							y, 
@@ -1076,81 +1071,8 @@ bool Edge::collisionTestingHelper(double width, const WeatherData &wData, double
 	return false;
 }
 
-#if defined(USE_OLD_COLLISION_CODE)
-// test the intersection between rectangle: center segments(x1, y1)->(x2, y2), width w*2, with square: bottomleft corner (x, y), side length c
-bool Edge::collisionBetweenRectangleAndSquare(double x1, double y1, double x2, double y2, double w, double x, double y, double c)
-{
-#if defined(DEBUGGING)
-  if(x1 == x2 && y1 == y2)
-  {
-    std::cout << "Hah!" << std::endl;
-  }
-#endif
-	// test the large bounding box first, note that w is actually half of the total width
-	if(std::min(x1, x2)-w>x+c || std::max(x1, x2)+w<x || std::min(y1, y2)-w>y+c || std::max(y1, y2)+w<y)
-	{
-		return false;									// if the large bounding box does not intersect the square, return false
-	}
-	// test the small bounding box next, no overlapping, then return false
-	double longestEdgeLength = sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));				// a omputation that will be used many times
-	if(std::min(x1, x2)-w*std::abs(y1-y2)/longestEdgeLength>x+c ||
-		std::max(x1, x2)+w*std::abs(y1-y2)/longestEdgeLength<x ||
-		std::min(y1, y2)-w*std::abs(x1-x2)/longestEdgeLength>y+c ||
-		std::max(y1, y2)+w*std::abs(x1-x2)/longestEdgeLength<y)
-		return false;
-	// next test the 4 edges of the rectangle to see if any of the 4 edges is a full line separator
-	double temp1, temp2, temp3, temp4, temp5, slope;
-	// 1. line equation: y-y1 = -((x1-x2)/(y1-y2))*(x-x1)
-	if(y1-y2!=0)								// if this is 0, then we already did the test, the rectangle is the bounding rectangle of itself
-	{
-		slope = (x1-x2)/(y1-y2);
-		temp1 = y-y1+slope*(x-x1);					// test the 4 vertices of the square
-		temp2 = y-y1+slope*(x+c-x1);
-		temp3 = y+c-y1+slope*(x-x1);
-		temp4 = y+c-y1+slope*(x+c-x1);
-		temp5 = y2-y1+slope*(x2-x1);				// test 1 point that is on the boundary of the rectangle
-		if(temp1*temp2>=0 && temp2*temp3>=0 && temp3*temp4>=0 && temp4*temp5<=0)
-		{
-			return false;							// vertices of the square are one side, the rectangle is on the other, then there is a separating line, then false
-		}
-		// 2. line equation: y-y2 = -((x1-x2)/(y1-y2))*(x-x2)
-		temp1 = y-y2+slope*(x-x2);					// test the 4 vertices of the square
-		temp2 = y-y2+slope*(x+c-x2);
-		temp3 = y+c-y2+slope*(x-x2);
-		temp4 = y+c-y2+slope*(x+c-x2);
-		temp5 = y1-y2+slope*(x1-x2);				// test 1 point that is on the boundary of the rectangle
-		if(temp1*temp2>=0 && temp2*temp3>=0 && temp3*temp4>=0 && temp4*temp5<=0)
-		{
-			return false;							// vertices of the square are one side, the rectangle is on the other, then true
-		}
-	}
-	// 3. line equation: y-(y1+w*sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))/std::abs(x1-x2)) = ((y2-y1)/(x2-x1))*(x-x1)
-	if(x1-x2!=0)
-	{
-		slope = (y2-y1)/(x2-x1);
-		temp1 = y-(y1+w*longestEdgeLength/std::abs(x1-x2)) - slope*(x-x1);
-		temp2 = y+c-(y1+w*longestEdgeLength/std::abs(x1-x2)) - slope*(x-x1);
-		temp3 = y-(y1+w*longestEdgeLength/std::abs(x1-x2)) - slope*(x+c-x1);
-		temp4 = y+c-(y1+w*longestEdgeLength/std::abs(x1-x2)) - slope*(x+c-x1);	// temp5 must be negative this time, when we apply (x1, y1) in the equation
-		if(temp1>=0 && temp2>=0 && temp3>=0 && temp4>=0)
-		{
-			return false;							// vertices of the square are one side, the rectangle is on the other, then true
-		}
-		// 4. line equation: y-(y1-w*sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))/std::abs(x1-x2)) = ((y2-y1)/(x2-x1))*(x-x1)
-		temp1 = y-(y1-w*longestEdgeLength/std::abs(x1-x2)) - slope*(x-x1);
-		temp2 = y+c-(y1-w*longestEdgeLength/std::abs(x1-x2)) - slope*(x-x1);
-		temp3 = y-(y1-w*longestEdgeLength/std::abs(x1-x2)) - slope*(x+c-x1);
-		temp4 = y+c-(y1-w*longestEdgeLength/std::abs(x1-x2)) - slope*(x+c-x1);	// temp5 must be positive this time, when we apply (x1, y1) in the equation
-		if(temp1>=0 && temp2>=0 && temp3>=0 && temp4<=0)
-		{
-			return false;							// vertices of the square are one side, the rectangle is on the other, then true
-		}
-	}
-	// no separating line is found, so they do collide
-	return true;
-}
-#endif
 
+#if defined(USE_NEW_COLLISION_CODE)
 namespace{
 
 bool isSquareOnOneSideOfEdge(double edgeX1, 
@@ -1277,7 +1199,80 @@ bool Edge::collisionBetweenRectangleAndSquare(double x1, double y1, double x2, d
 	return false;
 
 }
-
+#else 
+// test the intersection between rectangle: center segments(x1, y1)->(x2, y2), width w*2, with square: bottomleft corner (x, y), side length c
+bool Edge::collisionBetweenRectangleAndSquare(double x1, double y1, double x2, double y2, double w, double x, double y, double c)
+{
+#if defined(DEBUGGING)
+  if(x1 == x2 && y1 == y2)
+  {
+    std::cout << "Hah!" << std::endl;
+  }
+#endif
+	// test the large bounding box first, note that w is actually half of the total width
+	if(std::min(x1, x2)-w>x+c || std::max(x1, x2)+w<x || std::min(y1, y2)-w>y+c || std::max(y1, y2)+w<y)
+	{
+		return false;									// if the large bounding box does not intersect the square, return false
+	}
+	// test the small bounding box next, no overlapping, then return false
+	double longestEdgeLength = sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));				// a omputation that will be used many times
+	if(std::min(x1, x2)-w*std::abs(y1-y2)/longestEdgeLength>x+c ||
+		std::max(x1, x2)+w*std::abs(y1-y2)/longestEdgeLength<x ||
+		std::min(y1, y2)-w*std::abs(x1-x2)/longestEdgeLength>y+c ||
+		std::max(y1, y2)+w*std::abs(x1-x2)/longestEdgeLength<y)
+		return false;
+	// next test the 4 edges of the rectangle to see if any of the 4 edges is a full line separator
+	double temp1, temp2, temp3, temp4, temp5, slope;
+	// 1. line equation: y-y1 = -((x1-x2)/(y1-y2))*(x-x1)
+	if(y1-y2!=0)								// if this is 0, then we already did the test, the rectangle is the bounding rectangle of itself
+	{
+		slope = (x1-x2)/(y1-y2);
+		temp1 = y-y1+slope*(x-x1);					// test the 4 vertices of the square
+		temp2 = y-y1+slope*(x+c-x1);
+		temp3 = y+c-y1+slope*(x-x1);
+		temp4 = y+c-y1+slope*(x+c-x1);
+		temp5 = y2-y1+slope*(x2-x1);				// test 1 point that is on the boundary of the rectangle
+		if(temp1*temp2>=0 && temp2*temp3>=0 && temp3*temp4>=0 && temp4*temp5<=0)
+		{
+			return false;							// vertices of the square are one side, the rectangle is on the other, then there is a separating line, then false
+		}
+		// 2. line equation: y-y2 = -((x1-x2)/(y1-y2))*(x-x2)
+		temp1 = y-y2+slope*(x-x2);					// test the 4 vertices of the square
+		temp2 = y-y2+slope*(x+c-x2);
+		temp3 = y+c-y2+slope*(x-x2);
+		temp4 = y+c-y2+slope*(x+c-x2);
+		temp5 = y1-y2+slope*(x1-x2);				// test 1 point that is on the boundary of the rectangle
+		if(temp1*temp2>=0 && temp2*temp3>=0 && temp3*temp4>=0 && temp4*temp5<=0)
+		{
+			return false;							// vertices of the square are one side, the rectangle is on the other, then true
+		}
+	}
+	// 3. line equation: y-(y1+w*sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))/std::abs(x1-x2)) = ((y2-y1)/(x2-x1))*(x-x1)
+	if(x1-x2!=0)
+	{
+		slope = (y2-y1)/(x2-x1);
+		temp1 = y-(y1+w*longestEdgeLength/std::abs(x1-x2)) - slope*(x-x1);
+		temp2 = y+c-(y1+w*longestEdgeLength/std::abs(x1-x2)) - slope*(x-x1);
+		temp3 = y-(y1+w*longestEdgeLength/std::abs(x1-x2)) - slope*(x+c-x1);
+		temp4 = y+c-(y1+w*longestEdgeLength/std::abs(x1-x2)) - slope*(x+c-x1);	// temp5 must be negative this time, when we apply (x1, y1) in the equation
+		if(temp1>=0 && temp2>=0 && temp3>=0 && temp4>=0)
+		{
+			return false;							// vertices of the square are one side, the rectangle is on the other, then true
+		}
+		// 4. line equation: y-(y1-w*sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))/std::abs(x1-x2)) = ((y2-y1)/(x2-x1))*(x-x1)
+		temp1 = y-(y1-w*longestEdgeLength/std::abs(x1-x2)) - slope*(x-x1);
+		temp2 = y+c-(y1-w*longestEdgeLength/std::abs(x1-x2)) - slope*(x-x1);
+		temp3 = y-(y1-w*longestEdgeLength/std::abs(x1-x2)) - slope*(x+c-x1);
+		temp4 = y+c-(y1-w*longestEdgeLength/std::abs(x1-x2)) - slope*(x+c-x1);	// temp5 must be positive this time, when we apply (x1, y1) in the equation
+		if(temp1>=0 && temp2>=0 && temp3>=0 && temp4<=0)
+		{
+			return false;							// vertices of the square are one side, the rectangle is on the other, then true
+		}
+	}
+	// no separating line is found, so they do collide
+	return true;
+}
+#endif
 // test if THIS edge collides with another edge
 bool Edge::collisionWithEdge(Edge *temp, double w)
 {

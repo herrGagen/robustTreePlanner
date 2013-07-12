@@ -43,8 +43,8 @@ public:
 	Node(double ix, double iy, double iz, int itype = INTERNAL_NODE);
 	~Node();
 public:
-	bool testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres);
-	double testRadiusWithWeatherDataSet(double r, const std::vector<WeatherData> &wData, double effectiveThres);
+	bool isAnyWeatherCloserThanRadiusR(double r, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres);
+	double probabilityThatNodeIsClear(double r, const std::vector<WeatherData> &wDataSets, double effectiveThres);
 	bool collisionWithEdge(Edge *temp, double w);
 	bool collisionWithNode(Node *temp, double w);
 	void setTreeNode();				// set the node to be a node in the tree
@@ -121,7 +121,7 @@ private:
 	std::vector<double> weatherCollisionRNPs;					// define if a node is free of weather/ or collides with weather, record the tested rnps
 	std::vector<int> weatherCollisionStatus;					// define if a node is free of weather/ or collides with weather for each double rnp
 private:
-	bool testRadiusWithWeatherData(double r, const WeatherData &wData, double thres);	// test the surrounding of the point, if r=radius circle is weather free
+	bool isThisWeatherSetCloserThanRadiusR(double r, const WeatherData &wData, double thres);	// test the surrounding of the point, if r=radius circle is weather free
 	// test intersection between a disk whose center is (xC, yC), radius r, with a square, whose bottomleft corner is (x, y), side length c
 	bool collisionBetweenDiskAndSquare(double xC, double yC, double r, double x, double y, double c);
 	bool collisionWithEdgeHelper(double r, double ix1, double iy1, double iz1, double ix2, double iy2, double iz2, double iw);
@@ -139,17 +139,18 @@ public:
 public:
 	// algorithms related functions
 	// test if an edge can be thicken enough to rnp*2 width and avoid weather obstacles
-	bool testRNPWithWeatherDataSet(double rnp, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres);
+	bool isAnyWeatherWithinLaneWidthW(double rnp, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres);
 	// variable "thres" in the following fuctions are used to denote which weathe data is considered to be hazardous
 	// test the right side of the edge, if w=width rectangle is weather free
-	bool testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres);	
+	bool testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres);	
 	// test the left side of the edge, if w=width rectangle is weather free
-	bool testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres);	
+	bool testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres);	
 	
 	// overloaded versions of the functions above, return the probability that an edge is clear
-	double testRNPWithWeatherDataSet(double rnp, const std::vector<WeatherData> &wData, double effectiveThres);
-	double testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres);
-	double testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wData, double effectiveThres);
+	double sumOfProbOfAllWeatherCloserThanLaneWidthW(double rnp, const std::vector<WeatherData> &wDataSets, double effectiveThres);
+
+	double testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wDataSets, double effectiveThres);
+	double testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wDataSets, double effectiveThres);
 	
 	bool collisionWithEdge(Edge *temp, double w);
 	bool collisionWithNode(Node *temp, double w);
@@ -205,12 +206,12 @@ private:
 	std::vector<int> weatherCollisionStatus;					// define if a node is free of weather/ or collides with weather for each double rnp						
 	
 private:
-	bool collisionWithWeatherCheck(double w, const std::vector<WeatherData> &wData, double effectiveThres, double routingThres, int testType);
-	double collisionWithWeatherDataHelper(double w, const std::vector<WeatherData> &wData, double effectiveThres, int testType);
+	bool collisionWithWeatherCheck(double w, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres, int testType);
+	double probabilityThatEdgeIsClear(double w, const std::vector<WeatherData> &wDataSets, double effectiveThres, int testType);
 	
 	// test the intersection between rectangle: center segments(x1, y1)->(x2, y2), width w*2, with square: bottomleft corner (x, y), side length c
 	bool collisionBetweenRectangleAndSquare(double x1, double y1, double x2, double y2, double w, double x, double y, double c);
-	bool collisionTestingHelper(double width, const WeatherData &wData, double thres, int testType);
+	bool collidesWithWeatherDataSet(double width, const WeatherData &wData, double thres, int testType);
 	bool collisionWithEdgeHelper(double w, double ix1, double iy1, double iz1, double ix2, double iy2, double iz2, double iw);
 	bool collisionWithNodeHelper(double w, double ix, double iy, double iz, double ir);
 };
