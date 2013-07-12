@@ -8,11 +8,11 @@
 #include "InputFileReader.h"
 
 /**
-   \brief Simple constructor that parses an input file
-   
-   To see the format of the input file, see the class description.
-   
-   \param inputFileName Name of input file (i.e. input.txt)
+\brief Simple constructor that parses an input file
+
+To see the format of the input file, see the class description.
+
+\param inputFileName Name of input file (i.e. input.txt)
 */
 InputFileReader::InputFileReader(std::string inputFileName)
 {
@@ -28,7 +28,7 @@ InputFileReader::InputFileReader(std::string inputFileName)
 	}
 
 	in_stream >> demandFile;
-	
+
 	unsigned int numDataFiles;
 	in_stream >> numDataFiles;
 	weatherFileNames.resize(numDataFiles);
@@ -38,7 +38,6 @@ InputFileReader::InputFileReader(std::string inputFileName)
 		in_stream >> temp;
 		weatherFileNames[i] = temp;
 	}
-
 	in_stream >> cellWidth;
 	in_stream >> quadrantAngle;
 	in_stream >> deviationThreshold;
@@ -56,6 +55,62 @@ InputFileReader::InputFileReader(std::string inputFileName)
 		in_stream >> operFlex[i];
 	}
 	std::sort(operFlex.begin(), operFlex.end() );
-	in_stream >> timestamp;
+	in_stream >> outputFilename;
 	in_stream.close();
+
+	if(!areInputsLegal() )
+	{
+		exit(-1);
+	}
+}
+
+/**
+	\brief Checks that values from input file are legal.
+*/
+bool InputFileReader::areInputsLegal()
+{
+	bool inputsAreValid = true;
+	if( demandFile.size() == 0 )
+	{
+		std::cerr << "NULL demand file" << std::endl;	
+		inputsAreValid = false;
+	}
+	if(weatherFileNames.size() == 0 )
+	{
+		std::cerr << "No weather files" << std::endl;	
+		inputsAreValid = false;
+	}
+	for( std::vector<std::string>::iterator sIter = weatherFileNames.begin();
+		sIter != weatherFileNames.end();
+		++sIter)
+	{
+		if( sIter->size() == 0)
+		{
+			std::cerr << "Null weather file" << std::endl;	
+			inputsAreValid = false;
+		}
+	}
+	if( cellWidth < .0001 )
+	{
+		std::cerr << "Invalid cellWidth, it is < .0001" << std::endl;
+		inputsAreValid = false;			
+	}
+	if( deviationThreshold < 0 || deviationThreshold > 1)
+	{
+		std::cerr << "Deviation threshold not in [0,1], it is: ";
+		std::cerr << deviationThreshold << std::endl;
+		inputsAreValid = false;			
+	}
+	if( nodeEdgeThreshold < 0 || nodeEdgeThreshold > 1)
+	{
+		std::cerr << "Node edge threshold not in [0,1], it is: ";
+		std::cerr << nodeEdgeThreshold << std::endl;
+		inputsAreValid = false;			
+	}
+	if( laneWidth < .1 )
+	{
+		std::cerr << "Lane Width is too small (less than .1) " << std::endl;
+		inputsAreValid = false;			
+	}
+	return inputsAreValid;
 }

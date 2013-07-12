@@ -29,7 +29,7 @@
    operational flexibility 2
    ...
    operational flexibility n
-   timestamp
+   outputFilename
 
    When that format changes (like you decide that input.txt should be an XML file)
    encapsulate all of those changes here.
@@ -45,11 +45,11 @@ private:
 	double nodeEdgeThreshold; /**< Please describe this variable */
 	double angleOffset; /**< Please describe this variable */
 	double laneWidth; /**< Please describe this variable */
-	unsigned demandShift; /**< Please describe this variable */
+	unsigned int demandShift; /**< Please describe this variable */
 	unsigned int demandDrop; /**< Please describe this variable */
-	int numFixedNodes; /**< Please describe this variable */
+	int numFixedNodes; /**< Negative value used to indicate no limit */
 	std::vector<double> operFlex; /**< Please describe this variable */
-	std::string timestamp; /**< When the input file was created */
+	std::string outputFilename; /**< When the input file was created */
 public:
 	InputFileReader(std::string inputFileName);
 	InputFileReader(){}
@@ -63,11 +63,13 @@ public:
 	double getNodeEdgeThreshold() const { return nodeEdgeThreshold; }
 	double getAngleOffset() const { return angleOffset; }
 	double getLaneWidth() const { return laneWidth; }
-	int getNumFixedNodes() const { return numFixedNodes; }
+	int getNumFixedNodes() const { return (int)numFixedNodes; }
 	unsigned int getDemandShift() const { return demandShift; }
 	unsigned int getDemandDrop() const { return demandDrop; }
 	std::vector<double> getOperFlex() const { return operFlex; }
-	std::string getTimestamp() const { return timestamp; }
+	std::string getOutputName() const { return outputFilename; }
+private:
+	bool areInputsLegal();
 };
 
 #endif // already included
