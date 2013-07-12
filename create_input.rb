@@ -12,7 +12,7 @@ def create_input(dshift, ddrop, a, dthresh, nethresh, oname, temp_weather_name, 
   c_input_file        = c_input_file        ? c_input_file        : "inputs.txt"
   cell_width          = weather_cell_width  ? weather_cell_width  : 1.25 # 1.25 is the default value because that is what Shang had hardcoded
   angle_offset        = aoffset             ? aoffset             : Math::PI / 2 # 90 degrees for a standard quadrant size
-  lane_width          = lw                  ? lw                  : -1.0
+  lane_width          = lw                  ? lw                  : 1.0
   num_fix_nodes       = number_of_fix_nodes ? number_of_fix_nodes : 3
   oper_flex           = oper_flex           ? oper_flex : ["1", "2", "3"] 
   
