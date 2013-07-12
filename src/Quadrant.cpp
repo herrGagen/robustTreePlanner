@@ -188,10 +188,10 @@ bool Quadrant::demandFeasible(std::vector<double> &rnps)
 // effectiveThres means if a weather cell's deviation probability is below this value, it's going to be considered as NULL
 // routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
 // if the value < routingThres, then it is considered an obstacle 
-bool Quadrant::generateDAG(std::vector<double> rnps, int n, double effectiveThres, double routingThres, const std::vector<WeatherData> &wData, RoutingDAG* rDAG, double qAngleOffset, int numFixNodes)
+bool Quadrant::generateDAG(std::vector<double> rnps, int n, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG* rDAG, double qAngleOffset, int numFixNodes)
 {
 	std::cout << "Generating DAG..." << std::endl;
-	if(!generateEntryAndFixNodes(rnps, effectiveThres, routingThres, wData, rDAG, qAngleOffset, numFixNodes))
+	if(!generateEntryAndFixNodes(rnps, effectiveThres, routingThres, wDataSets, rDAG, qAngleOffset, numFixNodes))
 		return false;
 	std::cout << "Generating internal nodes..." << std::endl;
 
@@ -201,7 +201,7 @@ bool Quadrant::generateDAG(std::vector<double> rnps, int n, double effectiveThre
 }
 
 // given a size n double array of entry points' rnps, and a weatherdata set, and the DAG structure that we are going to put the points in
-bool Quadrant::generateEntryAndFixNodes(std::vector<double> rnps, double effectiveThres, double routingThres, const std::vector<WeatherData> &wData, RoutingDAG *rDAG, double quadAngleOffset, unsigned int maxFixNodes)
+bool Quadrant::generateEntryAndFixNodes(std::vector<double> rnps, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG *rDAG, double quadAngleOffset, unsigned int maxFixNodes)
 {
   std::cout << "Max Number of Fix Nodes: " << maxFixNodes << std::endl;
 	if(!demandFeasible(rnps))
@@ -249,7 +249,7 @@ bool Quadrant::generateEntryAndFixNodes(std::vector<double> rnps, double effecti
 				FIX_NODE);
 
 			// if not feasible
-			if(tempNode1->testRadiusWithWeatherDataSet(maxrnp, wData, effectiveThres, routingThres))
+			if(tempNode1->isAnyWeatherCloserThanRadiusR(maxrnp, wDataSets, effectiveThres, routingThres))
 			{
 				delete tempNode1;
 				currentAngleRight -= PI / 18; // test the next point on the inner arc ( 5 degrees out)
@@ -273,7 +273,7 @@ bool Quadrant::generateEntryAndFixNodes(std::vector<double> rnps, double effecti
 		if(currentAngleLeft<=endingAngle)
 		{
 			Node* tempNode2 = new Node(centerX+iRadius*cos(angle+currentAngleLeft), centerY+iRadius*sin(angle+currentAngleLeft), iHeight, FIX_NODE);
-			if(tempNode2->testRadiusWithWeatherDataSet(maxrnp, wData, effectiveThres, routingThres))		// intersect with the weather
+			if(tempNode2->isAnyWeatherCloserThanRadiusR(maxrnp, wDataSets, effectiveThres, routingThres))		// intersect with the weather
 			{
 				delete tempNode2;
 				currentAngleLeft+=PI/18;
