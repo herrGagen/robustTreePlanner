@@ -56,7 +56,7 @@ private:
 private:
 	InputFileReader inputs;
 	Quadrant* quadrant;						// the quadrant in the routing context
-	std::vector<WeatherData> weatherData;		// a set of weather data files
+	std::vector<WeatherData> weatherDataSets;		// a set of weather data files
 	DemandProfile* demandProfile;			// demand profile information
 	RoutingDAG* routingDAG;					// key component, the routing DAG structure
 	std::vector<double> demandRNPs;				// the std::vector storing RNP values for each entry node

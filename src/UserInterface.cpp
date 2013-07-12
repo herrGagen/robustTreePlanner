@@ -51,7 +51,7 @@ void UserInterface::reset()
 	{
 		delete routingDAG;
 	}
-	weatherData.clear();
+	weatherDataSets.clear();
 	demandRNPs.clear();
 	resetHelper(); // set all the ctrl variables to default and generate new objects
 }
@@ -244,7 +244,7 @@ bool UserInterface::generateTree()
 		unsigned int demand_shift = inputs.getDemandShift();
 		unsigned int demand_drop  = inputs.getDemandDrop();
 
-		if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherData, routingDAG, quadrantAngleOffset, maxFixNodes))
+		if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherDataSets, routingDAG, quadrantAngleOffset, maxFixNodes))
 		{
 			std::cout << "FINISHED DAG" << std::endl;
 			std::cout << std::endl << "Generating edge set..." << std::endl;
@@ -261,7 +261,7 @@ bool UserInterface::generateTree()
 			}
 			std::cout << std::endl;
 
-			if(!routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold))
+			if(!routingDAG->generateTree(weatherDataSets, demandRNPs, deviationThreshold, nodeEdgeThreshold))
 			{
 				// Will added some code 04/2013 to add a demand shifting scheme to hopefully reduce tree generation failure
 				bool demand_shift_success = false;
@@ -294,7 +294,7 @@ bool UserInterface::generateTree()
 							demandRNPs[demand_shift_index] = 0;
 
 							// If the tree is generated successfully, exit this block gracefully
-							if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) 
+							if (routingDAG->generateTree(weatherDataSets, demandRNPs, deviationThreshold, nodeEdgeThreshold)) 
 							{
 								demand_shift_success = true;
 								std::cout << std::endl << "A downward swap generated a tree on the following index: " << demand_shift_index << std::endl;
@@ -312,7 +312,7 @@ bool UserInterface::generateTree()
 							demandRNPs[demand_shift_index] = 0;
 
 							// If the tree is generated successfully, exit this block gracefully
-							if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
+							if (routingDAG->generateTree(weatherDataSets, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
 								demand_shift_success = true;
 								std::cout << std::endl << "An upward swap generated a tree on the following index: " << demand_shift_index << std::endl;
 							}
@@ -342,6 +342,11 @@ bool UserInterface::generateTree()
 						// std::cout << std::endl;
 						for (int j = 0; j < 4; ++j) 
 						{
+							if(combinations[comb_i][j] <   (int) 0 ||
+								combinations[comb_i][j] >= (int)demandRNPs.size())
+							{
+								continue;
+							}
 							if (demandRNPs[combinations[comb_i][j]] > 0) 
 							{
 								temp_demands[j] = demandRNPs[ combinations[comb_i][j] ] ;
@@ -350,7 +355,7 @@ bool UserInterface::generateTree()
 							// HARDCODED VALUE
 							if (j == 3) 
 							{
-								if (routingDAG->generateTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold)) 
+								if (routingDAG->generateTree(weatherDataSets, demandRNPs, deviationThreshold, nodeEdgeThreshold)) 
 								{
 									demand_shift_success = true;
 									std::cout << std::endl << "A demand drop generated a tree on the following indices: ";
@@ -435,19 +440,19 @@ bool UserInterface::tautenTree()
 	for(double rad = .1; rad<25; rad *=2)
 	{
 		std::cout << "Radius tested: " << rad << '\t';
-		routingDAG->areAllNodesFarFromWeather( weatherData, 
+		routingDAG->areAllNodesFarFromWeather( weatherDataSets, 
 												rad, 
 												deviationThreshold, 
 												nodeEdgeThreshold );
 	}
 #endif
-	bool retval =  routingDAG->generateTautenedTree(weatherData, demandRNPs, deviationThreshold, nodeEdgeThreshold);
+	bool retval =  routingDAG->generateTautenedTree(weatherDataSets, demandRNPs, deviationThreshold, nodeEdgeThreshold);
 #if defined(DEBUG_TAUTENING)
 	std::cout << "\nAfter tautening" << std::endl;
 	for(double rad = .1; rad<25; rad *=2)
 	{
 		std::cout << "Radius tested: " << rad << '\t';
-		routingDAG->areAllNodesFarFromWeather( weatherData, 
+		routingDAG->areAllNodesFarFromWeather( weatherDataSets, 
 												rad, 
 												deviationThreshold, 
 												nodeEdgeThreshold );
@@ -471,7 +476,7 @@ void UserInterface::inputOperationalFlexibility()
 		std::cout << "Operational flexbility values are invalid: Verify that all are positive";
 		exit(0);
 	}
-	routingDAG->generateOperFlexPairs(radii, weatherData, deviationThreshold);	// generate the pairs of operational flexibility values	
+	routingDAG->generateOperFlexPairs(radii, weatherDataSets, deviationThreshold);	// generate the pairs of operational flexibility values	
 	ctrl_OperFlexGenerated = OPER_FLEX_GENERATED;
 	std::cout << "\nOperational flexibility pairs successfully generated for the tree."<<std::endl;
 }
@@ -650,7 +655,7 @@ bool UserInterface::readWeatherData()
 		weatherFileDirectories.push_back(tempStr);					// store the directories of each weather file into the std::vector
 	}
 	/***********************************************************************************************************************************/
-	weatherData.clear();
+	weatherDataSets.clear();
 	double rangeMinLati;
 	double rangeMinLong;
 	double rangeMaxLati;
@@ -686,7 +691,7 @@ bool UserInterface::readWeatherData()
 			// convert the weather cells to screen OPENGL coordinate system 
 			tempWeather->convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
 
-			weatherData.push_back(*tempWeather);		// push the newly read in weather data into the storing std::vector
+			weatherDataSets.push_back(*tempWeather);		// push the newly read in weather data into the storing std::vector
 			minAlt = min(minAlt, (double)tempWeather->getMinAlt());
 			maxAlt = std::max(maxAlt, (double)tempWeather->getMaxAlt());
 		}
@@ -698,17 +703,17 @@ bool UserInterface::readWeatherData()
 	} // loop over all weather files
 	// weather files are read in, do some tests to make sure that the files are valid
 	double totalProbabilityOfWeatherFiles = 0;
-	for(unsigned int i=0; i<weatherData.size(); i++)
+	for(unsigned int i=0; i<weatherDataSets.size(); i++)
 	{
-		totalProbabilityOfWeatherFiles += weatherData[i].getProbability();
-		std::cout << i << "   " << weatherData[i].getProbability() << std::endl;
+		totalProbabilityOfWeatherFiles += weatherDataSets[i].getProbability();
+		std::cout << i << "   " << weatherDataSets[i].getProbability() << std::endl;
 	}
 	// the total probability of the weather files is not 1
 	if(std::abs(totalProbabilityOfWeatherFiles-1.0) > 0.1)			
 	{
 		std::cerr <<  "\nThe total probability of the weather data files is not 1."<<std::endl;
 		std::cout << "Current Probability: " << totalProbabilityOfWeatherFiles << std::endl;
-		weatherData.clear();
+		weatherDataSets.clear();
 		ctrl_WeatherReadIn = WEATHER_NOT_READ_IN;		// the weather is not read in yet
 		return false;
 	}
@@ -779,7 +784,7 @@ void UserInterface::saveTreeInformation()
 		std::cerr << "\nPlease generate Operational Flexity Pairs First!"<<std::endl;
 		return;
 	}
-	routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime, inputs.getTimestamp() );
+	routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime, inputs.getOutputName() );
 	std::cout << "latiPerPixel: " << latiPerPixel << "; centerLati: " << centerLati << std::endl;
 	std::cout << "longPerPixel: " << longPerPixel << "; centerLong: " << centerLong << std::endl;
 	std::cout<< "\nTree Information successfully written to file.\n";
