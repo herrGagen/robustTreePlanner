@@ -362,7 +362,6 @@ void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, std::vector<dou
 		double layerHeight = oHeight - (oHeight - iHeight) * i / (numLayers + 1);
 		double layerRadius = oRadius - (oRadius - iRadius) * i / (numLayers + 1);
 
-    // WILLXYZ It's possible that the following line needs to be updated to use quadAngleOffset
 		double layerLength = PI*layerRadius/2;									// 1/4 circular perimeter
 		int numNodesLayer = 0;													// numNodesLayer defines the number of nodes on the current layer
 		while(numNodesLayer <= layerLength / (2 * minrnp + 2))
