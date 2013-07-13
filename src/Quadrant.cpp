@@ -276,7 +276,7 @@ bool Quadrant::generateEntryAndFixNodes(std::vector<double> rnps, double effecti
 			if(tempNode2->isAnyWeatherCloserThanRadiusR(maxrnp, wDataSets, effectiveThres, routingThres))		// intersect with the weather
 			{
 				delete tempNode2;
-				currentAngleLeft+=PI/18;
+				currentAngleLeft+=PI/18; // MAGIC NUMBER
 			}
 			else																// the node can serve as a fix node
 			{
@@ -285,7 +285,8 @@ bool Quadrant::generateEntryAndFixNodes(std::vector<double> rnps, double effecti
 				currentAngleRight = std::min(currentAngleRight, currentAngleLeft - angleIncrement);
 				currentAngleLeft += angleIncrement;
 				numFixNodes ++;
-				if(numFixNodes==3)												// already got enough fix nodes
+				// MAGIC NUMBER
+				if(numFixNodes==3)	// we have enough fix nodes											
 				{
 					break;
 				}
@@ -332,41 +333,37 @@ bool Quadrant::generateEntryAndFixNodes(std::vector<double> rnps, double effecti
 void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, std::vector<double> rnps, double quadAngleOffset)
 {
 	unsigned int numLayers = 0;
-	double minrnp = *max_element(rnps.begin(), rnps.end());
-	std::cout << "minrnp initialized: " << minrnp << std::endl;
+	double maxrnp = *max_element(rnps.begin(), rnps.end());
+	std::cout << "maxrnp initialized: " << maxrnp << std::endl;
 	for(unsigned int i=0; i<rnps.size(); i++)
 	{
 		if(rnps[i]!=0)
-			minrnp = minrnp > rnps[i] ? rnps[i] : minrnp;							// use minrnp*3 as the interval in between levels, except 0
-	}
-	std::cout << "Found minrnp = " << minrnp << std::endl;
-	if(liftedoRadius - liftediRadius > minrnp * 4)	
-	{
-		numLayers = 1;
-		while((liftedoRadius - liftediRadius) / numLayers > minrnp * 3)
 		{
-			// compute the number of layers until the interval in between layer is less than maxrnp*3
-			numLayers++;
+			maxrnp = maxrnp > rnps[i] ? rnps[i] : maxrnp;							
 		}
-		numLayers--;
-		// the actual number of layers was the number of divisions (which is 1 more)
+	}
+	std::cout << "Found maxrnp = " << maxrnp << std::endl;
+	if(liftedoRadius - liftediRadius > maxrnp * 4)	
+	{
+		// James: The previous version iterated numLayers until it reached this value.
+		numLayers = (int)std::floor( (liftedoRadius - liftediRadius) / (maxrnp*3) );
 	}
 	std::cout << "Found numLayers = " << numLayers << std::endl;
 	// generate the nodes on each layer, i is the layer index, where the smaller i denotes layer that is closer to the outer boundary
 	for(unsigned int i=1; i<=numLayers; i++)
 	{
-		if (i % 5000 == 0) {
+		if (i % 5000 == 0) 
+		{
 			std::cout << "Current layer is: " << i << std::endl;
 		}
 		// compute the unified heights and radius(on the base plane) of all the nodes on this layer
 		double layerHeight = oHeight - (oHeight - iHeight) * i / (numLayers + 1);
 		double layerRadius = oRadius - (oRadius - iRadius) * i / (numLayers + 1);
 
-		double layerLength = PI*layerRadius/2;									// 1/4 circular perimeter
-		int numNodesLayer = 0;													// numNodesLayer defines the number of nodes on the current layer
-		while(numNodesLayer <= layerLength / (2 * minrnp + 2))
-			numNodesLayer++;
-		numNodesLayer--;														// the total number of nodes on current layer to ensure 2*maxrnp+2 interval
+		double layerLength = quadAngleOffset*layerRadius;									// 1/4 circular perimeter
+
+		// James: Again, who sets the value for a parameter by increasing its value until a condition is met?
+		int numNodesLayer = (int) std::floor( layerLength / (2* maxrnp + 2) );
 		double startingAngle = angle + quadAngleOffset / (2 * numNodesLayer);						// why 4? each angle is (PI/2)/numNodesLayer, but the starting and ending one are only half
 		for(int j=0; j<numNodesLayer; j++)
 		{
