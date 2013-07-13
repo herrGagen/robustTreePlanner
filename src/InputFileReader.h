@@ -49,7 +49,7 @@ private:
 	unsigned int demandDrop; /**< Please describe this variable */
 	int numFixedNodes; /**< Negative value used to indicate no limit */
 	std::vector<double> operFlex; /**< Please describe this variable */
-	std::string outputFilename; /**< When the input file was created */
+	std::string outputFilename; /**< Name of output XML file */
 public:
 	InputFileReader(std::string inputFileName);
 	InputFileReader(){}
