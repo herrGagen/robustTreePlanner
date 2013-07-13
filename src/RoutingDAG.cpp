@@ -441,7 +441,8 @@ bool RoutingDAG::generateEdgeSet()
 		return false;
 	}
 	/***************************************************************************************************/
-	// generate the edge set base on the nodes that are read in. Each node has outgoing edges going into the nodes in the next 3 layers, as long as the edge
+	// generate the edge set base on the nodes that are read in. Each node has outgoing edges going into the nodes in the next LL=3 layers, as long as the edge
+	//      Joe: changed the LL to 5 (it was 3)  I am calling the parameter LL
 	// is with in PI/3 degrees of the centerAngle, the order of the edges are from rightmost to leftmost, from furthest to nearest, except for the nodes that have
 	// edges going to fix nodes, then the order would be from leftmost to rightmost
 	if(!generateLayerStartingIndexVector())					// generate the layer starting position std::vector first
@@ -450,7 +451,7 @@ bool RoutingDAG::generateEdgeSet()
 	// but the order where we fill in fix nodes is opposite
 	for(unsigned int i=0; i<numLayers-2; i++)					
 	{
-		int startingLayer = (i+3>numLayers-2)? (numLayers-2) : (i+3);
+	  int startingLayer = (i+5>numLayers-2)? (numLayers-2) : (i+5);      //   Joe: the "5" was "3" but should be parameter LL
 		int endingLayer = i+1;							// connect to points that lie in the range [startingLayer, endingLayer]
 		// loop thru all the nodes int the current layer
 		for(int j = layerStartingIndex[i]; j<layerStartingIndex[i+1]; j++)		
@@ -460,6 +461,7 @@ bool RoutingDAG::generateEdgeSet()
 			double y = current->getY();
 			int *shortestDistanceNodeIndex = new int[startingLayer-endingLayer+1];
 			// compute for each layer(maximum 3), the closest node on that layer to the current node
+			// Joe:  compute for each layer(maximum LL=3 or 5), the closest node on that layer to the current node
 			for(int k=endingLayer; k<=startingLayer; k++)
 			{
 				// the distance from current node to the first node on the kth layer
