@@ -268,20 +268,24 @@ void DemandProfile::generateDemandVector(std::vector<double> &demand, double sta
       if(tempX!=0)
         {
           double angle = atan(tempY/tempX);					// the center angle of the point
-          if(tempX<0)											// if the point is in the 2nd or the 3rd quadrant
+          if(tempX<0)	//if the point is in the 2nd or the 3rd quadrant
+		  {
             angle = angle+PI;
-          else if(tempX>0 && tempY<0)							// in the 4th quadrant
-            angle = angle+2*PI;								// make it in the 0--2*PI range
-          // now we have the angle with in range (0, 2*PI)
-          if(endingAngle<2*PI)								// if the quadrant's angle
+		  }
+          else if(tempX>0 && tempY<0) // in the 4th quadrant
+		  {
+            angle = angle+2*PI;	 // make it in the 0--2*PI range
+		  }
+          // now we have the angle in range (0, 2*PI)
+          if(endingAngle<2*PI)	
             {
               if(angle>startingAngle && angle<=endingAngle)
                 {
                   int tempIndex = int((angle-startingAngle)/angleIncrement);
-                  demandRNPS[tempIndex] = std::max(demandRNPS[tempIndex], rnp[i]);	 // compute the std::max rnp value for this range of entry node
+                  demandRNPS[tempIndex] = std::max(demandRNPS[tempIndex], rnp[i]);	 // compute the std::max rnp value for this range of entry nodes
                 }
             }
-          else												// starting and ending angle are on different sides of the positive x axis
+          else	// starting and ending angle are on different sides of the positive x axis
             {
               if(angle>startingAngle || angle<endingAngle-2*PI)
                 {
