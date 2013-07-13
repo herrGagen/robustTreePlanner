@@ -42,7 +42,7 @@ InputFileReader::InputFileReader(std::string inputFileName)
 	in_stream >> quadrantAngle;
 	in_stream >> deviationThreshold;
 	in_stream >> nodeEdgeThreshold;
-	in_stream >> angleOffset;
+	in_stream >> angularWidth;
 	in_stream >> laneWidth;
 	in_stream >> numFixedNodes;
 	in_stream >> demandShift;

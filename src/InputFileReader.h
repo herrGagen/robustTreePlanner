@@ -22,7 +22,7 @@
    quadrant angle
    deviation threshold
    node edge threshold
-   angle offset
+   quadrant angular width
    lane width
    number of fixed nodes
    operational flexibility 1
@@ -43,7 +43,7 @@ private:
 	double quadrantAngle;/**< Please describe this variable */
 	double deviationThreshold; /**< Please describe this variable */
 	double nodeEdgeThreshold; /**< Please describe this variable */
-	double angleOffset; /**< Please describe this variable */
+	double angularWidth; /**< Angular width of quadrant */
 	double laneWidth; /**< Please describe this variable */
 	unsigned int demandShift; /**< Please describe this variable */
 	unsigned int demandDrop; /**< Please describe this variable */
@@ -61,7 +61,7 @@ public:
 	double getQuadrantAngle() const { return quadrantAngle; }
 	double getDeviationThreshold() const { return deviationThreshold;}
 	double getNodeEdgeThreshold() const { return nodeEdgeThreshold; }
-	double getAngleOffset() const { return angleOffset; }
+	double getAngularWidth() const { return angularWidth; }
 	double getLaneWidth() const { return laneWidth; }
 	int getNumFixedNodes() const { return (int)numFixedNodes; }
 	unsigned int getDemandShift() const { return demandShift; }

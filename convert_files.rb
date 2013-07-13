@@ -1,4 +1,4 @@
-# Takes multiple files and merges them into one directory.  
+# Takes multiple files and merges them into one directory.
 # It will also adjust the probabilities of each time to accomodate multiple times
 
 # BEFORE RUNNING MAKE SURE RESULTS IS BACKED UP (It will get deleted)
@@ -175,8 +175,8 @@ if __FILE__ == $0
       weather_dir         = arg if weather_dir          == true
       c_input_file        = arg if c_input_file         == true
       weather_cell_width  = arg if weather_cell_width   == true
-      quadrant_size       = arg if quadrant_size        == true # this is called angle_offset in "create_input.rb"
-      lane_width          = arg if lane_width	          == true
+      quadrant_size       = arg if quadrant_size        == true # this is called angular_width in "create_input.rb"
+      lane_width          = arg if lane_width	        == true
       max_fix_nodes       = arg if max_fix_nodes        == true # called num_fix_nodes
 
       if arg == "-s"
@@ -228,7 +228,7 @@ if __FILE__ == $0
     angle = (angle.to_f * Math::PI / 180).to_s if angle
     quadrant_size = (quadrant_size.to_f * Math::PI / 180).to_s if quadrant_size
     print "Angle (converted to radians):  ", angle,                   "\n" if angle
-    print "Quadrant Size (angle offset):  ", quadrant_size,           "\n" if quadrant_size
+    print "Quadrant Size (angular width): ", quadrant_size,           "\n" if quadrant_size
     print "Deviation threshold:           ", deviation_threshold,     "\n" if deviation_threshold
     print "Node edge threshold:           ", node_edge_threshold,     "\n" if node_edge_threshold    
     print "Output file name:              ", output_name,             "\n" if output_name    

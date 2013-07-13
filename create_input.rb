@@ -2,7 +2,7 @@ require 'fileutils'
 require 'pathname'
 require 'date'
 
-def create_input(dshift, ddrop, a, dthresh, nethresh, oname, temp_weather_name, c_input_file, weather_cell_width, aoffset, lw, number_of_fix_nodes,  oper_flex)
+def create_input(dshift, ddrop, a, dthresh, nethresh, oname, temp_weather_name, c_input_file, weather_cell_width, awidth, lw, number_of_fix_nodes,  oper_flex)
   demand_shift = dshift ? dshift : 1
   demand_drop = ddrop ? ddrop : 1
   angle               = a                   ? a                   : 0.0
@@ -11,7 +11,7 @@ def create_input(dshift, ddrop, a, dthresh, nethresh, oname, temp_weather_name, 
   output_name         = oname               ? oname               : Time.now.to_s.slice(0, 19).gsub(" ", "_").gsub(":", "-")
   c_input_file        = c_input_file        ? c_input_file        : "inputs.txt"
   cell_width          = weather_cell_width  ? weather_cell_width  : 1.25 # 1.25 is the default value because that is what Shang had hardcoded
-  angle_offset        = aoffset             ? aoffset             : Math::PI / 2 # 90 degrees for a standard quadrant size
+  angular_width       = awidth             ? awidth             : Math::PI / 2 # 90 degrees for a standard quadrant size
   lane_width          = lw                  ? lw                  : 1.0
   num_fix_nodes       = number_of_fix_nodes ? number_of_fix_nodes : 3
   oper_flex           = oper_flex           ? oper_flex : ["1", "2", "3"] 
@@ -37,7 +37,7 @@ def create_input(dshift, ddrop, a, dthresh, nethresh, oname, temp_weather_name, 
   input.write(angle.to_s + "\n")
   input.write(deviation_threshold.to_s + "\n")
   input.write(node_edge_threshold.to_s + "\n")
-  input.write(angle_offset.to_s + "\n")
+  input.write(angular_width.to_s + "\n")
   input.write(lane_width.to_s + "\n")
   input.write(num_fix_nodes.to_s + "\n")
   input.write(demand_shift.to_s + "\n")

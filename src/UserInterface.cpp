@@ -218,7 +218,7 @@ bool UserInterface::generateTree()
 		routingDAG->reset();											// a brand new routing instance
 		std::cout << std::endl << "Finished resetting edges." << std::endl;
 
-		double quadrantAngleOffset = inputs.getAngleOffset();
+		double quadrantAngularWidth = inputs.getAngularWidth();
 		double lane_width = inputs.getLaneWidth();
 		if (lane_width > 0) 
 		{
@@ -244,7 +244,7 @@ bool UserInterface::generateTree()
 		unsigned int demand_shift = inputs.getDemandShift();
 		unsigned int demand_drop  = inputs.getDemandDrop();
 
-		if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherDataSets, routingDAG, quadrantAngleOffset, maxFixNodes))
+		if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherDataSets, routingDAG, quadrantAngularWidth, maxFixNodes))
 		{
 			std::cout << "FINISHED DAG" << std::endl;
 			std::cout << std::endl << "Generating edge set..." << std::endl;

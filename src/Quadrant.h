@@ -35,7 +35,7 @@ public:
 	void reset();
 	/*********************************************************************************************/
 	// functions used to generate routing graph structures
-	bool generateDAG(std::vector<double> rnps, int n, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG* rDAG, double qAngleOffset, int numFixNodes);
+	bool generateDAG(std::vector<double> rnps, int n, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG* rDAG, double quadrantAngularWidth, int numFixNodes);
 	/*********************************************************************************************/
 	
 private:
@@ -54,8 +54,8 @@ private:
 private:
 	/*********************************************************************************************/
 	// functions used to generate routing graph structures
-	bool generateEntryAndFixNodes(std::vector<double> rnps, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG* rDAG, double quadAngleOffset, unsigned int numFixNodes);
-	void generateRoutingDAGInternalNodes(RoutingDAG* rDAG, std::vector<double> rnps, double quadAngleOffset);
+	bool generateEntryAndFixNodes(std::vector<double> rnps, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG* rDAG, double quadrantAngularWidth, unsigned int numFixNodes);
+	void generateRoutingDAGInternalNodes(RoutingDAG* rDAG, std::vector<double> rnps, double quadrantAngularWidth);
 	/*********************************************************************************************/
 };
 
