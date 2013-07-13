@@ -59,22 +59,22 @@ void Quadrant::setcY(double cY)
 	centerY = cY;
 }
 
-// normalize the angle to the range of [0, 2*PI)
+/**
+	\brief Sets angle to input, module being in [0,2PI)
+
+	\param ang Input angle (in radians) that can take any value.
+*/
 void Quadrant::setAngle(double ang)
 {
 	if(ang<0)
 	{
-		int temp = 1;
-		while(ang+2*PI*temp<0)
-			temp++;
+		double temp = ceil(abs(ang)/(2*PI) );
 		angle = ang + 2*PI*temp;
 	}
 	else
 	{
-		int temp = 1;
-		while(ang - 2*PI*temp > 0)
-			temp++;
-		angle = ang-2*PI*(temp-1);
+		double temp = floor(ang/(2*PI) );
+		angle = ang-2*PI*(temp);
 	}
 }
 
@@ -163,7 +163,7 @@ int Quadrant::getLiftStatus()
 }
 
 // decide if a group of demand for entry nodes is feasible or not, return true is feasilbe
-bool Quadrant::demandFeasible(std::vector<double> &rnps)
+bool Quadrant::demandFeasible(const std::vector<double> &rnps)
 {
 	// first compute the maximum, minimum and sum of the rnp values	
 	double rnpSum, minrnp, maxrnp;
@@ -176,23 +176,31 @@ bool Quadrant::demandFeasible(std::vector<double> &rnps)
 	}
 	if(rnpSum > PI*oRadius/2	||														// the outer arc length of the quadrant
 		liftedoRadius - liftediRadius<=(log(double( rnps.size() ))/log(double(2))+1)*2*maxrnp ||	// there exists a way to merge the edges to a single fix node, in degree 2	 
-		2*maxrnp> PI*iRadius/2)															// the inner boundary is long enough
-		return false;
+		2*maxrnp> PI*iRadius/2)		
+		{
+			// the inner boundary is long enough
+			return false;
+		}
 	return true;						// the demand is feasible
 }
 
-/*********************************************************************************************/
-// functions used to generate routing graph structures
-/*********************************************************************************************/
-// the general function, which generated all the nodes in the routing DAG(directed graph)
-// effectiveThres means if a weather cell's deviation probability is below this value, it's going to be considered as NULL
-// routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
-// if the value < routingThres, then it is considered an obstacle 
-bool Quadrant::generateDAG(std::vector<double> rnps, int n, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG* rDAG, double quadrantAngularWidth, int numFixNodes)
+/************************
+functions used to generate routing graph structures
+************************/
+
+/**
+\brief the general function, which generated all the nodes in the routing DAG(directed graph)
+
+\param effectiveThres if a weather cell's deviation probability is below this value, it's going to be considered as NULL
+\param routingThres we compute the weighted total probability of the weather cells, if the value < routingThres, then it is considered an obstacle 
+*/
+bool Quadrant::generateDAG(const std::vector<double> &rnps, int n, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG* rDAG, double quadrantAngularWidth, int numFixNodes)
 {
 	std::cout << "Generating DAG..." << std::endl;
 	if(!generateEntryAndFixNodes(rnps, effectiveThres, routingThres, wDataSets, rDAG, quadrantAngularWidth, numFixNodes))
+	{
 		return false;
+	}
 	std::cout << "Generating internal nodes..." << std::endl;
 
   generateRoutingDAGInternalNodes(rDAG, rnps, quadrantAngularWidth);
@@ -200,10 +208,16 @@ bool Quadrant::generateDAG(std::vector<double> rnps, int n, double effectiveThre
 	return true;
 }
 
+/**
+	\brief Generates Entry and Fixed nodes
+
+	\param rnps Demand RNPs for entire problem
+
 // given a size n double array of entry points' rnps, and a weatherdata set, and the DAG structure that we are going to put the points in
-bool Quadrant::generateEntryAndFixNodes(std::vector<double> rnps, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG *rDAG, double quadrantAngularWidth, unsigned int maxFixNodes)
+*/
+bool Quadrant::generateEntryAndFixNodes(const std::vector<double> &rnps, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG *rDAG, double quadrantAngularWidth, unsigned int maxFixNodes)
 {
-  std::cout << "Max Number of Fix Nodes: " << maxFixNodes << std::endl;
+  std::cout << "Max Number of Fixed Nodes: " << maxFixNodes << std::endl;
 	if(!demandFeasible(rnps))
 	{
 		std::cerr << "\nThe Quadrant is NOT large enough to be used for routing!"<<std::endl;
@@ -213,6 +227,9 @@ bool Quadrant::generateEntryAndFixNodes(std::vector<double> rnps, double effecti
 	// first generate a set of n entry nodes, equally distributed along the outer boundary of the quadrant
 	double maxrnp = *max_element(rnps.begin(), rnps.end()); // the maximum rnp among the input rnps
 	double startingAngle = 2*rnps[0]/oRadius; // the starting position and ending positions of the entry points
+	// Joe: this should change to    startingAngle = angle + 2*rnps[0]/oRadius   but first we need the angle passed as parameter?
+	// Joe: issue is that this startingAngle seems to assume 1st quadrant, as it starts at angle near 0
+	// Joe: The line below seems also to assume the quadrant starts at angle about 0
   double endingAngle = quadrantAngularWidth - 2*(*rnps.rbegin())/oRadius; // defined to be a little bit off the boundary of the quadrant
 	for(unsigned int i=0; i<rnps.size(); i++)
 	{
@@ -330,7 +347,7 @@ bool Quadrant::generateEntryAndFixNodes(std::vector<double> rnps, double effecti
 }
 
 // this function generated all the nodes in the DAG, but the edges are not generated, which have to be done by the generateEdgeSet() function defined in RoutingDAG.h
-void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, std::vector<double> rnps, double quadrantAngularWidth)
+void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, const std::vector<double> &rnps, double quadrantAngularWidth)
 {
 	unsigned int numLayers = 0;
 	double maxrnp = *max_element(rnps.begin(), rnps.end());

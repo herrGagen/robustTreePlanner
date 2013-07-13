@@ -31,11 +31,11 @@ public:
 	int getLiftStatus();
 	void setLiftStatus(int status);
 	void setQuadrant(double cX = 0, double cY = 0, double ang = PI/6, double iR = 10, double oR = 35, double iH = 0, double oH = 0);
-	bool demandFeasible(std::vector<double> &rnps);
+	bool demandFeasible(const std::vector<double> &rnps);
 	void reset();
 	/*********************************************************************************************/
 	// functions used to generate routing graph structures
-	bool generateDAG(std::vector<double> rnps, int n, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG* rDAG, double quadrantAngularWidth, int numFixNodes);
+	bool generateDAG(const std::vector<double> &rnps, int n, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG* rDAG, double quadrantAngularWidth, int numFixNodes);
 	/*********************************************************************************************/
 	
 private:
@@ -54,8 +54,8 @@ private:
 private:
 	/*********************************************************************************************/
 	// functions used to generate routing graph structures
-	bool generateEntryAndFixNodes(std::vector<double> rnps, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG* rDAG, double quadrantAngularWidth, unsigned int numFixNodes);
-	void generateRoutingDAGInternalNodes(RoutingDAG* rDAG, std::vector<double> rnps, double quadrantAngularWidth);
+	bool generateEntryAndFixNodes(const std::vector<double> &rnps, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG* rDAG, double quadrantAngularWidth, unsigned int numFixNodes);
+	void generateRoutingDAGInternalNodes(RoutingDAG* rDAG, const std::vector<double> &rnps, double quadrantAngularWidth);
 	/*********************************************************************************************/
 };
 
