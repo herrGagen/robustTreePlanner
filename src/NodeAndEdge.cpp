@@ -64,7 +64,7 @@ void Node::clearFreeRadiusVector()
 	*/
 bool Node::isAnyWeatherCloserThanRadiusR(double r, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres)
 {
-#if defined(DISABLE_COLLISION_CACHING)  
+#if !defined(DISABLE_COLLISION_CACHING)  
 	if(getWeatherCollisionStatus(r) == WEATHER_COLLISION)			// if was tested to be colliding with the weather
 	{
 		return true;
