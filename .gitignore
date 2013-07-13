@@ -26,6 +26,7 @@ Prototype\ Mac.xcodeproj/*
 old_outputs/*
 0600/*
 inputs.txt
+echoed_params.txt
 
 *.xml
 *.pdb
@@ -36,3 +37,4 @@ inputs.txt
 *.suo
 *.txt
 *.bat
+
