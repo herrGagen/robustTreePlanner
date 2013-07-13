@@ -346,7 +346,7 @@ void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, std::vector<dou
 	if(liftedoRadius - liftediRadius > maxrnp * 4)	
 	{
 		// James: The previous version iterated numLayers until it reached this value.
-		numLayers = (int)std::floor( (liftedoRadius - liftediRadius) / (maxrnp*3) );
+		numLayers = (int)floor( (liftedoRadius - liftediRadius) / (maxrnp*3) );
 	}
 	std::cout << "Found numLayers = " << numLayers << std::endl;
 	// generate the nodes on each layer, i is the layer index, where the smaller i denotes layer that is closer to the outer boundary
@@ -363,7 +363,7 @@ void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, std::vector<dou
 		double layerLength = quadrantAngularWidth*layerRadius;									// 1/4 circular perimeter
 
 		// James: Again, who sets the value for a parameter by increasing its value until a condition is met?
-		int numNodesLayer = (int) std::floor( layerLength / (2* maxrnp + 2) );
+		int numNodesLayer = (int) floor( layerLength / (2* maxrnp + 2) );
 		double startingAngle = angle + quadrantAngularWidth / (2 * numNodesLayer);						// why 4? each angle is (PI/2)/numNodesLayer, but the starting and ending one are only half
 		for(int j=0; j<numNodesLayer; j++)
 		{
