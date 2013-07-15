@@ -1,4 +1,4 @@
-function [km nmi mi] = haversine(loc1, loc2)
+function nmi = haversine(loc1, loc2)
 % HAVERSINE     Compute distance between locations using Haversine formula
 %   KM = HAVERSINE(LOC1, LOC2) returns the distance KM in km between
 %   locations LOC1 and LOC2 using the Haversine formula.  LOC1 and LOC2 are

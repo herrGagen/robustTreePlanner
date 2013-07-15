@@ -26,8 +26,8 @@ appxNmPerLon = haversine([arcLat1 arcLon1],[arcLat1 arcLon2])/abs(arcLon1-arcLon
 dLat = arcLat2 - arcLat1;
 dLon = arcLon2 - arcLon1;
 
-dists(1,:) = distanceFromPointOnArcToWeather(0, arcLat1, arcLon1, dLat, dLon, weatherLat(:), weatherLon(:), appxNmPerLat, appxNmPerLon);
-dists(2,:) = distanceFromPointOnArcToWeather(1, arcLat1, arcLon1, dLat, dLon, weatherLat(:), weatherLon(:), appxNmPerLat, appxNmPerLon);
+dists(1,:) = distanceFromPointOnArcToWeather(0, arcLat1, arcLon1, dLat, dLon, weatherLat(:), weatherLon(:));
+dists(2,:) = distanceFromPointOnArcToWeather(1, arcLat1, arcLon1, dLat, dLon, weatherLat(:), weatherLon(:));
 
 num = appxNmPerLat^2*dLat*(weatherLat-arcLat1) +  ...
       appxNmPerLon^2*dLon*(weatherLon-arcLon1) ;
@@ -37,22 +37,24 @@ closestT = num/denom;
 
 dists(3,:) = dists(2,:);
 goodInds = (closestT(:) > 0) & (closestT(:) < 1);
-dists(3,goodInds) = distanceFromPointOnArcToWeather(1, arcLat1, arcLon1, dLat, dLon, weatherLat(goodInds), weatherLon(goodInds), appxNmPerLat, appxNmPerLon);
+dists(3,goodInds) = distanceFromPointOnArcToWeather(closestT(goodInds), arcLat1, arcLon1, dLat, dLon, weatherLat(goodInds), weatherLon(goodInds) );
 
 minDist = min(dists(:) );
 
 end %function distanceFromArcToPoint
 
-function dist = distanceFromPointOnArcToWeather(t, arcLat1, arcLon1, dLat, dLon, weatherLat, weatherLon, appxNmPerLat, appxNmPerLon)
-% dist = distanceFromPointOnArcToPoint(t, arcLat1, arcLon1, dLat, dLon, weatherLat, weatherLon, appxNmPerLat, appxNmPerLon)
+function dist = distanceFromPointOnArcToWeather(t, arcLat1, arcLon1, dLat, dLon, weatherLat, weatherLon)
+% dist = distanceFromPointOnArcToPoint(t, arcLat1, arcLon1, dLat, dLon, weatherLat, weatherLon)
 %
 % Returns the distance from arc (arcLat1,arcLat2) + t(dLat,dLon) to point
 % (weatherLat, weatherLon) 
 
-
+if(length(t) ~= length(weatherLat) )
+    t = t*ones(size(weatherLat) );
+end
 dist = zeros(size(weatherLat) );
 for i = 1:length(weatherLat)
-    dist(i) = haversine([arcLat1 + t*dLat arcLon1 + t*dLon], [weatherLat(i) weatherLon(i)]);
+    dist(i) = haversine([arcLat1 + t(i)*dLat arcLon1 + t(i)*dLon], [weatherLat(i) weatherLon(i)]);
 end
 
 end
