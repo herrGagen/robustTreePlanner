@@ -419,19 +419,22 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 		{
 			for(unsigned int i = 0; i<wIter->size(); i++)
 			{
-				double x;
-				double y;
-				double z;
-				double cellWidth;
-				double cellHeight;
-				double deviationProbability;
-				wIter->getCellData(i, &x, &y, &z, &deviationProbability, &cellWidth, &cellHeight);
-				double lat = centerLati + latiPerPixel * x;
-				double lon = centerLong + longPerPixel * y;
-				if(deviationProbability > routingThresh)
-				{
-					os << "\t\t<point lat=\"" << lat << "\" lon=\"" << lon << "\"></point>" << std::endl;
-				}
+                          unsigned int ensembleNumber = wIter - wDataSets.begin();
+                          double x;
+                          double y;
+                          double z;
+                          double cellWidth;
+                          double cellHeight;
+                          double deviationProbability;
+                          wIter->getCellData(i, &x, &y, &z, &deviationProbability, &cellWidth, &cellHeight);
+                          double lat = centerLati + latiPerPixel * x;
+                          double lon = centerLong + longPerPixel * y;
+                          if(deviationProbability > routingThresh)
+                            {
+                              os << "\t\t<point lat=\"" << lat << "\" lon=\"" << lon;
+                              os << "\" ensemble=\"" << ensembleNumber;
+                              os << "\" prob=\"" << deviationProbability << "\"></point>" << std::endl;
+                            }
 			}
 		}
 		os << "\t</Weather>" << std::endl;
