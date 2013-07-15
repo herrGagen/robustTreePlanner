@@ -30,7 +30,7 @@ if __FILE__ == $0
 
   begin
     FileUtils.mkdir(weather_dir)
-  rescue Errno::EEXIST
+  rescue
   end
 
   seed_specific_folder = "RandomWeather"
