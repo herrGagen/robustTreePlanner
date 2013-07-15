@@ -60,7 +60,7 @@ if __FILE__ == $0
       elsif member_number == number_of_members
         probability_written = 0
         i = 1
-        while i <= member_number
+        while i < member_number
           probability_written += file_probabilities[i]
           i+=1
         end
