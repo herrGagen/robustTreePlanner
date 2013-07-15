@@ -43,7 +43,6 @@ if __FILE__ == $0
   end
 
   1.upto(number_of_members) do |member_number|
-    probability_written = 0
     file = "Seed_" + seed.to_s + "_20090618T060000_Member" + member_number.to_s + ".dat"
     rng = Random.new(seed)
     file_name = Pathname.new(seed_dir) + file
@@ -56,9 +55,17 @@ if __FILE__ == $0
       f.write("Probability ")
       if member_number < number_of_members
         f.write(file_probabilities[member_number].to_s) 
-        probability_written += file_probabilities[member_number]
-      else if member_number == number_of_members
-        f.write((0.999 - probability_written).to_s)
+
+
+      elsif member_number == number_of_members
+        probability_written = 0
+        i = 1
+        while i <= member_number
+          probability_written += file_probabilities[i]
+          i+=1
+        end
+        print probability_written, "\n"
+        f.write(("%.6f" % (0.999 - probability_written)).to_s)
       end
       f.write("\n")
       
@@ -76,7 +83,6 @@ if __FILE__ == $0
         end
       end
     end
-  end
   end
 
 
