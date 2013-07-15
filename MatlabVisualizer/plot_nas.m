@@ -1,5 +1,4 @@
-
-function plot_nas(varargin)
+function handle = plot_nas(varargin)
 
 if ~isempty(varargin)
     isLine = varargin{1};
@@ -134,3 +133,5 @@ end
 xlabel('Longitude')
 ylabel('Latitude')
 axis([xmin xmax ymin ymax])
+
+handle = gcf;

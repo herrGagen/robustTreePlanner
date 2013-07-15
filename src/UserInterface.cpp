@@ -219,6 +219,8 @@ bool UserInterface::generateTree()
 		std::cout << std::endl << "Finished resetting edges." << std::endl;
 
 		double quadrantAngularWidth = inputs.getAngularWidth();
+		// Note: if this is negative, we will use lane widths from 
+		// demand files.
 		double lane_width = inputs.getLaneWidth();
 		if (lane_width > 0) 
 		{
@@ -784,7 +786,7 @@ void UserInterface::saveTreeInformation()
 		std::cerr << "\nPlease generate Operational Flexity Pairs First!"<<std::endl;
 		return;
 	}
-	routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime, inputs.getOutputName() );
+	routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime, inputs.getOutputName(), weatherDataSets, deviationThreshold );
 	std::cout << "latiPerPixel: " << latiPerPixel << "; centerLati: " << centerLati << std::endl;
 	std::cout << "longPerPixel: " << longPerPixel << "; centerLong: " << centerLong << std::endl;
 	std::cout<< "\nTree Information successfully written to file.\n";

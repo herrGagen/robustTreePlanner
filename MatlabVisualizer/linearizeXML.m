@@ -11,6 +11,7 @@ fclose(fid);
 fid = fopen(fname,'w');
 for i = 1:length(str)
     s = regexprep(str{i},'[\r\t]+','');
+    s = regexprep(s,'[ \r\t]*<','<');
     fprintf(fid,'%s',s);
 end
 fclose(fid);

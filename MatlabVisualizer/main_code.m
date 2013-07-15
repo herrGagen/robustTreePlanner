@@ -1,9 +1,12 @@
-
+function visualizeXML( inputFileName )
 clear; clc; close all
 
 plot_nas(1)
 % parse robust tree
-route = readRobustTree('Rafal_text2.xml')
+if( nargin == 0)
+    [FileName,PathName,FilterIndex] = uigetfile('./*.xml')
+end
+route = readRobustTree(inputFileName)
 
 % load parsed weather file
 load wx

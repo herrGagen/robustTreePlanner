@@ -1,7 +1,8 @@
-
-clear; clc; close all
+function wx = parseWeather(weatherDir)
 
 wx = [];
+startingDir = pwd;
+cd(weatherDir);
 fs = dirs;
 for i = 1:length(fs)
     f = fs(i).name    
@@ -27,4 +28,4 @@ for i = 1:length(fs)
 end
 
 % save to .mat file
-save wx wx
+cd(startingDir);

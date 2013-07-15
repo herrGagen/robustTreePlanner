@@ -1,4 +1,3 @@
-
 function route = readRobustTree(fname)
 
 fprintf('Reading robust tree ...')
@@ -6,7 +5,7 @@ linearizeXML(fname);
 
 a = parseXML(fname);
 
-[nodes,arcs,branch] = parseRobustTree(a);
+[nodes,arcs,branch,weather] = parseRobustTree(a);
 
 k = [arcs.index];
 
@@ -36,4 +35,5 @@ for m = 1:length(branch)
     text(crdC(1,2),crdC(1,1),num2str(m))
 end
 
+plot(weather.lon,weather.lat,'r.');
 fprintf('Done\n')

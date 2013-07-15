@@ -177,7 +177,7 @@ void RoutingDAG::setminimumDistanceBetweenMergingNodes(double dis)
 
 // output the tree information into a .tre ASCII file
 // parametres are used to convert screen coordinates to lati/longs, and the time range of testing is also passed in as parameters
-bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, const std::string &startTime, const std::string &endTime, const std::string &outputName)
+bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, const std::string &startTime, const std::string &endTime, const std::string &outputName, const std::vector<WeatherData> &wDataSets, double routingThresh)
 {
 	if(status==TREE_NOT_GENERATED)
 	{
@@ -405,7 +405,38 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 			}
 			os << "\n\t\t</Branch>";
 		}
-		os << "\n\t</Branches>\n</Routing_Trees>\n";
+		os << "\n\t</Branches>\n";
+#if defined(OUTPUT_WEATHER_IN_XML)		
+		/********************
+		//
+		// Now output the weather passed to the function call
+		//
+		*********************/
+		os << "\t<Weather>" << std::endl;
+		for( std::vector<WeatherData>::const_iterator wIter = wDataSets.begin();
+			wIter != wDataSets.end();
+			wIter++)
+		{
+			for(unsigned int i = 0; i<wIter->size(); i++)
+			{
+				double x;
+				double y;
+				double z;
+				double cellWidth;
+				double cellHeight;
+				double deviationProbability;
+				wIter->getCellData(i, &x, &y, &z, &deviationProbability, &cellWidth, &cellHeight);
+				double lat = centerLati + latiPerPixel * x;
+				double lon = centerLong + longPerPixel * y;
+				if(deviationProbability > routingThresh)
+				{
+					os << "\t\t<point lat=\"" << lat << "\" lon=\"" << lon << "\"></point>" << std::endl;
+				}
+			}
+		}
+		os << "\t</Weather>" << std::endl;
+#endif
+		os << "</Routing_Trees>\n";
 		// finish printing, close the file stream and return file generated successfully
 		/****************************************************************************************************************************/
 		os.close();

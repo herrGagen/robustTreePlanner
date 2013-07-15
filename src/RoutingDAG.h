@@ -16,6 +16,8 @@
 #define EDGES_GENERATED 1
 #define EDGES_NOT_GENERATED 2
 
+#define OUTPUT_WEATHER_IN_XML
+
 #define BOTTOM_TREE 1
 #define TAUTENED_TREE 2
 
@@ -44,7 +46,7 @@ public:
 	bool generateEdgeSet();
 	void generateOperFlexPairs(const std::vector<double> &radii, const std::vector<WeatherData> &wDataSets, double effectiveThres);
 public:
-	bool outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, const std::string &startTime, const std::string &endTime, const std::string &outputName);
+	bool outputTreeInformation(double centerLati, double centerLong, double latiPerPixel, double longPerPixel, const std::string &startTime, const std::string &endTime, const std::string &outputName, const std::vector<WeatherData> &wDataSets, double routingThresh);
 private:
 	unsigned int numLayers;
 	// the entry nodes have to be in the order aligned along the outer boundary of the quadrant, with enough RNP separating them
