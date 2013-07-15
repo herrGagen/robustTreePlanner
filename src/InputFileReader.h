@@ -44,10 +44,14 @@ private:
 	double deviationThreshold; /**< Please describe this variable */
 	double nodeEdgeThreshold; /**< Please describe this variable */
 	double angularWidth; /**< Angular width of quadrant */
-	double laneWidth; /**< Please describe this variable */
+	/** Clearance required from weather (in nm)
+	Set non-zero to override positive demand RNPs from demand file. */
+	double laneWidth; 
 	unsigned int demandShift; /**< Please describe this variable */
 	unsigned int demandDrop; /**< Please describe this variable */
-	int numFixedNodes; /**< Negative value used to indicate no limit */
+	/** Maximum number of fixed nodes to generate
+	Negative value used to indicate no limit */
+	int numFixedNodes; 
 	std::vector<double> operFlex; /**< Please describe this variable */
 	std::string outputFilename; /**< Name of output XML file */
 public:

@@ -107,10 +107,9 @@ bool InputFileReader::areInputsLegal()
 		std::cerr << nodeEdgeThreshold << std::endl;
 		inputsAreValid = false;			
 	}
-	if( laneWidth < .1 )
+	if( laneWidth < 0 )
 	{
-		std::cerr << "Lane Width is too small (less than .1) " << std::endl;
-		inputsAreValid = false;			
+		std::cerr << "Warning: Lane Width is negative, so it is being read from demand files " << std::endl;
 	}
 	return inputsAreValid;
 }
