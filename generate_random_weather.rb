@@ -16,6 +16,7 @@ if __FILE__ == $0
   altitudes = ["10000", "15000", "20000", "25000", "30000"]
   file_probabilities = { 1 => 0.8, 2 => 0.1, 3 => 0.02, 4 => 0.02, 5 => 0.02, 6 => 0.02 }
   weather_dir = "Data"
+  use_only_one_weather = -1
 
   ARGV.each_with_index do |arg, index|
     seed                = ARGV[index+1].to_i if arg == "-seed"
@@ -26,6 +27,7 @@ if __FILE__ == $0
     max_prob            = ARGV[index+1].to_f if arg == "-max_prob"
     min_prob            = ARGV[index+1].to_f if arg == "-min_prob"
     weather_dir         = ARGV[index+1]      if arg == "-weather_dir"
+    use_only_one_weather = ARGV[index+1].to_i if arg == "-use_weather"
   end
 
   begin
@@ -53,19 +55,25 @@ if __FILE__ == $0
       f.write("/")
       f.write(number_of_members.to_s + "\n")
       f.write("Probability ")
-      if member_number < number_of_members
-        f.write(file_probabilities[member_number].to_s) 
-        f.write("0000")
+      if use_only_one_weather == -1
+        if member_number < number_of_members
+          f.write(file_probabilities[member_number].to_s) 
+          f.write("0000")
 
-      elsif member_number == number_of_members
-        probability_written = 0
-        i = 1
-        while i < member_number
-          probability_written += file_probabilities[i]
-          i+=1
+        elsif member_number == number_of_members
+          probability_written = 0
+          i = 1
+          while i < member_number
+            probability_written += file_probabilities[i]
+            i+=1
+          end
+          print probability_written, "\n"
+          f.write(("%.6f" % (0.999 - probability_written)).to_s)
         end
-        print probability_written, "\n"
-        f.write(("%.6f" % (0.999 - probability_written)).to_s)
+      elsif use_only_one_weather != member_number
+        f.write("0.00000")
+      elsif use_only_one_weather == member_number
+        f.write("0.99900")
       end
       f.write("\n")
 
