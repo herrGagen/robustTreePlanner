@@ -1,6 +1,7 @@
 @echo off
+mkdir out
 setlocal enabledelayedexpansion
-set NUM_MEMBERS=6
+set NUM_MEMBERS=1
 set MIN_NUMEL=100
 set MAX_NUMEL=1000
 set MIN_SEED=1
