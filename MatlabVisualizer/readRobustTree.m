@@ -35,5 +35,7 @@ for m = 1:length(branch)
     text(crdC(1,2),crdC(1,1),num2str(m))
 end
 
-plot(weather.lon,weather.lat,'r.');
+if(~isempty(weather) )
+    plot(weather.lon,weather.lat,'r.');
+end
 fprintf('... Done\n')

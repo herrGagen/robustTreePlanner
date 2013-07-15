@@ -1,12 +1,14 @@
-function visualizeXML( inputFileName )
-clear; clc; close all
+function main_code( inputFileName )
+clc; close all
 
 plot_nas(1)
 % parse robust tree
 if( nargin == 0)
-    [FileName,PathName,FilterIndex] = uigetfile('./*.xml')
+    [inputFileName path] = uigetfile('./XML/*.xml');
+    route = readRobustTree(fullfile([path inputFileName]) );
+else
+    route = readRobustTree(inputFileName);
 end
-route = readRobustTree(inputFileName)
 
 % load parsed weather file
 load wx
