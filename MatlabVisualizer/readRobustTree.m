@@ -1,6 +1,6 @@
 function route = readRobustTree(fname)
 
-fprintf('Reading robust tree ...')
+fprintf('Reading robust tree from %s',fname)
 linearizeXML(fname);
 
 a = parseXML(fname);
@@ -36,4 +36,4 @@ for m = 1:length(branch)
 end
 
 plot(weather.lon,weather.lat,'r.');
-fprintf('Done\n')
+fprintf('... Done\n')
