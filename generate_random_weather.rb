@@ -56,7 +56,7 @@ if __FILE__ == $0
         f.write(file_probabilities[member_number].to_s) 
         probability_written += file_probabilities[member_number]
       else if member_number == number_of_members
-        f.write((1 - probability_written).to_s)
+        f.write((0.999 - probability_written).to_s)
       end
       f.write("\n")
       
@@ -112,7 +112,7 @@ if __FILE__ == $0
       c_input_file        = arg if c_input_file         == true
       weather_cell_width  = arg if weather_cell_width   == true
       quadrant_size       = arg if quadrant_size        == true # this is called angular_width in "create_input.rb"
-      lane_width          = arg if lane_width	        == true
+      lane_width          = arg if lane_width	          == true
       max_fix_nodes       = arg if max_fix_nodes        == true # called num_fix_nodes
 
       if arg == "-s"
@@ -166,13 +166,12 @@ if __FILE__ == $0
     print "Deviation threshold:           ", deviation_threshold,     "\n" if deviation_threshold
     print "Node edge threshold:           ", node_edge_threshold,     "\n" if node_edge_threshold    
     print "Output file name:              ", output_name,             "\n" if output_name    
-    print "Temp weather dir:              ", temp_weather_name,       "\n" if temp_weather_name    
     print "Input weather dir:             ", weather_dir,             "\n" if weather_dir
     print "Weather cell width:            ", weather_cell_width,      "\n" if weather_cell_width
     print "Lane width:                    ", lane_width,              "\n" if lane_width
     print "Max Number of Fix Nodes:       ", max_fix_nodes,           "\n" if max_fix_nodes
     print "Operational Flexibility:       ", oper_flex,               "\n" if oper_flex != []
 
-    create_input(dshift, ddrop, angle, deviation_threshold, node_edge_threshold, output_name, seed_dir, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, oper_flex)
+    create_input(dshift, ddrop, angle, deviation_threshold, node_edge_threshold, output_name, seed_dir.basename, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, oper_flex)
   end
 end
