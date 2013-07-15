@@ -30,22 +30,21 @@ if __FILE__ == $0
 
   begin
     FileUtils.mkdir(weather_dir)
-  rescue Errno::EEXIST
+  rescue 
   end
 
   seed_specific_folder = "RandomWeather"
   seed_dir = Pathname.new(weather_dir) + seed_specific_folder
 
   begin
-    FileUtils.remove_dir(seed_dir, force = true)
+    FileUtils.rm_rf(seed_dir)
     FileUtils.mkdir(seed_dir)
   rescue Errno::EEXIST
   end
 
+  rng = Random.new(seed)
   1.upto(number_of_members) do |member_number|
-    probability_written = 0
     file = "Seed_" + seed.to_s + "_20090618T060000_Member" + member_number.to_s + ".dat"
-    rng = Random.new(seed)
     file_name = Pathname.new(seed_dir) + file
 
     File.open(file_name, 'w') do |f|
@@ -56,12 +55,20 @@ if __FILE__ == $0
       f.write("Probability ")
       if member_number < number_of_members
         f.write(file_probabilities[member_number].to_s) 
-        probability_written += file_probabilities[member_number]
-      else if member_number == number_of_members
-        f.write((0.999 - probability_written).to_s)
+        f.write("0000")
+
+      elsif member_number == number_of_members
+        probability_written = 0
+        i = 1
+        while i < member_number
+          probability_written += file_probabilities[i]
+          i+=1
+        end
+        print probability_written, "\n"
+        f.write(("%.6f" % (0.999 - probability_written)).to_s)
       end
       f.write("\n")
-      
+
       num_weather_points.times do
         # Generate latitude between 38 and 45.5
         # Generate longitude between -93 and -83
@@ -76,7 +83,6 @@ if __FILE__ == $0
         end
       end
     end
-  end
   end
 
 
