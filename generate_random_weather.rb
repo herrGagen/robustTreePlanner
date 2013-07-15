@@ -37,7 +37,7 @@ if __FILE__ == $0
   seed_dir = Pathname.new(weather_dir) + seed_specific_folder
 
   begin
-    FileUtils.remove_dir(seed_dir, force = true)
+    FileUtils.rm_r(seed_dir, force = true)
     FileUtils.mkdir(seed_dir)
   rescue Errno::EEXIST
   end
