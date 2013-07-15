@@ -89,7 +89,6 @@ bool Node::isAnyWeatherCloserThanRadiusR(double r, const std::vector<WeatherData
 	return false;											// the node is considered to be clear of weather obstacle
 }
 
-// overloaded function which does the same but returns the value of the final probability (for probability output)
 // return the probability that the cell is clear
 double Node::probabilityThatNodeIsClear(double r, const std::vector<WeatherData> &wDataSets, double effectiveThres)
 {
