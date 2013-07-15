@@ -30,7 +30,7 @@ if __FILE__ == $0
 
   begin
     FileUtils.mkdir(weather_dir)
-  rescue
+  rescue 
   end
 
   seed_specific_folder = "RandomWeather"
@@ -55,7 +55,7 @@ if __FILE__ == $0
       f.write("Probability ")
       if member_number < number_of_members
         f.write(file_probabilities[member_number].to_s) 
-
+        f.write("0000")
 
       elsif member_number == number_of_members
         probability_written = 0
@@ -68,7 +68,7 @@ if __FILE__ == $0
         f.write(("%.6f" % (0.999 - probability_written)).to_s)
       end
       f.write("\n")
-      
+
       num_weather_points.times do
         # Generate latitude between 38 and 45.5
         # Generate longitude between -93 and -83
