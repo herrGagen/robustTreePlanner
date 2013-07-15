@@ -42,9 +42,9 @@ if __FILE__ == $0
   rescue Errno::EEXIST
   end
 
+  rng = Random.new(seed)
   1.upto(number_of_members) do |member_number|
     file = "Seed_" + seed.to_s + "_20090618T060000_Member" + member_number.to_s + ".dat"
-    rng = Random.new(seed)
     file_name = Pathname.new(seed_dir) + file
 
     File.open(file_name, 'w') do |f|
