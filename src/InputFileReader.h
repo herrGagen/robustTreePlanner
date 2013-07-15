@@ -36,44 +36,45 @@
 */
 class InputFileReader
 {
-private:
-	std::string demandFile; /**< Path to demand file (i.e. demand.nom) */
-    std::vector<std::string> weatherFileNames;  /**< Paths to weather files */
-	double cellWidth; /**< Please describe this variable */
-	double quadrantAngle;/**< Please describe this variable */
-	double deviationThreshold; /**< Please describe this variable */
-	double nodeEdgeThreshold; /**< Please describe this variable */
-	double angularWidth; /**< Angular width of quadrant */
-	/** Clearance required from weather (in nm)
-	Set non-zero to override positive demand RNPs from demand file. */
-	double laneWidth; 
-	unsigned int demandShift; /**< Please describe this variable */
-	unsigned int demandDrop; /**< Please describe this variable */
-	/** Maximum number of fixed nodes to generate
-	Negative value used to indicate no limit */
-	int numFixedNodes; 
-	std::vector<double> operFlex; /**< Please describe this variable */
-	std::string outputFilename; /**< Name of output XML file */
-public:
-	InputFileReader(std::string inputFileName);
-	InputFileReader(){}
-public:
-	std::string getDemandFile() const { return demandFile; }
-	unsigned int getNumWeatherFiles() const { return weatherFileNames.size(); }
-	std::string getWeatherFile(unsigned int index) const { return weatherFileNames[index]; }
-	double getCellWidth() const { return cellWidth; }
-	double getQuadrantAngle() const { return quadrantAngle; }
-	double getDeviationThreshold() const { return deviationThreshold;}
-	double getNodeEdgeThreshold() const { return nodeEdgeThreshold; }
-	double getAngularWidth() const { return angularWidth; }
-	double getLaneWidth() const { return laneWidth; }
-	int getNumFixedNodes() const { return (int)numFixedNodes; }
-	unsigned int getDemandShift() const { return demandShift; }
-	unsigned int getDemandDrop() const { return demandDrop; }
-	std::vector<double> getOperFlex() const { return operFlex; }
-	std::string getOutputName() const { return outputFilename; }
-private:
-	bool areInputsLegal();
+ private:
+  std::string demandFile; /**< Path to demand file (i.e. demand.nom) */
+  std::vector<std::string> weatherFileNames;  /**< Paths to weather files */
+  double cellWidth; /**< Please describe this variable */
+  double quadrantAngle;/**< Please describe this variable */
+  /** Ignore weather that makes pilots less than this likely to fly around */
+  double deviationThreshold; 
+  double nodeEdgeThreshold; /**< 1-sum(prob emsembles impacted) < this */
+  double angularWidth; /**< Angular width of quadrant */
+  /** Clearance required from weather (in nm)
+      Set non-zero to override positive demand RNPs from demand file. */
+  double laneWidth; 
+  unsigned int demandShift; /**< Please describe this variable */
+  unsigned int demandDrop; /**< Please describe this variable */
+  /** Maximum number of fixed nodes to generate
+      Negative value used to indicate no limit */
+  int numFixedNodes; 
+  std::vector<double> operFlex; /**< Please describe this variable */
+  std::string outputFilename; /**< Name of output XML file */
+ public:
+  InputFileReader(std::string inputFileName);
+  InputFileReader(){}
+ public:
+  std::string getDemandFile() const { return demandFile; }
+  unsigned int getNumWeatherFiles() const { return weatherFileNames.size(); }
+  std::string getWeatherFile(unsigned int index) const { return weatherFileNames[index]; }
+  double getCellWidth() const { return cellWidth; }
+  double getQuadrantAngle() const { return quadrantAngle; }
+  double getDeviationThreshold() const { return deviationThreshold;}
+  double getNodeEdgeThreshold() const { return nodeEdgeThreshold; }
+  double getAngularWidth() const { return angularWidth; }
+  double getLaneWidth() const { return laneWidth; }
+  int getNumFixedNodes() const { return (int)numFixedNodes; }
+  unsigned int getDemandShift() const { return demandShift; }
+  unsigned int getDemandDrop() const { return demandDrop; }
+  std::vector<double> getOperFlex() const { return operFlex; }
+  std::string getOutputName() const { return outputFilename; }
+ private:
+  bool areInputsLegal();
 };
 
 #endif // already included
