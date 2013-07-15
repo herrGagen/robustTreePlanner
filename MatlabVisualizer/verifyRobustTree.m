@@ -1,6 +1,5 @@
 function minDist = verifyRobustTree(fname)
 
-outf = fopen('xmlClearances','a');
 fprintf('Minimum weather clearance in %s is ',fname)
 linearizeXML(fname);
 
@@ -35,4 +34,6 @@ for i = 1:length(route)
 end
 
 fprintf('%f\n',minDist);
+outf = fopen('xmlClearances.txt','a');
 fprintf(outf,'Minimum weather clearance in %s is %f\n',fname,minDist);
+fclose(outf);
