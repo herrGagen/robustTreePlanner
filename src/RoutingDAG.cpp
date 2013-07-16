@@ -429,12 +429,12 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
                           wIter->getCellData(i, &x, &y, &z, &deviationProbability, &cellWidth, &cellHeight);
                           double lat = centerLati + latiPerPixel * x;
                           double lon = centerLong + longPerPixel * y;
-                          if( wIter->getProbability() > routingThresh &&
-                              deviationProbability > routingThresh )
+                          if( deviationProbability > routingThresh )
                             {
-                              os << "\t\t<point lat=\"" << lat << "\" lon=\"" << lon;
-                              os << "\" ensemble=\"" << ensembleNumber;
-                              os << "\" prob=\"" << deviationProbability << "\"></point>" << std::endl;
+                              os << "\t\t<point lat=\"" << lat << "\" lon=\"" << lon << std::flush;
+                              os << "\" ensembleId=\"" << ensembleNumber << std::flush;
+                              os << "\" ensembleProb=\"" << wIter->getProbability() << std::flush;
+							  os << "\"></point>" << std::endl;
                             }
 			}
 		}

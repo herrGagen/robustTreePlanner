@@ -1,5 +1,4 @@
 // the class RoutingDAG is the graph on which we do the routing
-
 #ifndef ROUTINGDAG_H
 
 #include <string>
@@ -16,7 +15,7 @@
 #define EDGES_GENERATED 1
 #define EDGES_NOT_GENERATED 2
 
-// #define OUTPUT_WEATHER_IN_XML
+#define OUTPUT_WEATHER_IN_XML
 
 #define BOTTOM_TREE 1
 #define TAUTENED_TREE 2
