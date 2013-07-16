@@ -1,42 +1,62 @@
-function [minX,minY] = findGlobalMin( fun, xMin, xMax )
+function [minX,minY] = findGlobalMin( fun, xLeft, xRight )
+
+yLeft = fun(xLeft);
+yRight = fun(xRight);
 
 smallX = .0000001;
-deltaX = .001;
-x = xMin;
-y = fun(x+smallX) - fun(x);
+deltaX = (xRight - xLeft)/10;
+x = xLeft;
+der = fun(x+smallX) - fun(x);
 
 minX = x;
-minY = y;
-%bracket zeos;
-while(x < xMax)
+minDer = der;
+localMinX = minX;
+localMinDer = minDer;
+%bracket zeros;
+while(x < xRight)
         oldX = x;
-        oldY = y;
+        oldDer = der;
         x = x+ deltaX;
-        y = fun(x+smallX) - fun(x);
-        if(oldY*y < 0) % we have bracketed a zero
-                  [localMinX localMinY] = findZeroOfDeriv(fun,oldX, x);
+        der = fun(x+smallX) - fun(x);
+        if(oldDer*der < 0) % we have bracketed a zero
+            [localMinX, localMinDer] = findZeroOfDeriv(fun,oldX, x);                 
         end
-        if(localMinY < minY)
-                minX = localMinX;
-                minY = localMinY;
+        if(localMinDer < minDer)
+            minX = localMinX;
+            minDer = localMinDer;
         end
 end
 
+minY = fun(minX);
+if(yLeft < minY)
+    minX = xLeft;
+    minY = yLeft;
+end
 
-function [x,y] = findZeroOfDeriv( fun, xMin, xMax )
+if(yRight < minY)
+    minX = xRight;
+    minY = yRight;
+end
 
+function [x der] = findZeroOfDeriv( fun, xMin, xMax )
+% Uses dinary search to find zero of the derivative of the function
+% handle fun being passed in.
+
+SMALL_NUMBER = abs(xMax-xMin)/2^10;
 smallX = .0000001;
-yPrimeMin = fun(xMin+smallX) - fun(xMin);
+
 yPrimeMax = fun(xMax+smallX) - fun(xMax);
 
-while(xMax - xMin > SMALL_NUMBER )
+while( abs(xMax - xMin) > SMALL_NUMBER )
            xTemp = (xMax + xMin)/2;
-           yTemp = fun(yTemp+smallX) - fun(yTemp);
-           if(yTemp*yMax < 0)
-               xMax = xTemp;
-           else
+           yPrimeTemp = fun(xTemp+smallX) - fun(xTemp);
+           % if derivative in center is different side than derivative on
+           % right, make the center the lew left point
+           if(yPrimeTemp*yPrimeMax < 0)
                xMin = xTemp;
+           else
+               xMax = xTemp;
             end
 end
 x = xTemp;
-y = yTemp;
+der = yPrimeTemp;

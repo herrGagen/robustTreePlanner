@@ -36,6 +36,7 @@ for m = 1:length(branch)
 end
 
 if(~isempty(weather) )
-    plot(weather.lon,weather.lat,'r.');
+    scatter(weather.lon,weather.lat,5,weather.ensembleId,'filled');
+    colorbar('SouthOutside')
 end
 fprintf('... Done\n')

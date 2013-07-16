@@ -1,6 +1,6 @@
-function minDist = verifyRobustTree(fname)
+function numViolatedEdges = verifyRobustTree(fname, thresholdDist, edgeProbThresh)
 
-fprintf('Minimum weather clearance in %s is ',fname)
+fprintf('Number of bad edges in %s is ',fname)
 linearizeXML(fname);
 
 a = parseXML(fname);
@@ -9,6 +9,8 @@ a = parseXML(fname);
 
 k = [arcs.index];
 
+routes( length(branch) ).lat = [];
+routes( length(branch) ).lon = [];
 for m = 1:length(branch)
     ind = branch(m).ind;
     k1 = [];
@@ -17,23 +19,35 @@ for m = 1:length(branch)
     end
     arcs1 = arcs(k1);
     crdC = getCenterLine(arcs1,nodes);
-    route(m).lat = crdC(:,1);
-    route(m).lon = crdC(:,2);
+    routes(m).lat = crdC(:,1);
+    routes(m).lon = crdC(:,2);
 end
 
-minDist = Inf;
-for i = 1:length(route)
-    latVec = route(i).lat;
-    lonVec = route(i).lon;
-    for j = 1:(length(latVec)-1)
-        thisMinDist = closestWeatherDistFromArc(latVec(j),lonVec(j),latVec(j+1),lonVec(j+1),weather.lat,weather.lon);
-        if(thisMinDist < minDist)
-            minDist = thisMinDist;
+% Count hte number of edges that are violated
+% Where an edge is defined as being violated if it is closer than
+% thresholdDist from a number of weather cells whose emsembleProbabilities
+% sum to edgeProbThresh or greater
+ensembleIndices = unique(weather.ensembleId);
+numViolatedEdges = 0;
+for i = 1:length(routes)
+    latVec = routes(i).lat;
+    lonVec = routes(i).lon;
+    for j = 1:(length(latVec)-1)      
+        edgeProb = 1;
+        for ensemble = ensembleIndices
+            ndxInThisEnsemble = (weather.ensembleId == ensemble);
+            thisMinDist = closestWeatherDistFromArc(latVec(j),lonVec(j),latVec(j+1),lonVec(j+1),weather.lat(ndxInThisEnsemble),weather.lon(ndxInThisEnsemble) );
+            if(thisMinDist < thresholdDist)
+                edgeProb = edgeProb - max(weather.ensembleProb(ndxInThisEnsemble) );
+            end
+        end
+        if( edgeProb < edgeProbThresh )
+           numViolatedEdges = numViolatedEdges+1;
         end
     end
 end
 
-fprintf('%f\n',minDist);
-outf = fopen('xmlClearances.txt','a');
-fprintf(outf,'Minimum weather clearance in %s is %f\n',fname,minDist);
+fprintf('%d\n',numViolatedEdges);
+outf = fopen('xmlViolations.txt','a');
+fprintf(outf,'Number of bad edges in %s is %d\n',fname,numViolatedEdges);
 fclose(outf);
