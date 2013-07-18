@@ -5,10 +5,11 @@
 #include <iostream>
 #include <limits>
 
-Quadrant::Quadrant(double cX, double cY, double ang, double iR, double oR, double iH, double oH)
+Quadrant::Quadrant(double cX, double cY, double ang, double iR, double oR, double iH, double oH):
+centerX(cX), centerY(cY)
 {
-	setcX(cX);
-	setcY(cY);
+	setCenterX(cX);
+	setCenterY(cY);
 	setAngle(ang);
 	setiRadius(iR);
 	setoRadius(oR);
@@ -26,11 +27,14 @@ Quadrant::~Quadrant(void)
 }
 
 // modify and set the quadrant to a new configuration
-void Quadrant::setQuadrant(double cX, double cY, double ang, double iR, double oR, double iH, double oH)
+// THIS IS WHY YOU WRITE GOOD COMMENTS AND USE MEANINGFUL VARIABLE NAMES
+// WHAT THE HELL?
+void Quadrant::setQuadrant(double cX, double cY, double ang, double angWidth, double iR, double oR, double iH, double oH)
 {
-	setcX(cX);
-	setcY(cY);
+	setCenterX(cX);
+	setCenterY(cY);
 	setAngle(ang);
+	setAngularWidth(angWidth);
 	setiRadius(iR);
 	setoRadius(oR);
 	setiHeight(iH);
@@ -40,57 +44,78 @@ void Quadrant::setQuadrant(double cX, double cY, double ang, double iR, double o
 	liftediRadius = sqrt(iRadius*iRadius+(iHeight-cHeight)*(iHeight-cHeight));
 	liftedoRadius = sqrt(oRadius*oRadius+(oHeight-cHeight)*(oHeight-cHeight));
 	if(iH!=0 || oH!=0)
+	{
 		liftStatus = QUADRANT_LIFTED;
+	}
 	else liftStatus = QUADRANT_PLANE; // both heights are 0, then its still on the plane z=0
 }
 
 // set the quadrant to its initial configuration
 void Quadrant::reset()
 {
-	setQuadrant(0, 0, PI/6, 10, 35, 0, 0);
-}
-
-void Quadrant::setcX(double cX)
-{
-	centerX = cX;
-}
-void Quadrant::setcY(double cY)
-{
-	centerY = cY;
+	setQuadrant(0, 0, PI/6, PI/2, 10, 35, 0, 0);
 }
 
 /**
-	\brief Sets angle to input, module being in [0,2PI)
+	\brief Given any angle, rotates it by 2nPI until it's in [0,2PI)
+*/
+double Quadrant::moveThisAngleBetweenZeroAndTwoPi( double inAngle )
+{
+	double retAngle = inAngle;
+	if(inAngle<0)
+	{
+		double numRotations = ceil(abs(inAngle)/(2*PI) );
+		retAngle = inAngle + 2*PI*numRotations;
+	}
+	else
+	{
+		double numRotations = floor(inAngle/(2*PI) );
+		retAngle = inAngle-2*PI*(numRotations);
+	}
+	return retAngle;
+}
+
+/**
+	\brief Sets angular extent to input, slecting the [0,2PI) branch cut
+
+	\param ang Input angle (in radians) that can take any value.
+*/
+void Quadrant::setAngularWidth(double ang)
+{
+	angularWidth = moveThisAngleBetweenZeroAndTwoPi(ang);
+}
+
+/**
+	\brief Sets angle to input, slecting the [0,2PI) branch cut
 
 	\param ang Input angle (in radians) that can take any value.
 */
 void Quadrant::setAngle(double ang)
 {
-	if(ang<0)
-	{
-		double temp = ceil(abs(ang)/(2*PI) );
-		angle = ang + 2*PI*temp;
-	}
-	else
-	{
-		double temp = floor(ang/(2*PI) );
-		angle = ang-2*PI*(temp);
-	}
+	angle = moveThisAngleBetweenZeroAndTwoPi(ang);
 }
 
 void Quadrant::setiRadius(double iR)
 {
 	if(iR>0)
+	{
 		iRadius = iR;
+	}
 	if(iR>oRadius)
+	{
 		oRadius = iRadius+30;
+	}
 }
 void Quadrant::setoRadius(double oR)
 {
 	if(oR>0 && oR>iRadius)
+	{
 		oRadius = oR;
+	}
 	if(oR<iRadius)
+	{
 		oRadius = iRadius+30;											// default size of the quadrant
+	}
 }
 
 void Quadrant::setiHeight(double iH)
@@ -104,47 +129,18 @@ void Quadrant::setiHeight(double iH)
 void Quadrant::setoHeight(double oH)
 {
 	if(oH>=iHeight)
+	{
 		oHeight = oH;
+	}
 	else
+	{
 		oHeight = iHeight+50;											// the default difference from iHeight to oHeight
+	}
 	cHeight = oHeight - (oHeight-iHeight)*oRadius/(oRadius-iRadius);	// recompute the center height to help draw the quadrant
 	liftediRadius = sqrt(iRadius*iRadius+(iHeight-cHeight)*(iHeight-cHeight));
 	liftedoRadius = sqrt(oRadius*oRadius+(oHeight-cHeight)*(oHeight-cHeight));
 }
 
-double Quadrant::getcX()
-{
-	return centerX;
-}
-double Quadrant::getcY()
-{
-	return centerY;
-}
-
-double Quadrant::getAngle()
-{
-	return angle;
-}
-
-double Quadrant::getiRadius()
-{
-	return iRadius;
-}
-
-double Quadrant::getoRadius()
-{
-	return oRadius;
-}
-
-double Quadrant::getiHeight()
-{
-	return iHeight;
-}
-
-double Quadrant::getoHeight()
-{
-	return oHeight;
-}
 
 // set the lift status of the quadrant. If input status is an invalid value, do nothing
 void Quadrant::setLiftStatus(int status)		
@@ -155,11 +151,6 @@ void Quadrant::setLiftStatus(int status)
 		liftStatus = QUADRANT_LIFTED;
 	liftediRadius = sqrt(iRadius*iRadius+(iHeight-cHeight)*(iHeight-cHeight));
 	liftedoRadius = sqrt(oRadius*oRadius+(oHeight-cHeight)*(oHeight-cHeight));
-}
-
-int Quadrant::getLiftStatus()
-{
-	return liftStatus;
 }
 
 // decide if a group of demand for entry nodes is feasible or not, return true is feasilbe
@@ -175,7 +166,7 @@ bool Quadrant::demandFeasible(const std::vector<double> &rnps)
 		maxrnp = maxrnp<rnps[i]? rnps[i] : maxrnp;
 	}
 	if(rnpSum > PI*oRadius/2	||														// the outer arc length of the quadrant
-		liftedoRadius - liftediRadius<=(log(double( rnps.size() ))/log(double(2))+1)*2*maxrnp ||	// there exists a way to merge the edges to a single fix node, in degree 2	 
+		liftedoRadius - liftediRadius<=(log(double( rnps.size() ))/log(double(2))+1)*2*maxrnp ||	// there exists a way to merge the edges to a single fixed node, in degree 2	 
 		2*maxrnp> PI*iRadius/2)		
 		{
 			// the inner boundary is long enough
@@ -231,6 +222,10 @@ bool Quadrant::generateEntryAndFixNodes(const std::vector<double> &rnps, double 
 	// Joe: issue is that this startingAngle seems to assume 1st quadrant, as it starts at angle near 0
 	// Joe: The line below seems also to assume the quadrant starts at angle about 0
   double endingAngle = quadrantAngularWidth - 2*(*rnps.rbegin())/oRadius; // defined to be a little bit off the boundary of the quadrant
+  if(endingAngle < startingAngle)
+  {
+	  endingAngle += 2*PI;
+  }
 	for(unsigned int i=0; i<rnps.size(); i++)
 	{
 		double tempAngle = startingAngle + i*(endingAngle-startingAngle)/(rnps.size()-1);
@@ -240,20 +235,21 @@ bool Quadrant::generateEntryAndFixNodes(const std::vector<double> &rnps, double 
 		rDAG->insertNode(tempNode); // insert the new Entry node into the routing graph
 	}
 	/***************************************************************************/
-	// then generate a set of fix nodes, at least 1, at most 3
+	// then generate a set of fixed nodes, at least 1, at most 3
 	double angleIncrement = (2*maxrnp+2)/iRadius;	
-	// when we find a fix node, the next one should be at least 
-	// angleIncrement aside from both sides
+	// when we find a fixed node, the next one should be at least 
+	// angleIncrement away on either side
 
+	// James: MAGIC NUMBER
 	double currentAngleLeft = quadrantAngularWidth/2+PI/18;									// iterate through boundary points on the left and right from the 45 degrees
   // WILLXYZ
 	double currentAngleRight = quadrantAngularWidth/2;
 	startingAngle = (maxrnp+0.5)/iRadius; // the boundary condition
 	endingAngle = quadrantAngularWidth - (maxrnp+0.5)/iRadius;
 	Node** nodeArrayToBeInsertedIntoTheDAG = new Node*[3]; 
-	// store the fix nodes first, then insert them into the DAG in order of their angles
+	// store the fixed nodes first, then insert them into the DAG in order of their angles
 
-	double *anglesOfFixNodes = new double[3]; // store the angles of each fix nodes generated
+	double *anglesOfFixNodes = new double[3]; // store the angles of each fixed nodes generated
 
 	unsigned int numFixNodes = 0;
 	while(currentAngleRight >= startingAngle || currentAngleLeft <= endingAngle)
@@ -271,10 +267,10 @@ bool Quadrant::generateEntryAndFixNodes(const std::vector<double> &rnps, double 
 				delete tempNode1;
 				currentAngleRight -= PI / 18; // test the next point on the inner arc ( 5 degrees out)
 			}
-			else // the node can serve as a fix node
+			else // the node can serve as a fixed node
 			{
 				nodeArrayToBeInsertedIntoTheDAG[numFixNodes] = tempNode1;
-				// store the fix nodes information in the array
+				// store the fixed nodes information in the array
 
 				anglesOfFixNodes[numFixNodes] = currentAngleRight;
 				currentAngleLeft = std::max(currentAngleLeft, currentAngleRight + angleIncrement);
@@ -282,7 +278,7 @@ bool Quadrant::generateEntryAndFixNodes(const std::vector<double> &rnps, double 
 				numFixNodes++;
 				if(numFixNodes>=maxFixNodes)
 				{
-					// already got enough fix nodes
+					// already got enough fixed nodes
 					break;
 				}
 			}
@@ -295,15 +291,15 @@ bool Quadrant::generateEntryAndFixNodes(const std::vector<double> &rnps, double 
 				delete tempNode2;
 				currentAngleLeft+=PI/18; // MAGIC NUMBER
 			}
-			else																// the node can serve as a fix node
+			else																// the node can serve as a fixed node
 			{
-				nodeArrayToBeInsertedIntoTheDAG[numFixNodes] = tempNode2;		// store the fix nodes information in the array
+				nodeArrayToBeInsertedIntoTheDAG[numFixNodes] = tempNode2;		// store the fixed nodes information in the array
 				anglesOfFixNodes[numFixNodes] = currentAngleLeft;
 				currentAngleRight = std::min(currentAngleRight, currentAngleLeft - angleIncrement);
 				currentAngleLeft += angleIncrement;
 				numFixNodes ++;
 				// MAGIC NUMBER
-				if(numFixNodes==3)	// we have enough fix nodes											
+				if(numFixNodes==3)	// we have enough fixed nodes											
 				{
 					break;
 				}
@@ -311,12 +307,12 @@ bool Quadrant::generateEntryAndFixNodes(const std::vector<double> &rnps, double 
 		}
 	}
 	 
-		/* find at least 1 fix node,
+		/* find at least 1 fixed node,
 		then insert them in order of the angle into the DAG,
 		and set their layerIndex values */
 	if(numFixNodes>=1)
 	{
-		/* we have the fix nodes stored in the nodeArrayToBeInsertedIntoTheDAG array, 
+		/* we have the fixed nodes stored in the nodeArrayToBeInsertedIntoTheDAG array, 
 		and their corresponding angles are stores in the anglesOfFixNodes array */
 		for(unsigned int i=0; i<numFixNodes; i++)	// insert the nodes one by one
 		{
@@ -342,7 +338,7 @@ bool Quadrant::generateEntryAndFixNodes(const std::vector<double> &rnps, double 
 	delete []nodeArrayToBeInsertedIntoTheDAG;
 	delete []anglesOfFixNodes;
 	std::cerr << std::endl <<"The Quadrant is NOT large enough to be used for routing, please edit the quadrant!"<<std::endl;
-	std::cout << std::endl << "Failure generating entry / fix nodes.!" << std::endl;
+	std::cout << std::endl << "Failure generating entry / fixed nodes.!" << std::endl;
 	return false;
 }
 
@@ -392,7 +388,7 @@ void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, const std::vect
 			rDAG->insertNode(tempNode);
 		}
 	}
-	rDAG->setNumLayers(numLayers+2);											// number of internal nodes layers + 2 layers for entry nodes and fix nodes
+	rDAG->setNumLayers(numLayers+2);											// number of internal nodes layers + 2 layers for entry nodes and fixed nodes
 	rDAG->setNodesReadInStatus(NODES_READ_IN);
 }
 

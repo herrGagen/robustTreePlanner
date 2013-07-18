@@ -14,6 +14,10 @@
 #include "NodeAndEdge.h"
 #include "InputFileReader.h"
 
+#if !defined(DO_NOT_CONVERT_LAT_LON_TO_PIXELS)
+#  include "RoutingDAG.h"
+#endif
+
 /* Have to update this if we ever allow more than 4 as a parameter for demand_drop
 There is also a 4 that needs to be changed down below, in the declaration of an array called temp_demands[4]
 There is a ruby file (combination.rb) to generate this line */  
@@ -106,6 +110,7 @@ void UserInterface::ProgramBegins(std::string inputFile)
 	}
 	std::cout << "\nWeather files are succesfully read in!" << std::endl;
 	(*quadrant).setAngle( inputs.getQuadrantAngle() );
+	(*quadrant).setAngularWidth( inputs.getQuadrantAngle() );
 	std::cout << "Current angle: " << quadrant->getAngle() << std::endl;
 	std::cout << "Generating tree." << std::endl;
 	generateTree();
@@ -125,8 +130,8 @@ void UserInterface::printQuadrantAndDemandInfo()
 	if(ctrl_QuadGenerated == QUADRANT_GENERATED)  
 	{
 		// first print the current quadrant information and demand information
-		std::cout << "\nThe center of the quadrant is currently at lati/long ("<<setprecision(5)<<centerLati+quadrant->getcX()*latiPerPixel<<", ";
-		std::cout << setprecision(5)<<centerLong+quadrant->getcY()*longPerPixel<<").";
+		std::cout << "\nThe center of the quadrant is currently at lati/long ("<<setprecision(5)<<centerLati+quadrant->getCenterX()*latiPerPixel<<", ";
+		std::cout << setprecision(5)<<centerLong+quadrant->getCenterY()*longPerPixel<<").";
 		std::cout << "\nThe inner radius (in nm) is "<<setprecision(5)<<quadrant->getiRadius()*NMILESPERPIXEL<<", the outer radius is ";
 		std::cout << setprecision(5)<<quadrant->getoRadius()*NMILESPERPIXEL<<".";
 		std::cout << "\nThe inner altitude (in feet) is "<<setprecision(5)<<ALTITUDE_AT_BASE_PLANE+quadrant->getiHeight()*ALTITUDE_PER_PIXEL<<", ";
@@ -145,52 +150,6 @@ void UserInterface::printQuadrantAndDemandInfo()
 	{
 		std::cout << "\nThe quadrant is not generated yet!"<<std::endl;
 	}
-}
-
-// display the quadrant infomation and prompt the users if they want to edit the information
-bool UserInterface::editQuadrant()
-{
-	if(ctrl_QuadGenerated == QUADRANT_GENERATED)  
-	{
-		std::cout << "Please input the new quadrant information";
-		double cx, cy, angle, ir, ora, ih, oh;
-		std::cout << "\nThe latitude of the center of the quadrant is (enter 0 to skip):";
-		cin>>cx;
-		if(cx!=0)	cx = (cx-centerLati) / latiPerPixel;
-		std::cout << "\nThe longitude of the center of the quadrant is (enter 0 to skip):";
-		cin>>cy;
-		if(cy!=0)	cy = (cy-centerLong) / longPerPixel;
-		std::cout << "\nThe angle of the right side of the quadrant is (0 to 360 degrees, relative to the positive x axis, enter 0 to skip):";
-		cin>> angle;
-		if(angle!=0) angle = angle*PI/180;
-		std::cout << "\nThe inner radius of the quadrant is (in nm, enter 0 to skip):";
-		cin>>ir;
-		if(ir!=0)	ir = std::abs(ir)/NMILESPERPIXEL;
-		std::cout << "\nThe outer radius of the quadrant is (in nm, enter 0 to skip):";
-		cin>>ora;
-		if(ora!=0)	ora = std::abs(ora)/NMILESPERPIXEL;
-		std::cout << "\nThe inner altitude of the quadrant is (in feet, enter 0 to skip):";
-		cin>>ih;
-		if(ih!=0)	ih = (ih-ALTITUDE_AT_BASE_PLANE)/ALTITUDE_PER_PIXEL;
-		std::cout << "\nThe outer altitude of the quadrant is (in feet, enter 0 to skip):";
-		cin>>oh;
-		if(oh!=0)	oh = (oh-ALTITUDE_AT_BASE_PLANE)/ALTITUDE_PER_PIXEL;
-		// set the new information gotten from the dialog to the quadrant object
-		quadrant->setQuadrant(cx, cy, angle, ir, ora, ih, oh);
-		printQuadrantAndDemandInfo();										// after editing, print the new quadrant information out
-		if(ctrl_DemandReadIn == DEMAND_READ_IN && !quadrant->demandFeasible(demandRNPs))
-		{
-			demandRNPs.clear();
-			ctrl_DemandReadIn = DEMAND_NOT_READ_IN;	// if the new quadrant cannot accomodate the demands, then set demand NOT read in
-			std::cout << "\nThe new quadrant cannot accommondate the rnp requirements of the entry nodes, the demand info are therefore restored."<<std::endl;
-			return false;
-		}
-		// quadrant is changed, then if a tree or routing DAG was generated, they are considered outdated
-		ctrl_RoutingDAGGenerated = !ROUTINGDAG_GENERATED;	
-	}
-	else
-		std::cout << "\nThe quadrant is not generated yet!"<<std::endl;
-	return true;
 }
 
 /*****************************************************************************************************************************************/
@@ -214,7 +173,7 @@ bool UserInterface::generateTree()
 		std::cout <<  std::endl << "Generating a bottommost merge tree, please wait..." << std::endl;
 		/************************************************************************************************/
 		ctrl_OperFlexGenerated = OPER_FLEX_NOT_GENERATED;				// when generating a new tree, the Oper-Flex pairs need to be generated again
-		// first, generate the entry and fix nodes, then the internal nodes
+		// first, generate the entry and fixed nodes, then the internal nodes
 		routingDAG->reset();											// a brand new routing instance
 		std::cout << std::endl << "Finished resetting edges." << std::endl;
 
@@ -232,14 +191,18 @@ bool UserInterface::generateTree()
 				}
 			}
 		}
-		std::cout << "Demand RNPS: ";
+#if !defined(DO_NOT_CONVERT_LAT_LON_TO_PIXELS)
+		std::cout << "Demand RNPS (in pixels): ";
+#else
+		std::cout << "Demand RNPS (in nm): ";
+#endif
 		for(unsigned int i = 0; i < demandRNPs.size(); i++) 
 		{
 			std::cout << demandRNPs[i] << " ";
 		}
 		std::cout << std::endl;
 
-		std::cout << "Max Fix Nodes: " << inputs.getNumFixedNodes() << std::endl;
+		std::cout << "Max fixed nodes: " << inputs.getNumFixedNodes() << std::endl;
 		int maxFixNodes = inputs.getNumFixedNodes(); // a negative parameter is used sometimes to indicate no limit
 		std::cout << "START GENERATING DAG" << std::endl;
 
@@ -473,6 +436,12 @@ void UserInterface::inputOperationalFlexibility()
 	}
 	std::vector<double> radii = inputs.getOperFlex();
 	std::sort(radii.begin(), radii.end() );
+#if !defined(DO_NOT_CONVERT_LAT_LON_TO_PIXELS)
+	for(unsigned int i = 0; i<radii.size(); i++)
+	{
+		radii[i]/=NMILESPERPIXEL;
+	}
+#endif
 	if( radii[0] < 0 ) 
 	{ // valid values, all positive and in increasing order, then move to the next step
 		std::cout << "Operational flexbility values are invalid: Verify that all are positive";
@@ -747,13 +716,13 @@ bool UserInterface::readDemandProfile()
 			ctrl_DemandReadIn = DEMAND_READ_IN;
 			// the radius 100 always corresponds to the radius of the transition airspace quadrant, and the conversion from
 			// lati/long to screen coordinate system is done by the conversion from 100 to radius in lati/long
-			quadrant->setQuadrant(0, 0, 10*PI/180, 20, TOTAL_DEMAND_CIRCLE_RADIUS_PIXEL, 0, 0);
+			quadrant->setQuadrant(0, 0, inputs.getQuadrantAngle(), inputs.getAngularWidth() , 20, TOTAL_DEMAND_CIRCLE_RADIUS_PIXEL, 0, 0);
 			// set up the 4 global variable for drawing purpose (convertion inbetween 2 coordinate systems)
 			// the center of the lati/long is always set to be at opengl coordinate (0, 0)
 			// and getting the demand profile's starting time and ending time
 			demandProfile->getDemandInfo(&centerLati, &centerLong, &latiPerPixel, &longPerPixel, &startTime, &endTime);
 			demandRNPs.clear();
-			demandProfile->generateDemandVector(demandRNPs, quadrant->getAngle(), quadrant->getAngle()+PI/2, NMILESPERPIXEL);
+			demandProfile->generateDemandVector(demandRNPs, quadrant->getAngle(), quadrant->getAngularWidth(), NMILESPERPIXEL);
 			// when demand or weather data is changed, the routingDAG must be regenerated based on the new demand/weather data
 			if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)
 			{

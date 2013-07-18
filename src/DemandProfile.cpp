@@ -7,17 +7,14 @@
 #include <cstdlib>
 #include <typeinfo>
 
-DemandProfile::DemandProfile(void)
+DemandProfile::DemandProfile()
 {
   numDemands = 0;
   minX = maxX = minY = maxY = 0;
 }
 
-DemandProfile::~DemandProfile(void)
+DemandProfile::~DemandProfile()
 {
-  xCoors.clear();
-  yCoors.clear();
-  rnp.clear();
 }
 
 // read in the demand profile from file, the content is passed in by the character array buffer, and the size is fileSize
@@ -256,48 +253,46 @@ void DemandProfile::getRange(double *minLati, double *minLong, double *maxLati, 
 }
 
 // generate a set of 8 entry points and their rnp values based on the starting angle of the quadrant
-void DemandProfile::generateDemandVector(std::vector<double> &demand, double startingAngle, double endingAngle, double nmilesPerPixel)
+void DemandProfile::generateDemandVector(std::vector<double> &demand, double startingAngle, double angularWidth, double nmilesPerPixel)
 {
-  double demandRNPS[NUM_ENTRY_NODES_PER_QUADRANT] = {0};
-  double angleIncrement = (endingAngle - startingAngle)/NUM_ENTRY_NODES_PER_QUADRANT;
+	double endingAngle = startingAngle + angularWidth;
+	
+	double demandRNPS[NUM_ENTRY_NODES_PER_QUADRANT] = {0};
+	double angleIncrement = (endingAngle - startingAngle)/NUM_ENTRY_NODES_PER_QUADRANT;
+
+  /**********
+  // Demand RNPs are located at startingAngle+n*angleIncrement.
+  // Where n goes from something like 1 to 10 (don't quote me on that)
+  // 
+  // 
+  **********/
+
+  
   for(unsigned int i=0; i<numDemands; i++)
-    {
-      // compute the x, y coordinates in the opengl coordinate system for each demand, where the center is (0, 0)
-      double tempX = (xCoors[i]-centerX)/latiPerPixel;	
-      double tempY = (yCoors[i]-centerY)/longPerPixel;
-      if(tempX!=0)
-        {
-          double angle = atan(tempY/tempX);					// the center angle of the point
-          if(tempX<0)	//if the point is in the 2nd or the 3rd quadrant
-		  {
-            angle = angle+PI;
-		  }
-          else if(tempX>0 && tempY<0) // in the 4th quadrant
-		  {
-            angle = angle+2*PI;	 // make it in the 0--2*PI range
-		  }
-          // now we have the angle in range (0, 2*PI)
-          if(endingAngle<2*PI)	
-            {
-              if(angle>startingAngle && angle<=endingAngle)
-                {
-                  int tempIndex = int((angle-startingAngle)/angleIncrement);
-                  demandRNPS[tempIndex] = std::max(demandRNPS[tempIndex], rnp[i]);	 // compute the std::max rnp value for this range of entry nodes
-                }
-            }
-          else	// starting and ending angle are on different sides of the positive x axis
-            {
-              if(angle>startingAngle || angle<endingAngle-2*PI)
-                {
-                  int tempIndex = angle>=startingAngle ? int((angle-startingAngle)/angleIncrement) :  int((angle+2*PI-startingAngle)/angleIncrement);
-                  demandRNPS[tempIndex] = std::max(demandRNPS[tempIndex], rnp[i]);	 // compute the std::max rnp value for this range of entry node
-                }
-            }			
-        }
-    }
+  {
+	  // compute the x, y coordinates in the opengl coordinate system for each demand, where the center is (0, 0)
+	  double tempX = (xCoors[i]-centerX)/latiPerPixel;	
+	  double tempY = (yCoors[i]-centerY)/longPerPixel;
+	  double angle = atan2(tempY,tempX);	// Returns angle in range [-pi,pi)
+	  int tempIndex;
+	  if(angle< 0)
+	  {
+		  angle += 2*PI;
+	  }
+
+	  if(angle>startingAngle && angle<=endingAngle)
+	  {
+		  tempIndex = (int) floor( (angle-startingAngle)/angleIncrement ) ;
+		  demandRNPS[tempIndex] = std::max(demandRNPS[tempIndex], rnp[i]);	 // compute the std::max rnp value for this range of entry nodes
+	  }			
+  }
   // convert to opengl coordinate system and in the project, rnp is half the lane width
   for(unsigned int i=0; i<NUM_ENTRY_NODES_PER_QUADRANT; i++)		
-    {
+  {
+#if !defined(DO_NOT_CONVERT_LAT_LON_TO_PIXELS)
     demand.push_back(demandRNPS[i]/(2*nmilesPerPixel));						// store them into the resulting std::vector
+#else
+	demand.push_back(demandRNPS[i]/(2));
+#endif
     }
 }

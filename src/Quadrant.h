@@ -14,23 +14,25 @@ class Quadrant
 public:
 	Quadrant(double cX = 0, double cY = 0, double ang = PI/6, double iR = 10, double oR = 35, double iH = 0, double oH = 0);
 	virtual ~Quadrant(void);
-	void setcX(double cX);
-	void setcY(double cY);
+	void setCenterX(double cX) { centerX = cX; }
+	void setCenterY(double cY) { centerY = cY; }
 	virtual void setAngle(double ang);
+	void setAngularWidth(double ang);
 	void setiRadius(double iR);
 	void setoRadius(double oR);
 	void setiHeight(double iH);
 	void setoHeight(double oH);
-	double getcX();
-	double getcY();
-	double getAngle();
-	double getiRadius();
-	double getoRadius();
-	double getiHeight();
-	double getoHeight();
-	int getLiftStatus();
+	double getCenterX() { return centerX; }
+	double getCenterY() { return centerY; }
+	double getAngle() { return angle; }
+	double getAngularWidth() { return angularWidth; }
+	double getiRadius() { return iRadius; }
+	double getoRadius() { return oRadius; }
+	double getiHeight() { return iHeight; }
+	double getoHeight() { return oHeight; }
+	int getLiftStatus() { return liftStatus; }
 	void setLiftStatus(int status);
-	void setQuadrant(double cX = 0, double cY = 0, double ang = PI/6, double iR = 10, double oR = 35, double iH = 0, double oH = 0);
+	void setQuadrant(double cX = 0, double cY = 0, double ang = PI/6, double angWidth = PI/2, double iR = 10, double oR = 35, double iH = 0, double oH = 0);
 	bool demandFeasible(const std::vector<double> &rnps);
 	void reset();
 	/*********************************************************************************************/
@@ -39,23 +41,25 @@ public:
 	/*********************************************************************************************/
 	
 private:
-	int liftStatus;		// if the quadrant is lifted on not
-	double centerX;		// the x coordinate of the center
-	double centerY;		// the y coordinate of the center
-	double angle;		// the angle relative to the x axis, from 0 to 2*PI
-	double iRadius;		// inner radius of the quadrant
-	double oRadius;		// outer radius of the quadrant
-	double liftediRadius;	// the inner and outer radius after the quadrant is lifted
+	int liftStatus;		  // if the quadrant is lifted on not
+	double centerX;		  // the x coordinate of the center
+	double centerY;		  // the y coordinate of the center
+	double angle;		  // the angle relative to the x axis, from 0 to 2*PI
+	double angularWidth; // the angle relative to the x axis, from 0 to 2*PI
+	double iRadius;		  // inner radius of the quadrant
+	double oRadius;		  // outer radius of the quadrant
+	double liftediRadius; // the inner and outer radius after the quadrant is lifted
 	double liftedoRadius;
-	double iHeight;		// the inner height of the boundary of the quadrant
-	double oHeight;		// the outer height of the boundary of the quadrant
-	double cHeight;		// the height of the center of the quadrant
+	double iHeight;		  // the inner height of the boundary of the quadrant
+	double oHeight;		  // the outer height of the boundary of the quadrant
+	double cHeight;		  // the height of the center of the quadrant
 	
 private:
 	/*********************************************************************************************/
 	// functions used to generate routing graph structures
 	bool generateEntryAndFixNodes(const std::vector<double> &rnps, double effectiveThres, double routingThres, const std::vector<WeatherData> &wDataSets, RoutingDAG* rDAG, double quadrantAngularWidth, unsigned int numFixNodes);
 	void generateRoutingDAGInternalNodes(RoutingDAG* rDAG, const std::vector<double> &rnps, double quadrantAngularWidth);
+	double moveThisAngleBetweenZeroAndTwoPi( double inAngle );
 	/*********************************************************************************************/
 };
 

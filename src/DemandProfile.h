@@ -21,11 +21,10 @@ public:
 	
 public:
 	bool readInFile(std::string fileName);
-	bool readInNewFormatDemandFile();
 	void reset();
 	void getDemandInfo(double* cX, double* cY, double* laPerPixel, double* loPerPixel, std::string* timeStart, std::string* timeEnd);
 	void getRange(double* minLati, double* minLong, double* maxLati, double* maxLong);
-	void generateDemandVector(std::vector<double> &demandRNPs, double startingAngle, double endingAngle, double nmilesPerPixel);
+	void generateDemandVector(std::vector<double> &demandRNPs, double startingAngle, double angularWidth, double nmilesPerPixel);
 	
 	// most x,y pairs we are talking about in this class are actually lati/long pairs
 private:

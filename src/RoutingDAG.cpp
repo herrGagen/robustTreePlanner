@@ -53,7 +53,7 @@ void RoutingDAG::insertEdge(Edge *temp)
 // set the number of layers in the routingDAG
 void RoutingDAG::setNumLayers(unsigned int n)
 {
-	if(n >= 2)					// at least 2 levels of fix nodes and entry nodes
+	if(n >= 2)					// at least 2 levels of fixed nodes and entry nodes
 	{
 		numLayers = n;
 		for(unsigned int i=0; i<numLayers; i++)			// initialize the layerUsedIndex std::vector which will be used when computing the tree
@@ -62,7 +62,7 @@ void RoutingDAG::setNumLayers(unsigned int n)
 		}
 		for(unsigned int i=0; i<fixes.size(); i++)
 		{
-			fixes[i]->setLayer(n-1);			// all the fix nodes now know that they are in layer (n-1)
+			fixes[i]->setLayer(n-1);			// all the fixed nodes now know that they are in layer (n-1)
 		}
 	}
 }
@@ -479,11 +479,11 @@ bool RoutingDAG::generateEdgeSet()
 	// generate the edge set base on the nodes that are read in. Each node has outgoing edges going into the nodes in the next LL=3 layers, as long as the edge
 	//      Joe: changed the LL to 5 (it was 3)  I am calling the parameter LL
 	// is with in PI/3 degrees of the centerAngle, the order of the edges are from rightmost to leftmost, from furthest to nearest, except for the nodes that have
-	// edges going to fix nodes, then the order would be from leftmost to rightmost
+	// edges going to fixed nodes, then the order would be from leftmost to rightmost
 	if(!generateLayerStartingIndexVector())					// generate the layer starting position std::vector first
 		return false;
-	// iterate for each layer, deal with the fix node layer and the second to the last layer separately later because the last layer only has edges going to fix nodes
-	// but the order where we fill in fix nodes is opposite
+	// iterate for each layer, deal with the fixed node layer and the second to the last layer separately later because the last layer only has edges going to fixed nodes
+	// but the order where we fill in fixed nodes is opposite
 	for(unsigned int i=0; i<numLayers-2; i++)					
 	{
 	  int startingLayer = (i+5>numLayers-2)? (numLayers-2) : (i+5);      //   Joe: the "5" was "3" but should be parameter LL
@@ -536,16 +536,16 @@ bool RoutingDAG::generateEdgeSet()
 		}
 	}
 	/***************************************************************************************************/
-	// deal with the connection to the final layer: the layer that holds fix nodes
-	// we suppose that only the last 2 layers connect to the fix nodes, so we add the fix nodes into their outgoing edge list one by one
+	// deal with the connection to the final layer: the layer that holds fixed nodes
+	// we suppose that only the last 2 layers connect to the fixed nodes, so we add the fixed nodes into their outgoing edge list one by one
 	int startingLayer = numLayers-3>=0? numLayers-3 : 0;
-	for(int i=layerStartingIndex[startingLayer]; i<layerStartingIndex[numLayers-1]; i++)		// these nodes will be connected to all fix nodes
+	for(int i=layerStartingIndex[startingLayer]; i<layerStartingIndex[numLayers-1]; i++)		// these nodes will be connected to all fixed nodes
 	{
 		Node* current = fetchNode(i);
 		int fixNodesSize = fixes.size();
 		for(int j=0; j<fixNodesSize; j++)
 		{
-			Node* tempNode = fixes[j];														// connect current node to the fix node, from small angle to large angle
+			Node* tempNode = fixes[j];														// connect current node to the fixed node, from small angle to large angle
 			Edge* tempEdge = new Edge(current, tempNode);									// in the opposite order compared to previous inserting order
 			current->insertOutNodeEdge(tempNode, tempEdge);
 			tempNode->insertInNodeEdge(current, tempEdge);	
@@ -576,8 +576,8 @@ bool RoutingDAG::generateLayerStartingIndexVector()
 			initialLayer = nodes[i]->getLayer();
 		}		// now the layerStartingIndex std::vector stores the starting position of each layer in the nodes std::vector
 	}
-	layerStartingIndex.push_back(entrySize+nodes.size());	// the starting position of the fix nodes is lastly pushed in the std::vector
-	layerStartingIndex.push_back(entrySize+nodes.size()+fixes.size());		// the last position, after the end of fix nodes
+	layerStartingIndex.push_back(entrySize+nodes.size());	// the starting position of the fixed nodes is lastly pushed in the std::vector
+	layerStartingIndex.push_back(entrySize+nodes.size()+fixes.size());		// the last position, after the end of fixed nodes
 	return true;
 }
 
@@ -684,7 +684,7 @@ bool RoutingDAG::generateTree(const std::vector<WeatherData> &wDataSets, std::ve
 	return true;
 }
 
-// search from a specific entry node "start", using DFS to find a path to a fix node
+// search from a specific entry node "start", using DFS to find a path to a fixed node
 // effectiveThres means if a weather cell's deviation probability is below this value, it's going to be considered as NULL
 // routingThres means that we compute the weighted total probability of the weathercells p1*(0 or 1) + p2*(0 or 1) +..., 
 // if the value < routingThres, then it is considered an obstacle 
@@ -759,7 +759,7 @@ bool RoutingDAG::routeBranch(Node *start, unsigned int entryIndex, const std::ve
 			}
 			/**********************************************************************************************************************************************************/
 			// THE 2 ENDING CONDITIONS OF FINDING A BRANCH, THESE 2 CASES MARKS THE END OF A BRANCH
-			// this case happens then we are merging into an existing branch(but not at the fix node). 
+			// this case happens then we are merging into an existing branch(but not at the fixed node). 
 			// We test all the remaining part of the branch to see if the remaining branch is feasible, 
 			// and make sure that this node is from the immediate previous branch, instead of some node from other previous branches
 			// note that once merged into the brach of the tree, it cannot deviate out from the branch 
@@ -773,21 +773,21 @@ bool RoutingDAG::routeBranch(Node *start, unsigned int entryIndex, const std::ve
 				// meaning that the remaining part of the tree would work, then just finish building the tree
 				if(testRemainingBranchWhileMerging(tempNode, wDataSets, rnp, effectiveThres, routingThres))		
 				{
-					setTreeBranchUpMerging(tempNode, rnp);									// set the drawingRNP values from the fix node to the node that we start
+					setTreeBranchUpMerging(tempNode, rnp);									// set the drawingRNP values from the fixed node to the node that we start
 					tempNode->setPrevTreeNode(temp);									// mark the prevNode and prevEdge in the tree structure
 					tempNode->setPrevTreeEdge(tempEdge);
 					setTreeBranchUp(tempNode, start, rnp);								// set the tree information and the branch is complete, return true, find a branch
 					return true;
 				}
 			}
-			// if we reach a fix node, then mark the branch in the tree, meaning that we just found a complete branch
+			// if we reach a fixed node, then mark the branch in the tree, meaning that we just found a complete branch
 			if(tempNode->getLayerIndex()>=layerUsedIndex[tempNode->getLayer()] && tempNode->getNodeType()==FIX_NODE)			
-			{	// if we are approaching a merging fix node here, then test the min distance constraint first
+			{	// if we are approaching a merging fixed node here, then test the min distance constraint first
 				if(tempNode->getInDegree()==1 && testDistanceTooCloseToMergingNodesOnPreviousBranch(tempNode, entryIndex))	
 					continue;
 				if(testPreviousBranchTillCurrentLayerEdge(tempEdge, rnp, entryIndex))
 					continue;
-				// no need to test the node itself again since it's a fix node, already tested when generated
+				// no need to test the node itself again since it's a fixed node, already tested when generated
 				if(tempNode->getInDegree()<2)
 				{
 					tempNode->setPrevTreeNode(temp);
@@ -818,7 +818,7 @@ bool RoutingDAG::testRemainingBranchWhileMerging(Node *start, const std::vector<
 		{
 			return false;
 		}
-		if(temp->getNodeType()==FIX_NODE)							// if we are getting to a fix node, then we suceessfully prove that the branch is safe to be merged in
+		if(temp->getNodeType()==FIX_NODE)							// if we are getting to a fixed node, then we suceessfully prove that the branch is safe to be merged in
 			break;													
 		Edge* tempEdge = temp->getOutEdge(temp->getTreeOutEdgeIndex());
 		if(tempEdge)		// if we find a tree edge (each node has at MOST one outgoing edge that is a tree edge), and its NOT clear of weather with the new rnp value
@@ -838,7 +838,7 @@ bool RoutingDAG::testRemainingBranchWhileMerging(Node *start, const std::vector<
 }
 
 // set all the edges that we used to be in the tree, and it is guaruateed to be a bottommost tree branch
-// when we find the last node of a tree(a fix node), mark the tree from the current node all way up to the entry node start
+// when we find the last node of a tree(a fixed node), mark the tree from the current node all way up to the entry node start
 // set rnp values and in degrees
 void RoutingDAG::setTreeBranchUp(Node* current, Node* start, double rnp)
 {
@@ -856,14 +856,14 @@ void RoutingDAG::setTreeBranchUp(Node* current, Node* start, double rnp)
 	}
 }
 
-// set the drawingRNP values from the fix node to the merging node, only rnp values are updated because the other status variables are already set to be in the tree
-// Node* current is always a fix node, and it links up to start node, this funtion is only called when we are merging a new branch into an existing branch
+// set the drawingRNP values from the fixed node to the merging node, only rnp values are updated because the other status variables are already set to be in the tree
+// Node* current is always a fixed node, and it links up to start node, this funtion is only called when we are merging a new branch into an existing branch
 void RoutingDAG::setTreeBranchUpMerging(Node *start, double rnp)
 {
-	Node* temp = start;								// find the fix node of the branch containing node start
+	Node* temp = start;								// find the fixed node of the branch containing node start
 	while(temp->getNodeType()!=FIX_NODE)
 		temp = temp->getOutNode(temp->getTreeOutEdgeIndex());
-	Node* current = temp;							// current is the fix node of the branch constaining start
+	Node* current = temp;							// current is the fixed node of the branch constaining start
 	while(current!=start)
 	{
 		if(rnp>current->getDrawingRNP())
@@ -918,7 +918,7 @@ void RoutingDAG::updateLayerUsedIndexVector(unsigned int entryIndex)
 			layerUsedIndex[tempLayer] = std::max(layerUsedIndex[tempLayer], start->getLayerIndex());
 			start = start->getOutNode(start->getTreeOutEdgeIndex());			// go to the next level of the bottommost tree
 		}
-		// now start is a fix node
+		// now start is a fixed node
 		layerUsedIndex[start->getLayer()] = std::max(layerUsedIndex[start->getLayer()], start->getLayerIndex());
 	}
 }
@@ -1047,7 +1047,7 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 		return true;
 	}
 	std::deque<Node*> tempQueue;					// the queue used for breath first search in Dijkstra algorithm for a DAG
-	// decide which is the node to end the current branch ( we may meet at most 3 fix nodes, the one we pick is the one that has the minimum distance
+	// decide which is the node to end the current branch ( we may meet at most 3 fixed nodes, the one we pick is the one that has the minimum distance
 	Node* endingFixNode = NULL;													
 	tempQueue.push_back(start);		
 	start->setDistance(0);					// the source vertex has distance 0
@@ -1114,7 +1114,7 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 				}
 			}
 			// if the start of the current edge is already a part of the previous branch, then the new node must also be a node in the previous branch
-			// the reason is that once two branches merges together, they have to be together till the fix node
+			// the reason is that once two branches merges together, they have to be together till the fixed node
 			if(onNextBranch(frontNode, entryIndex) && tempNode!=nextNodeOfGivenNodeOnNextBranch(frontNode, entryIndex))
 			{
 					continue;
@@ -1157,7 +1157,7 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 					tempNode->setVisited(VISITED);
 					tempQueue.push_back(tempNode);
 				}
-				// if the node is a feasible FIX node and is closer to the source, then store it using pointer endingFixNode 
+				// if the node is a feasible fixed node and is closer to the source, then store it using pointer endingFixNode 
 				if(tempNode->getNodeType() == FIX_NODE && endingFixNode!=tempNode)
 				{
 					if (!endingFixNode || (endingFixNode->getDistance()>=tempNode->getDistance()))
@@ -1181,7 +1181,7 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 			}
 		}		// visited all adjacent nodes of the current node
 	}
-	if(!endingFixNode)		// if we didn't find a fix node, which should NOT happen
+	if(!endingFixNode)		// if we didn't find a fixed node, which should NOT happen
 	{
 		return false;
 	}
@@ -1217,12 +1217,12 @@ void RoutingDAG::treeBranchPostProcessingForTreeTautening(Node* start, double rn
 		temp->getOutEdge(temp->getTreeOutEdgeIndex())->setDrawingRNP(std::max(temp->getOutEdge(temp->getTreeOutEdgeIndex())->getDrawingRNP(), rnp));
 		temp = temp->getOutNode(temp->getTreeOutEdgeIndex());	// next level of tree node
 	}			// after the function, if we have the start node, we could use the treeOutEdgeIndex variable to trace the entire tree branch
-	temp->setDrawingRNP(std::max(temp->getDrawingRNP(), rnp));		// now temp is a fix node, do the same: setting rnp and updating layerUsedIndexReverseDirection
+	temp->setDrawingRNP(std::max(temp->getDrawingRNP(), rnp));		// now temp is a fixed node, do the same: setting rnp and updating layerUsedIndexReverseDirection
 	layerUsedIndexReverseDirection[temp->getLayer()] = std::min(layerUsedIndexReverseDirection[temp->getLayer()], temp->getLayerIndex());
 }
 
 // set all the edges that we used to be in the tree, and it is guaruateed to be a tautend tree branch
-// when we find the last node of a tree(a fix node), mark the tree from the current node all way up to the entry node start
+// when we find the last node of a tree(a fixed node), mark the tree from the current node all way up to the entry node start
 void RoutingDAG::setTreeBranchUpForTreeTautening(Node* current, Node* start, double rnp)
 {
 	while(current!=start)
@@ -1247,18 +1247,18 @@ void RoutingDAG::setTreeBranchUpForTreeTautening(Node* current, Node* start, dou
 	}
 }
 
-// set the drawingRNP values from the merging node to its the fix node, only rnp values are updated because the other status variables are already set 
+// set the drawingRNP values from the merging node to its the fixed node, only rnp values are updated because the other status variables are already set 
 // to be in the tree. This funtion is only called when we are merging a new branch into an existing branch in the tautened tree
 void RoutingDAG::setTreeBranchUpMergingForTreeTautening(Node *start, double rnp)
 {
-	Node* temp = start;								// find the fix node of the branch containing node start
+	Node* temp = start;								// find the fixed node of the branch containing node start
 	while(temp->getNodeType()!=FIX_NODE)
 	{
 		temp->setDrawingRNP(rnp);
 		temp->getOutEdge(temp->getTreeOutEdgeIndex())->setDrawingRNP(rnp);
 		temp = temp->getOutNode(temp->getTreeOutEdgeIndex());
 	}
-	temp->setDrawingRNP(rnp);						// temp is now a fix node
+	temp->setDrawingRNP(rnp);						// temp is now a fixed node
 }
 
 
@@ -1419,7 +1419,7 @@ bool RoutingDAG::testBranchWithNode(Node* current, double rnp, Node* start)
 	}
 	// then track down the branch
 	Node* temp = start;
-	while(temp->getNodeType()!=FIX_NODE)			// traverse till the fix node, but no need to test the fix node (cause it will eventually merge into a fix node)
+	while(temp->getNodeType()!=FIX_NODE)			// traverse till the fixed node, but no need to test the fixed node (cause it will eventually merge into a fixed node)
 	{
 		if(current->collisionWithEdge(temp->getOutEdge(temp->getTreeOutEdgeIndex()), rnp))
 		{
@@ -1448,7 +1448,7 @@ bool RoutingDAG::testBranchWithEdge(Edge* current, double rnp, Node* start, int 
 	Node* temp = start;
 	if(testType==1)
 	{
-		while(temp->getNodeType()!=FIX_NODE)			// traverse till the fix node, but no need to test the fix node (cause it will eventually merge into a fix node)
+		while(temp->getNodeType()!=FIX_NODE)			// traverse till the fixed node, but no need to test the fixed node (cause it will eventually merge into a fixed node)
 		{
 			if(current->collisionWithEdge(temp->getOutEdge(temp->getTreeOutEdgeIndex()), rnp))
 			{
@@ -1555,7 +1555,7 @@ bool RoutingDAG::onBranchStartingAt(Node* current, Node* start)
 	}
 	if(current==start)	
 	{
-			return true;				// current is the fix node of the previous branch
+			return true;				// current is the fixed node of the previous branch
 	}
 	return false;
 }
@@ -1721,7 +1721,7 @@ void RoutingDAG::generateOperFlexPairs(const std::vector<double> &radii, const s
 			tempNode = tempNode->getOutNode(tempNode->getTreeOutEdgeIndex());		// walk to the next step of the tree
 		}
 	}
-	// finally, computing the operational flexibility of the fix nodes
+	// finally, computing the operational flexibility of the fixed nodes
 	for(unsigned int i=0; i<fixes.size(); i++)
 	{
 		Node* tempNode = fixes[i];
