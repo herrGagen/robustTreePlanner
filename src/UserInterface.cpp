@@ -86,6 +86,7 @@ void UserInterface::ProgramBegins(std::string inputFile)
 {
 
 	inputs = InputFileReader(inputFile);
+	outputFileName = inputs.getOutputName();
 
 	char userInput = '0';	     // the user input will always be a number, deciding what to do next
 	bool startOver = false;    // when the user chooses to do everything again
@@ -755,7 +756,7 @@ void UserInterface::saveTreeInformation()
 		std::cerr << "\nPlease generate Operational Flexity Pairs First!"<<std::endl;
 		return;
 	}
-	routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime, inputs.getOutputName(), weatherDataSets, deviationThreshold );
+	routingDAG->outputTreeInformation(centerLati, centerLong, latiPerPixel, longPerPixel, startTime, endTime, outputFileName, weatherDataSets, deviationThreshold );
 	std::cout << "latiPerPixel: " << latiPerPixel << "; centerLati: " << centerLati << std::endl;
 	std::cout << "longPerPixel: " << longPerPixel << "; centerLong: " << centerLong << std::endl;
 	std::cout<< "\nTree Information successfully written to file.\n";

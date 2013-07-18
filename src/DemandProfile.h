@@ -1,5 +1,5 @@
 #ifndef DEMANDPROFILE_H
-#define DEMAND_PROFILE_H
+#define DEMANDPROFILE_H
 
 #define PI 3.14159265
 

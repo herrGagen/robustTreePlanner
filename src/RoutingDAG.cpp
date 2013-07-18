@@ -237,15 +237,15 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 		// start printing to the file according the the file format
 		os << "<Routing_Trees start_time=\"" << startTime.c_str() << "\" end_time=\"" << endTime.c_str() << "\" units=\"unix_time_ms\">\n\t<Nodes>";		
                 // start printing the tree nodes information here
-		std::vector<int>	indexToFetchNodeIndexVec;							// for each node in the tree, it will have an index value used for outputing
+		std::vector<int>	indexToGetNodePointerIndexVec;							// for each node in the tree, it will have an index value used for outputing
 		int treeNodeIndex = 0;											// record all the tree nodes one by one starting from 1
 		for(unsigned int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
 		{
-			Node* temp = fetchNode(i);
+			Node* temp = getNodePointer(i);
 			if(temp->isTreeNode()) // if we have a tree node
 			{
-				// the position in indexToFetchNodeIndexVec is the index value of the node, the stored value is the one used in fetchNode(int i) function
-				indexToFetchNodeIndexVec.push_back(i);
+				// the position in indexToGetNodePointerIndexVec is the index value of the node, the stored value is the one used in getNodePointer(int i) function
+				indexToGetNodePointerIndexVec.push_back(i);
 				treeNodeIndex++;
         
 				os << "\n\t\t<Node index=\"" << treeNodeIndex << "\" latitude=\"" << centerLati+temp->getX()*latiPerPixel << "\" longitude=\""
@@ -310,11 +310,11 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 		{
 			if(edges[i]->isTreeEdge())
 			{
-				// get the head node's printed index, in the indexToFetchNodeIndexVec std::vector, where the position in the std::vector is the index-1
-				int unifiedIndexHead = getFetchNodeIndex(edges[i]->getHead());	// the head's unified index
-				int tempIndexHead = find(indexToFetchNodeIndexVec.begin(), indexToFetchNodeIndexVec.end(), unifiedIndexHead)-indexToFetchNodeIndexVec.begin()+1;
-				int unifiedIndexTail = getFetchNodeIndex(edges[i]->getTail());	// the head's unified index
-				int tempIndexTail = find(indexToFetchNodeIndexVec.begin(), indexToFetchNodeIndexVec.end(), unifiedIndexTail)-indexToFetchNodeIndexVec.begin()+1;
+				// get the head node's printed index, in the indexToGetNodePointerIndexVec std::vector, where the position in the std::vector is the index-1
+				int unifiedIndexHead = getNodePointerIndex(edges[i]->getHead());	// the head's unified index
+				int tempIndexHead = find(indexToGetNodePointerIndexVec.begin(), indexToGetNodePointerIndexVec.end(), unifiedIndexHead)-indexToGetNodePointerIndexVec.begin()+1;
+				int unifiedIndexTail = getNodePointerIndex(edges[i]->getTail());	// the head's unified index
+				int tempIndexTail = find(indexToGetNodePointerIndexVec.begin(), indexToGetNodePointerIndexVec.end(), unifiedIndexTail)-indexToGetNodePointerIndexVec.begin()+1;
 				indexToTreeEdgeIndexVec.push_back(i);						// the position in the edges std::vector to its printed index
 				treeEdgeIndex++;
 				os << "\n\t\t<Arc index=\"1" << treeEdgeIndex << "\" start_node=\"" << tempIndexHead << "\" end_node=\"" << tempIndexTail << "\" cost=\"";
@@ -451,18 +451,30 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
 }
 
 // find a node based on its layer and layerIndex, return NULL means no matching node is found
-Node* RoutingDAG::findNode(int layer, int layerIndex)
+Node* RoutingDAG::findNode(int layer, int layerIndex) const
 {
 	// search all the nodes linearly to find the correnponding one
 	for(unsigned int i=0; i<nodes.size(); i++)
+	{
 		if(nodes[i]->getLayer()==layer && nodes[i]->getLayerIndex()==layerIndex)
+		{
 			return nodes[i];
+		}
+	}
 	for(unsigned int i=0; i<fixes.size(); i++)
+	{
 		if(fixes[i]->getLayer()==layer && fixes[i]->getLayerIndex()==layerIndex)
+		{
 			return fixes[i];
+		}
+	}
 	for(unsigned int i=0; i<entries.size(); i++)
+	{
 		if(entries[i]->getLayer()==layer && entries[i]->getLayerIndex()==layerIndex)
+		{
 			return entries[i];
+		}
+	}
 	return NULL;
 }
 
@@ -491,7 +503,7 @@ bool RoutingDAG::generateEdgeSet()
 		// loop thru all the nodes int the current layer
 		for(int j = layerStartingIndex[i]; j<layerStartingIndex[i+1]; j++)		
 		{
-			Node* current = fetchNode(j);				// the current Node on the current Layer
+			Node* current = getNodePointer(j);				// the current Node on the current Layer
 			double x = current->getX();
 			double y = current->getY();
 			int *shortestDistanceNodeIndex = new int[startingLayer-endingLayer+1];
@@ -500,12 +512,12 @@ bool RoutingDAG::generateEdgeSet()
 			for(int k=endingLayer; k<=startingLayer; k++)
 			{
 				// the distance from current node to the first node on the kth layer
-				Node* temp = fetchNode(layerStartingIndex[k+1]-1);
+				Node* temp = getNodePointer(layerStartingIndex[k+1]-1);
 				double shortestDistance = (x-temp->getX())*(x-temp->getX()) + (y-temp->getY())*(y-temp->getY());
 				shortestDistanceNodeIndex[k-endingLayer] = layerStartingIndex[k+1]-1;
 				for(int l = layerStartingIndex[k+1]-2; l>=layerStartingIndex[k]; l--)
 				{
-					temp = fetchNode(l);
+					temp = getNodePointer(l);
 					double tempDist = (x-temp->getX())*(x-temp->getX()) + (y-temp->getY())*(y-temp->getY());
 					if(tempDist < shortestDistance)		// compute the closest distance and record its position
 					{
@@ -525,7 +537,7 @@ bool RoutingDAG::generateEdgeSet()
 					int tempIndex = shortestDistanceNodeIndex[l-endingLayer]+k;				// we are interested in this node at this step
 					if(tempIndex>=layerStartingIndex[l+1] || tempIndex<layerStartingIndex[l])		// a node in the next layer or previous layer, then not feasible
 						continue;
-					Node* tempNode = fetchNode(tempIndex);									// this node will form one of the edges with the current node
+					Node* tempNode = getNodePointer(tempIndex);									// this node will form one of the edges with the current node
 					Edge* tempEdge = new Edge(current, tempNode);
 					current->insertOutNodeEdge(tempNode, tempEdge);							// insert the node and edge into the neighbor std::vector of the current Node
 					tempNode->insertInNodeEdge(current, tempEdge);							// the other node points back to the current node, too
@@ -541,7 +553,7 @@ bool RoutingDAG::generateEdgeSet()
 	int startingLayer = numLayers-3>=0? numLayers-3 : 0;
 	for(int i=layerStartingIndex[startingLayer]; i<layerStartingIndex[numLayers-1]; i++)		// these nodes will be connected to all fixed nodes
 	{
-		Node* current = fetchNode(i);
+		Node* current = getNodePointer(i);
 		int fixNodesSize = fixes.size();
 		for(int j=0; j<fixNodesSize; j++)
 		{
@@ -581,8 +593,8 @@ bool RoutingDAG::generateLayerStartingIndexVector()
 	return true;
 }
 
-// for a node, get its index value used in the fetchNode function as parameter(kind of a unified index among all the nodes)
-int RoutingDAG::getFetchNodeIndex(Node* temp)
+// for a node, get its index value used in the getNodePointer function as parameter(kind of a unified index among all the nodes)
+int RoutingDAG::getNodePointerIndex(Node* temp) const
 {
 	if(temp->getNodeType()==ENTRY_NODE)
 	{
@@ -603,8 +615,15 @@ int RoutingDAG::getFetchNodeIndex(Node* temp)
 }
 
 
-// find a node based on its index among the big std::vector entries, nodes and fixes
-Node* RoutingDAG::fetchNode(int n)
+/**
+	\brief find a node based on its index among the big std::vector entries, nodes and fixes
+
+	Yes, all 3 vectors are laid head to tail and you get either an entry node, internal node
+	or fixed node depending on how high N is.
+
+	Again, don't shoot the messenger.
+*/
+Node* RoutingDAG::getNodePointer(int n) const
 {
 	int entrySize = entries.size();
 	int nodesSize = nodes.size();
@@ -623,6 +642,47 @@ Node* RoutingDAG::fetchNode(int n)
 	}
 	return NULL;
 }
+
+/**
+	\brief Return total number of nodes in this DAG
+
+	Note: does not only return tree nodes,
+	
+	Also, as there are three types of nodes, entry nodes,
+	internal nodes and fixed nodes, this function returns 
+	the sum of their cardinalities.
+*/
+unsigned int RoutingDAG::getNumNodes() const
+{
+	return entries.size() + nodes.size() + fixes.size();
+}
+
+/**
+	\brief Returns number of edges in DAG (no just tree edges)
+*/
+unsigned int RoutingDAG::getNumEdges() const
+{
+	return edges.size();
+
+}
+
+/**
+	\brief Extremely unsafe access to edges in the routingDAG
+
+	Too bad both Node and Edge are not const correct.
+	Or have copy constructors.
+	Or weren't full of std::vectors of pointers.
+
+	Because if one of those sad facts weren't true, we
+	could make this access safe.
+
+	\param n Index of edge we are getting.
+*/
+Edge* RoutingDAG::getEdgePointer(int n) const
+{
+	return edges[n];
+}
+
 
 /***************************************************************************************************************************************************************/
 // the key function, routing algorithm, used to generate a tree from a prebuilt graph, given the weather, rnp for each entry point and threshold value
@@ -659,7 +719,7 @@ bool RoutingDAG::generateTree(const std::vector<WeatherData> &wDataSets, std::ve
 		// test if the entry node is feasible, then route a branch for each entry node
 		for(unsigned int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
 		{
-			fetchNode(j)->setVisited(NOT_VISITED);					// when starting a new graph search from a new entry node, set every node unvisited
+			getNodePointer(j)->setVisited(NOT_VISITED);					// when starting a new graph search from a new entry node, set every node unvisited
 		}
 		// first update the layerUsedIndex std::vector by walking thru the previous branches
 		updateLayerUsedIndexVector(i);
@@ -667,7 +727,7 @@ bool RoutingDAG::generateTree(const std::vector<WeatherData> &wDataSets, std::ve
 		entries[i]->setTreeNode();
 		for(unsigned int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
 		{
-			fetchNode(j)->setVisited(NOT_VISITED);					// when starting a new search, all the nodes within the search DAG are set to be unvisited
+			getNodePointer(j)->setVisited(NOT_VISITED);					// when starting a new search, all the nodes within the search DAG are set to be unvisited
 		}
 		if(!routeBranch(entries[i], i, wDataSets, rnp[i], effectiveThres, routingThres))		
 		{
@@ -847,10 +907,14 @@ void RoutingDAG::setTreeBranchUp(Node* current, Node* start, double rnp)
 		current->addInDegree();				// one more edge is coming in	
 		current->setTreeNode();				// the node is a tree node
 		if(rnp>current->getDrawingRNP())
+		{
 			current->setDrawingRNP(rnp);		// the std::max rnp is updated
+		}
 		current->getPrevTreeEdge()->setTreeEdge();	// the edge leading to this node is a tree edge
 		if(rnp>current->getPrevTreeEdge()->getDrawingRNP())
+		{
 			current->getPrevTreeEdge()->setDrawingRNP(rnp);
+		}
 		layerUsedIndex[current->getLayer()] = current->getLayerIndex();		// in current layer, the layerIndex node was the last node used in the tree
 		current = current->getPrevTreeNode();
 	}
@@ -955,7 +1019,7 @@ bool RoutingDAG::generateTautenedTree(const std::vector<WeatherData> &wDataSets,
 	// save the original bottommost tree information, in case there are multiple rounds of tautened tree generating
 	for(unsigned int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
 	{
-		fetchNode(i)->storeTreeOutEdgeIndexInformation();
+		getNodePointer(i)->storeTreeOutEdgeIndexInformation();
 	}
 	// when topMostTendency is 1, nothing unusual happens. Then next round, every 2nd branches will try to merge into its next branch
 	// next round, then every 3rd and 2nd branches will try to merge into their corresponding 1st branch. until topMostTendency is entry.size(), where
@@ -967,7 +1031,7 @@ bool RoutingDAG::generateTautenedTree(const std::vector<WeatherData> &wDataSets,
 		//preparation for the new tree: clear the unuseful(useful for the new tree) data structure related to the previous tree for nodes and edges
 		for(unsigned int j = 0; j < entries.size()+nodes.size()+fixes.size(); j++)
 		{
-			Node* temp = fetchNode( j );
+			Node* temp = getNodePointer( j );
 			double tempRNP = temp->getDrawingRNP();
 			// set nodes NOT in the tree, in degree 0, BUT THE TREE OUTGOING EDGE INFORMATION IS KEPT(IMPORTANT!!!): we can still trace a branch from an entry
 			temp->resetTreeStatus();			
@@ -991,11 +1055,11 @@ bool RoutingDAG::generateTautenedTree(const std::vector<WeatherData> &wDataSets,
 		{
 			for(unsigned int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
 			{
-				fetchNode(j)->setVisited(NOT_VISITED);		// when starting a new search, all the nodes within the search DAG are set to be unvisited
+				getNodePointer(j)->setVisited(NOT_VISITED);		// when starting a new search, all the nodes within the search DAG are set to be unvisited
 			}
 			for(unsigned int j=0; j<entries.size()+nodes.size()+fixes.size(); j++)
 			{
-				fetchNode(j)->setDistance(*max_element(rnp.begin(), rnp.end())*5*numLayers);	// at the beginning of Dijkstra, every node has very large distance
+				getNodePointer(j)->setDistance(*max_element(rnp.begin(), rnp.end())*5*numLayers);	// at the beginning of Dijkstra, every node has very large distance
 			}
 			// first update the layerUsedIndex std::vector by walking thru the previous branches
 			updateLayerUsedIndexVector(i);
@@ -1750,7 +1814,7 @@ bool RoutingDAG::areAllNodesFarFromWeather( const std::vector<WeatherData> &wDat
 	Node* tempNode = NULL;
 	while( true )
 	{
-			tempNode = fetchNode( j++ );
+			tempNode = getNodePointer( j++ );
 			if(tempNode == NULL)
 			{
 				break;

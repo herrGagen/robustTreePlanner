@@ -1,6 +1,7 @@
-#include "UserInterface.h"
 #include <iostream>
 
+#include "UserInterface.h"
+#include "TreeVerifier.h"
 int main(int argc, char* argv[])
 {
   std::string inputFile = "inputs.txt";
@@ -17,8 +18,9 @@ int main(int argc, char* argv[])
     }
   }
   
-	UserInterface* userInterface = new UserInterface();
-	userInterface->ProgramBegins(inputFile);
-	delete userInterface;
+	UserInterface userInterface;
+	userInterface.ProgramBegins(inputFile);
+	TreeVerifier checker(userInterface);
+	checker.appendReportToFiles("InvalidTrees.txt","ValidTrees.txt");
 	return 0;
 }

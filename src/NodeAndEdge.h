@@ -98,7 +98,9 @@ public:
 	bool getFreeRadiusResults(int n, double *radius, double *prob);	// get the value of nth element in the radius testing result (operational flexity)
 	void insertFreeRadiusVec(double r, double prob);					// insert into the operational flexibility std::vector a pair of radius and probability
 private:
-	double x, y, z;										// the coordinates of the point
+	double x;
+	double y;
+	double z;										// the coordinates of the point
 	std::vector<Node*> inNodes;								// the nodes that go into this node, size is the same as inEdges
 	std::vector<Edge*> inEdges;								// the edges coming into this node, matching each of inNodes
 	std::vector<Node*> outNodes;
@@ -114,12 +116,12 @@ private:
 	int inDeg;											// currently, only allow in degree 2 trees
 	int treeNode;										// after routing, if it is a node used in the tree
 	double drawingRNP;									// the rnp when drawing, rnp is the width of the thick cylinder/2
-	std::vector<OperationalFlexibility*> freeRadius;			// for a set of width, the probability that the node is free of obstacles
+	std::vector<OperationalFlexibility*> freeRadius;	// for a set of width, the probability that the node is free of obstacles
 	Node* prevTreeNode;													
 	Edge* prevTreeEdge;	
 	double distance;									// when generating the tautened tree, used as distance in Dijkstra algorithm
-	std::vector<double> weatherCollisionRNPs;					// define if a node is free of weather/ or collides with weather, record the tested rnps
-	std::vector<int> weatherCollisionStatus;					// define if a node is free of weather/ or collides with weather for each double rnp
+	std::vector<double> weatherCollisionRNPs;			// define if a node is free of weather/ or collides with weather, record the tested rnps
+	std::vector<int> weatherCollisionStatus;			// define if a node is free of weather/ or collides with weather for each double rnp
 private:
 	bool isThisWeatherSetCloserThanRadiusR(double r, const WeatherData &wData, double thres);	// test the surrounding of the point, if r=radius circle is weather free
 	// test intersection between a disk whose center is (xC, yC), radius r, with a square, whose bottomleft corner is (x, y), side length c
@@ -188,6 +190,14 @@ public:
 	void insertWeatherCollisionStatus(double rnp, int collisionStatus);
 	int getWeatherCollisionStatus(double rnp);
 	/* set and get functions related to pathStretching and wiggleRoom defination here*/
+
+	// Get position of starting and ending points
+	double getX1() const {return x1; }
+	double getY1() const {return y1; }
+	double getZ1() const {return z1; }
+	double getX2() const {return x2; }
+	double getY2() const {return y2; }
+	double getZ2() const {return z2; }
 private:
 	double x1, y1, z1;									// the coordinates of its 2 endpoints
 	double x2, y2, z2;

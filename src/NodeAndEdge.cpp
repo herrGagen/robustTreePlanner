@@ -121,7 +121,7 @@ bool Node::isThisWeatherSetCloserThanRadiusR(double r, const WeatherData &wData,
 	if(wData.size() == 0)
 		{
 			return false;					// if the weather data does not exist, then just return false
-	}
+		}
 	double x1;
 	double y1;
 	double z1;

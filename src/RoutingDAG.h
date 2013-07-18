@@ -79,12 +79,18 @@ private:
 	bool generateLayerStartingIndexVector();
 	int  findFeasiblePreviousEntryNode(unsigned int entryIndex);
 	
-	// helper functions for locating a node by its index or layer/layerIndex
-	Node* fetchNode(int n);
-	int getFetchNodeIndex(Node* temp);
-	Node* findNode(int layer, int layerIndex);
-	
-	// helper functions when tautening the tree branches
+	// functions for locating a node by its index or layer/layerIndex
+	int getNodePointerIndex(Node* temp) const;
+	Node* findNode(int layer, int layerIndex) const;
+
+public:
+	unsigned int getNumNodes() const;
+	Node* getNodePointer(int n) const;
+	unsigned int getNumEdges() const;
+	Edge* getEdgePointer(int n) const;
+
+private:
+	// functions when tautening the tree branches
 	void updateLayerUsedIndexVector(unsigned int entryIndex);
 	int findFeasibleNextEntryNode(unsigned int entryIndex);
 	bool routeTautenedTreeBranch(Node *start, unsigned int entryIndex, const std::vector<WeatherData> &wDataSets, double rnp, 

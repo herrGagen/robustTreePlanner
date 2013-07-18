@@ -55,13 +55,24 @@ private:
 	/****************************************************************************************************************************/
 private:
 	InputFileReader inputs;
-	Quadrant* quadrant;						// the quadrant in the routing context
-	std::vector<WeatherData> weatherDataSets;		// a set of weather data files
-	DemandProfile* demandProfile;			// demand profile information
-	RoutingDAG* routingDAG;					// key component, the routing DAG structure
+	std::string outputFileName;
+	Quadrant* quadrant;							// the quadrant in the routing context
+	std::vector<WeatherData> weatherDataSets;	// a set of weather data files
+	DemandProfile* demandProfile;				// demand profile information
+	RoutingDAG* routingDAG;						// key component, the routing DAG structure
 	std::vector<double> demandRNPs;				// the std::vector storing RNP values for each entry node
-	double deviationThreshold;				// the threshold that a weather cell is considered hazardous
-	double nodeEdgeThreshold;				// the threshold that we consider a thick edge or disk to be clear of weather
+	double deviationThreshold;					// the threshold that a weather cell is considered hazardous
+	double nodeEdgeThreshold;					// the threshold that we consider a thick edge or disk to be clear of weather
+public:
+	double getDeviationThreshold() const{ return deviationThreshold; }
+	double getNodeEdgeThreshold() const { return nodeEdgeThreshold; }
+	double getCenterLati() const { return centerLati; }
+	double getCenterLong() const { return centerLong; }
+	double getLatiPerPixel() const { return latiPerPixel; }
+	double getLongPerPixel() const { return longPerPixel; }
+	RoutingDAG *getRoutingDAG() const { return routingDAG; }
+	const std::vector<WeatherData> &getWeatherDataSets() const { return weatherDataSets; }
+	std::string getOutputFileName() const { return outputFileName; }
 	/****************************************************************************************************************************/
 	// control variables
 private:
