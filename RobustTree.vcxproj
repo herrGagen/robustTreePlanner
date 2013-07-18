@@ -16,6 +16,7 @@
     <ClInclude Include="src\NodeAndEdge.h" />
     <ClInclude Include="src\Quadrant.h" />
     <ClInclude Include="src\RoutingDAG.h" />
+    <ClInclude Include="src\TreeVerifier.h" />
     <ClInclude Include="src\UserInterface.h" />
     <ClInclude Include="src\WeatherData.h" />
   </ItemGroup>
@@ -26,6 +27,7 @@
     <ClCompile Include="src\NodeAndEdge.cpp" />
     <ClCompile Include="src\Quadrant.cpp" />
     <ClCompile Include="src\RoutingDAG.cpp" />
+    <ClCompile Include="src\TreeVerifier.cpp" />
     <ClCompile Include="src\UserInterface.cpp" />
     <ClCompile Include="src\WeatherData.cpp" />
   </ItemGroup>
