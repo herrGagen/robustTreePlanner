@@ -40,7 +40,7 @@ class InputFileReader
   std::string demandFile; /**< Path to demand file (i.e. demand.nom) */
   std::vector<std::string> weatherFileNames;  /**< Paths to weather files */
   double cellWidth; /**< Please describe this variable */
-  double quadrantAngle;/**< Please describe this variable */
+  double quadrantAngle;/**< Starting angle of our wedge. */
   /** Ignore weather that makes pilots less than this likely to fly around */
   double deviationThreshold; 
   double nodeEdgeThreshold; /**< 1-sum(prob emsembles impacted) < this */
