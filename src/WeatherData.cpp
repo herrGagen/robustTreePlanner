@@ -207,7 +207,7 @@ void WeatherData::convertLatiLongHeightToXY(double cX, double cY, double latiPer
 	for(unsigned int i=0; i<numPoints; i++)
 	{
 		
-    xCoors[i] = (xCoors[i]-cX)/latiPerPix;
+		xCoors[i] = (xCoors[i]-cX)/latiPerPix;
 		yCoors[i] = (yCoors[i]-cY)/longPerPix;
     
 		// altitude values usually vary from 10000 to 30000, difference is 5000

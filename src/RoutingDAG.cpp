@@ -706,9 +706,10 @@ bool RoutingDAG::generateTree(const std::vector<WeatherData> &wDataSets, std::ve
 		std::cerr << "\nNumber of RNP values does not match the number of entry points." << std::endl;
 		return false;
 	}
-	for(unsigned int i=0; i<entries.size(); i++)						// first make sure that all the entry nodes are themselves weather obstacle free
+	// first make sure that all the entry nodes are free of weather obstacles
+	for(unsigned int i=0; i<entries.size(); i++)						
 	{
-		if(entries[i]->isAnyWeatherCloserThanRadiusR(rnp[i], wDataSets, effectiveThres, routingThres))
+		if(entries[i]->isDangerousWeatherCloserThanRadiusR(rnp[i], wDataSets, effectiveThres, routingThres))
 		{
 			return false;	
 		}
@@ -770,7 +771,7 @@ bool RoutingDAG::routeBranch(Node *start, unsigned int entryIndex, const std::ve
 			Node* tempNode = temp->getOutNode(i);
 			// if the new outgoing node/edge pair conflict with weather, then just ignore
 			if(tempEdge->isAnyWeatherWithinLaneWidthW(rnp, wDataSets, effectiveThres, routingThres) ||
-			   tempNode->isAnyWeatherCloserThanRadiusR(rnp, wDataSets, effectiveThres, routingThres))
+			   tempNode->isDangerousWeatherCloserThanRadiusR(rnp, wDataSets, effectiveThres, routingThres))
 			{
 				continue;
 			}
@@ -874,7 +875,7 @@ bool RoutingDAG::testRemainingBranchWhileMerging(Node *start, const std::vector<
 	{
 		// getDrawingRNP is used to denote if the previous RNP is alreayd larger, then no need to test again
 		// test if the current node is clear of weather obstacle with the new rnp				
-		if(temp->getDrawingRNP()<rnp && temp->isAnyWeatherCloserThanRadiusR(rnp, wDataSets, effectiveThres, routingThres))	
+		if(temp->getDrawingRNP()<rnp && temp->isDangerousWeatherCloserThanRadiusR(rnp, wDataSets, effectiveThres, routingThres))	
 		{
 			return false;
 		}
@@ -1146,7 +1147,7 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
 #endif
       
       // first test if the new pair of nodes and edges collide with the weather data, if so, then just ignore this pair
-			if(tempNode->isAnyWeatherCloserThanRadiusR(rnp, wDataSets, effectiveThres, routingThres) ||
+			if(tempNode->isDangerousWeatherCloserThanRadiusR(rnp, wDataSets, effectiveThres, routingThres) ||
 			   tempEdge->isAnyWeatherWithinLaneWidthW(rnp, wDataSets, effectiveThres, routingThres)) 
 			{
 				continue;							// the node is infeasible, look at the next node
@@ -1821,7 +1822,7 @@ bool RoutingDAG::areAllNodesFarFromWeather( const std::vector<WeatherData> &wDat
 			}
 			if(tempNode->isTreeNode() )
 			{
-				if( tempNode->isAnyWeatherCloserThanRadiusR(rad, wDataSets, effectiveThresh, routingThresh) )
+				if( tempNode->isDangerousWeatherCloserThanRadiusR(rad, wDataSets, effectiveThresh, routingThresh) )
 				{	
 					collisionCount++;
 				}
