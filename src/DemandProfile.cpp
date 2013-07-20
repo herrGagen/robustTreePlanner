@@ -38,6 +38,8 @@ bool DemandProfile::readInFile(std::string fileName)
     The data files are formatted in the following way (# start comment lines):	
     Then file has the following parameters:
 
+	// Format 1.0 only available if recompiled with 
+	// #define DEMAND_FORMAT_1
     CASE_NAME ==> Ignore
     CURRENT_TIME ==> Ignore
     SIMULATION_TIME_RANGE ==> timeStart [SPACE] timeEnd
@@ -46,69 +48,162 @@ bool DemandProfile::readInFile(std::string fileName)
     RNP_LEVELS ==> Ignore
     RNP_DISTRIBUTION ==> Ignore
 
+	// Format 2 (default)
+	#Simulation Parameters
+	CASE_NAME ==> Ignore
+	CURRENT_TIME ==> Ignore
+	SIMULATION_TIME_RANGE ==> timeStart [space] timeEnd
+	CENTER_LOCATION centerX [SPACE] centerY
+	SIMULATION_FCAS airport_range_FCA ==> Ignore
+	FCA_RANGES_IN_NAUTICAL_MILES ==> Ignore
+	RNP_LEVELS ==> Ignore
+	RNP_DISTRIBUTION ==> Ignore
+	REROUTE_ANGLE_OFFSETS ==> Ignore
+
     ### Flight Data in next comment block
   */
+
+#if defined(DEMAND_FORMAT_1)
+  enum simulationParamLocs
+  {
+	CASE_NAME = 0,
+    CURRENT_TIME,
+    SIMULATION_TIME_RANGE,
+    CENTER_LOCATION,
+    AIRPORT_RANGE_RING_IN_NAUTICAL_MILES,
+    RNP_LEVELS,
+    RNP_DISTRIBUTION
+  }
+#else
+  enum simulationParamLocs
+  {
+	CASE_NAME = 0,
+	CURRENT_TIME,
+	SIMULATION_TIME_RANGE,
+	CENTER_LOCATION,
+	airport_range_FCA,
+	FCA_RANGES_IN_NAUTICAL_MILES,
+	RNP_LEVELS,
+	RNP_DISTRIBUTION,
+	REROUTE_ANGLE_OFFSETS
+  };
+#endif
+
+  std::vector<std::string> simParams;
+  size_t found = 0;
   while ( !dataStream.eof() )
     {
-      size_t found = 0;
-      if( dataStream.peek() == '#' || dataStream.peek() == ' ')
+	char nextC = dataStream.peek();
+      if( nextC < 'A' || nextC > 'Z' )
         {
-          std::getline(dataStream, thisLine);
-          continue;
-        }
-      std::getline(dataStream, thisLine);
+			std::getline(dataStream, thisLine);
+			continue;
+	  }
+	  std::getline(dataStream, thisLine);
+	  if(thisLine.size() == 0)
+	  {
+		  continue;
+	  }
+	  simParams.push_back(thisLine);
 
-      // Look for SIMULATION_TIME_RANGE and store following 2 numbers in timeStart, timeEnd
-      if( (found = thisLine.find("SIMULATION_TIME_RANGE") ) != std::string::npos )
-        {
-          size_t beginNumber = thisLine.find_first_of("-.0123456789",found);
-          size_t endNumber = thisLine.find_first_not_of("-.0123456789", beginNumber);
-	
-          timeStart = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str(); // store it in the timeStart std::string
-          beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
-          endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
-          endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
-          timeEnd   = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str(); // store it in the timeStart std::string
-        }
+	  // Look for BEGIN_FLIGHTS to signal that we're in the correct location for flight data
+	  if( (found = thisLine.find("BEGIN_FLIGHTS") ) != std::string::npos )	
+	  {
+		  break;
+	  }
+  }
 
-      // Look for CENTER_LOCATION and store following 2 numbers in centerX, centerY
-      if( (found = thisLine.find("CENTER_LOCATION")) != std::string::npos )	
-        {
-          size_t beginNumber = thisLine.find_first_of("-.0123456789",0);
-          size_t endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
-          centerX = (double) ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() ); // store it in the timeStart std::string
-          beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
-          endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
-          endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
-          centerY   = (double) ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() ); // store it in the timeStart std::string
-        }
+  thisLine = simParams[SIMULATION_TIME_RANGE];
+  // Look for SIMULATION_TIME_RANGE and store following 2 numbers in timeStart, timeEnd
+  if( (found = thisLine.find("SIMULATION_TIME_RANGE") ) != std::string::npos )
+  {
+	  size_t beginNumber = thisLine.find_first_of("-.0123456789",found);
+	  size_t endNumber = thisLine.find_first_not_of("-.0123456789", beginNumber);
 
-      // Look for BEGIN_FLIGHTS to signal that we're in the correct location for flight data
-      if( (found = thisLine.find("BEGIN_FLIGHTS") ) != std::string::npos )	
-        {
-          break;
-        }
+	  timeStart = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str(); // store it in the timeStart std::string
+	  beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
+	  endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
+	  endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
+	  timeEnd   = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str(); // store it in the timeStart std::string
+  }
+  else
+  {
+	  return false;
+  }
 
-    }
+  thisLine = simParams[CENTER_LOCATION];
+  // Look for CENTER_LOCATION and store following 2 numbers in centerX, centerY
+  if( (found = thisLine.find("CENTER_LOCATION")) != std::string::npos )	
+  {
+	  size_t beginNumber = thisLine.find_first_of("-.0123456789",0);
+	  size_t endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
+	  centerX = (double) ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() ); // store it in the timeStart std::string
+	  beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
+	  endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
+	  endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
+	  centerY   = (double) ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() ); // store it in the timeStart std::string
+  }
+  else
+  {
+	  return false;
+  }
 
-  /*
-    Flight data is in the next portion of the file, between the "tags" BEGIN_FLIGHTS, END_FLIGHTS
-    and is in the format:
-    Unique ID,ACID,RNP Level,Airport Range Entry Time,Airport Range Entry Lat,Airport Range Entry Lon, Dept. Airport,Arr. Airport,Flight Plan std::string
-    Unique ID ==> Ignore
-    ACID ==> Ignore
-    RNP Level ==> std::vector<double>  rnp (note, the entries are all integers)
-    Airport Range Entry Time ==> Ignore
-    Airport Range Entry Lat ==> std::vector xCoors
-    Airport Range Entry Lon ==> std::vector yCoors
-    Dept. Airport ==> Ignore
-    Arr. Airport ==> Ignore
-    Flight Plan std::string ==> Ignore
-  */
-  std::string tempString;
-  double tempdouble = 0;
-  int numPaths = 0;
-  while ( !dataStream.eof() )
+/*
+Flight data is in the next portion of the file, between the "tags" BEGIN_FLIGHTS, END_FLIGHTS
+and is in the format:
+// Format 1.0 only available if recompiled with 
+// #define DEMAND_FORMAT_1
+Unique ID,ACID,RNP Level,Airport Range Entry Time,Airport Range Entry Lat,Airport Range Entry Lon, Dept. Airport,Arr. Airport,Flight Plan String
+// Format 2.0 (default)
+Unique ID,ACID,Dept. Airport,Arr. Airport,Flow ID,RNP Level,Departure Time,Arrival Time,Airport Range Entry Time,Airport Range Entry Lat,Airport Range Entry Lon
+
+Unique ID ==> Ignore
+ACID ==> Ignore
+Dept. Airport ==> Ignore
+Arr. Airport ==> Ignore
+Flow ID ==> Ignore
+RNP Level ==> std::vector<double>  rnp (note, the entries are all integers)
+Departure Time ==> Ignore
+Arrival Time ==> Ignore
+Airport Range Entry Time ==> Ignore
+Airport Range Entry Lat ==> std::vector xCoors
+Airport Range Entry Lon ==> std::vector yCoors
+*/
+std::vector<std::string> CSVs;
+double tempdouble = 0;
+int numPaths = 0;
+
+#if defined(DEMAND_FORMAT_1)
+enum flightDataLocs
+  {
+	UniqueID = 0,
+	ACID,
+	RNP,
+	rangeEntryTime,
+	entryLat,
+	entryLon,
+	deptAirport,
+	arrAirport,
+	flightPlan
+  };
+#else
+  enum flightDataLocs
+  {
+	  UniqueID = 0,
+	  ACID,
+	  deptAirport,
+	  arrAirport,
+	  flowID,
+	  RNP,
+	  departureTime,
+	  arrTime,
+	  rangeEntryTime,
+	  entryLat,
+	  entryLon
+  };
+#endif
+
+  while( !dataStream.eof() )
     {
       // Ignore comment lines
       if( dataStream.peek() == '#')
@@ -124,39 +219,26 @@ bool DemandProfile::readInFile(std::string fileName)
           break;
         }
 
-      // Ignore the first 2 comma separated values
-      unsigned long beginNumber = thisLine.find_first_of(",",0); // find first comma
-      unsigned long endNumber = thisLine.find_first_of(",",beginNumber+1); // find second comma
+	  // Parse all CSVs into a vector for easy parsing.
+	  CSVs.clear();
+	  unsigned long beginCSV = 0;
+	  unsigned long endCSV = thisLine.find_first_of(",",beginCSV);
+	  while(endCSV != string::npos)
+	  {
+			CSVs.push_back(thisLine.substr(beginCSV,endCSV-beginCSV) );		
+			beginCSV = endCSV+1;
+			endCSV = thisLine.find_first_of(",",beginCSV+1); // find second comma
+	  }
+	  CSVs.push_back(thisLine.substr(beginCSV,thisLine.size()-beginCSV) );
 
-      // Find the RNP value
-      beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
-      endNumber   = thisLine.find_first_not_of("-.0123456789",beginNumber);
-		
-      tempString = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str();
-      tempdouble = (double) ::atof( tempString.c_str() );
-      rnp.push_back( tempdouble );
-
-      // Now ignore next CSV
-      beginNumber = thisLine.find_first_of(",",endNumber); // first comma after RNP
-      endNumber   = thisLine.find_first_of(",",beginNumber+1); // find second comma after RNP
-
-      // The next two numbers are the X and Y coordinates
-      // First the xCoord
-      beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
-      endNumber   = thisLine.find_first_not_of("-.0123456789",beginNumber);
-					
-      tempString = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str();
-      tempdouble = (double) ::atof( tempString.c_str() );
-      xCoors.push_back( (double)tempdouble );
-
-      // Next we find the yCoord
-      beginNumber = thisLine.find_first_of("-.0123456789",endNumber);
-      endNumber   = thisLine.find_first_not_of("-.0123456789",beginNumber);
-      endNumber = endNumber < thisLine.length() ? endNumber : thisLine.length();
-
-      tempString = (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str();
-      tempdouble = (double) ::atof( tempString.c_str() );
-      yCoors.push_back( (double)tempdouble );
+	  // Check for lines missing some entries.  
+	  if(CSVs.size() < entryLon+1)
+	  {
+		  continue; 
+	  }
+      rnp.push_back( ::atof( CSVs[RNP].c_str() ) );
+      xCoors.push_back( ::atof( CSVs[entryLat].c_str() ) );
+	  yCoors.push_back( ::atof( CSVs[entryLon].c_str() ) );
     }
   return handleInputData();
 }
