@@ -644,13 +644,14 @@ bool UserInterface::readWeatherData()
 	for(int i=0; i<totalNumWeatherFiles; i++)
 	{
 		std::cout << "Parsing weather file: " << weatherFileDirectories[i] << std::endl;
-		ifstream is(weatherFileDirectories[i].c_str(), ios::in);	// read in from the weather files
-		if(true) //is.is_open())
+		ifstream is;
+		is.open(weatherFileDirectories[i].c_str(), ios::in);	// read in from the weather files
+		if( is.is_open() )
 		{
 			is.close();
 			std::string currentFile = weatherFileDirectories[i];
-			WeatherData* tempWeather = new WeatherData();
-			if(!tempWeather->readInFileData(currentFile, 
+			WeatherData tempWeather;
+			if(!tempWeather.readInFileData(currentFile, 
 				rangeMinLati-1, 
 				rangeMinLong-1, 
 				rangeMaxLati+1, 
@@ -661,11 +662,11 @@ bool UserInterface::readWeatherData()
 			}
 
 			// convert the weather cells to screen OPENGL coordinate system 
-			tempWeather->convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
+			tempWeather.convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
 
-			weatherDataSets.push_back(*tempWeather);		// push the newly read in weather data into the storing std::vector
-			minAlt = min(minAlt, (double)tempWeather->getMinAlt());
-			maxAlt = std::max(maxAlt, (double)tempWeather->getMaxAlt());
+			weatherDataSets.push_back(tempWeather);		// push the newly read in weather data into the storing std::vector
+			minAlt = min(minAlt, (double)tempWeather.getMinAlt());
+			maxAlt = std::max(maxAlt, (double)tempWeather.getMaxAlt());
 		}
 		else
 		{
