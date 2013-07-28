@@ -22,5 +22,6 @@ int main(int argc, char* argv[])
 	userInterface.ProgramBegins(inputFile);
 	TreeVerifier checker(userInterface);
 	checker.appendReportToFiles("InvalidTrees.txt","ValidTrees.txt");
+        checker.outputTreeLengthStats();
 	return 0;
 }

@@ -57,10 +57,12 @@ public:
 	
 	// basic get and set functions
 public:
-	void insertInNodeEdge(Node* node, Edge* edge);						
+	void insertInNodeEdge(Node* node, Edge* edge);
 	void insertOutNodeEdge(Node* node, Edge* edge);
-	unsigned int getInSize();									// number of coming in edges
-	unsigned int getOutSize();									// number of going out edges
+        // number of coming in edges
+	unsigned int getInSize();
+        // number of going out edges
+	unsigned int getOutSize();
 	Node* getInNode(unsigned int index);
 	Node* getOutNode(unsigned int index);
 	Edge* getInEdge(unsigned int index);
@@ -146,7 +148,7 @@ public:
 	// test the left side of the edge, if w=width rectangle is weather free
 	bool testWiggleRoomWithWeatherDataSet(double width, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres);	
 	
-	// overloaded versions of the functions above, return the probability that an edge is clear
+	// return the probability that an edge is clear
 	double sumOfProbOfAllWeatherCloserThanLaneWidthW(double rnp, const std::vector<WeatherData> &wDataSets, double effectiveThres);
 
 	double testPathStretchWithWeatherDataSet(double width, const std::vector<WeatherData> &wDataSets, double effectiveThres);
@@ -211,8 +213,7 @@ private:
 	std::vector<Node*> deviationNodes;						// the nodes in this edge that are used to escape from the current tree
 	// define if an edge is free of weather/ or collides with weather/ or not tested yet, avoid testing again(time consuming)
 	std::vector<double> weatherCollisionRNPs;					// define if a node is free of weather/ or collides with weather, record the tested rnps
-	std::vector<int> weatherCollisionStatus;					// define if a node is free of weather/ or collides with weather for each double rnp						
-	
+	std::vector<int> weatherCollisionStatus;					// define if a node is free of weather/ or collides with weather for each double rnp 	
 private:
 	bool collisionWithWeatherCheck(double w, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres, int testType);
 	double probabilityThatEdgeIsClear(double w, const std::vector<WeatherData> &wDataSets, double effectiveThres, int testType);

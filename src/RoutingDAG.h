@@ -1,8 +1,8 @@
 // the class RoutingDAG is the graph on which we do the routing
 #ifndef ROUTINGDAG_H
+#define ROUTINGDAG_H
 
 #include <string>
-#define ROUTINGDAG_H
 
 #define PI 3.14159265
 
@@ -31,7 +31,8 @@ class RoutingDAG
 public:
 	RoutingDAG();
 	~RoutingDAG();
-	// the key function, routing algorithm, used to generate a tree from a prebuilt graph
+	// the key function, routing algorithm, used to generate 
+        // a tree from a prebuilt graph
 	bool generateTree(const std::vector<WeatherData> &wDataSets, std::vector<double> rnp, double effectiveThres, double routingThres);
 	bool generateTautenedTree(const std::vector<WeatherData> &wDataSets, std::vector<double> rnp, double effectiveThres, double routingThres);
 	void resetTree();

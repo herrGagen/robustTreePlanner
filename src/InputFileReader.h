@@ -71,7 +71,7 @@ class InputFileReader
   int getNumFixedNodes() const { return (int)numFixedNodes; }
   unsigned int getDemandShift() const { return demandShift; }
   unsigned int getDemandDrop() const { return demandDrop; }
-  std::vector<double> getOperFlex() const { return operFlex; }
+  const std::vector<double> &getOperFlex() const { return operFlex; }
   std::string getOutputName() const { return outputFilename; }
  private:
   bool areInputsLegal();
