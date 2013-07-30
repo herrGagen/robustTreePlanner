@@ -778,8 +778,18 @@ void Edge::insertOperFlexDeviationCandidateNode(Node *temp)
 	deviationNodes.push_back(temp);
 }
 
-// test the rnp on both side of THIS edge with the weatherDataSet (a set of boxes)
-bool Edge::isAnyWeatherWithinLaneWidthW(double rnp, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres)
+/**
+	\brief Test the rnp on both side of THIS edge with the weatherDataSet (a set of boxes)
+
+	For some reason I do NOT understand, the inputs effectiveThresh and routingThresh correspond to:
+
+	\param effectiveThreshold a.k.a. deviationThreshold 
+	probability that  a pilot would navigate around this weather
+	\param routingThresh a.k.a. nodeEdgeThresh 
+	Threshold for weather free navigation required to include edge.
+
+*/
+bool Edge::isDangerousWeatherWithinLaneWidthW(double rnp, const std::vector<WeatherData> &wDataSets, double effectiveThres, double routingThres)
 {
 #if !defined(DISABLE_COLLISION_CACHING)	
   if(getWeatherCollisionStatus(rnp) == WEATHER_COLLISION)			// if was tested to be colliding with the weather

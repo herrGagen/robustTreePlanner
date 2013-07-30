@@ -453,7 +453,7 @@ void TreeVerifier::outputTreeLengthStats() const
   std::cout << "Total length of tree edges: ";
   std::cout << totalLength << std::endl;
 
-  // For each radius in out operational flexibility set,
+  // For each radius in our operational flexibility set,
   // compare length of its safe edges to length of entire
   // tree
   std::vector<double> radii = ui.getOperFlex();
@@ -523,24 +523,27 @@ double TreeVerifier::computeEdgeLength( Edge *edge) const
 double TreeVerifier::computeFlexiblySafeTreeLength( double r ) const
 {
 
-  double totalLength = 0;
-  const RoutingDAG &dag = *(ui.getRoutingDAG() );
-  for(unsigned int i = 0; i< dag.getNumEdges(); i++)
-    {
-      Edge *thisEdge = dag.getEdgePointer(i);
-      // If this edge isn't in the tree, who cares if it impacts weather?
-      if(!thisEdge->isTreeEdge() )
-        {
-          continue;
-        }
-      double thisLength = computeEdgeLength(thisEdge);
-      if( thisEdge->getWeatherCollisionStatus(r) == WEATHER_FREE ) // defined in NodeAndEdge.h
-        {
-          totalLength += thisLength;
-        }
-    }
+	double totalLength = 0;
+	const RoutingDAG &dag = *(ui.getRoutingDAG() );
+	for(unsigned int i = 0; i< dag.getNumEdges(); i++)
+	{
+		Edge *thisEdge = dag.getEdgePointer(i);
+		// If this edge isn't in the tree, who cares if it impacts weather?
+		if(!thisEdge->isTreeEdge() )
+		{
+			continue;
+		}
+		double thisLength = computeEdgeLength(thisEdge);
+		bool thisEdgeIsUnsafe = thisEdge->isDangerousWeatherWithinLaneWidthW(r, 
+			ui.getWeatherDataSets(), 
+			ui.getDeviationThreshold(),
+			ui.getNodeEdgeThreshold() );
+		if( thisEdgeIsUnsafe == false ) 
+		{
+			totalLength += thisLength;
+		}
+	}
 
   return totalLength;
-  
 }
 

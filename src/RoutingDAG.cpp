@@ -824,7 +824,7 @@ bool RoutingDAG::routeBranch(Node *start, unsigned int entryIndex, const std::ve
           Edge* tempEdge = temp->getOutEdge(i);					// the pointers to the current outer edge and outer node
           Node* tempNode = temp->getOutNode(i);
           // if the new outgoing node/edge pair conflict with weather, then just ignore
-          if(tempEdge->isAnyWeatherWithinLaneWidthW(rnp, wDataSets, effectiveThres, routingThres) ||
+          if(tempEdge->isDangerousWeatherWithinLaneWidthW(rnp, wDataSets, effectiveThres, routingThres) ||
              tempNode->isDangerousWeatherCloserThanRadiusR(rnp, wDataSets, effectiveThres, routingThres))
             {
               continue;
@@ -938,7 +938,7 @@ bool RoutingDAG::testRemainingBranchWhileMerging(Node *start, const std::vector<
       Edge* tempEdge = temp->getOutEdge(temp->getTreeOutEdgeIndex());
       if(tempEdge)		// if we find a tree edge (each node has at MOST one outgoing edge that is a tree edge), and its NOT clear of weather with the new rnp value
         {
-          if(tempEdge->getDrawingRNP()<rnp && tempEdge->isAnyWeatherWithinLaneWidthW(rnp, wDataSets, effectiveThres, routingThres))
+          if(tempEdge->getDrawingRNP()<rnp && tempEdge->isDangerousWeatherWithinLaneWidthW(rnp, wDataSets, effectiveThres, routingThres))
             return false;									// NOT clear of weather, report false
         }
       else				// means no outgoing tree edge is found, means there is tree error in the previous branch
@@ -1202,7 +1202,7 @@ bool RoutingDAG::routeTautenedTreeBranch(Node *start, unsigned int entryIndex, c
       
           // first test if the new pair of nodes and edges collide with the weather data, if so, then just ignore this pair
           if(tempNode->isDangerousWeatherCloserThanRadiusR(rnp, wDataSets, effectiveThres, routingThres) ||
-             tempEdge->isAnyWeatherWithinLaneWidthW(rnp, wDataSets, effectiveThres, routingThres)) 
+             tempEdge->isDangerousWeatherWithinLaneWidthW(rnp, wDataSets, effectiveThres, routingThres)) 
             {
               continue;							// the node is infeasible, look at the next node
             }
