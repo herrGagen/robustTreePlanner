@@ -1,3 +1,5 @@
+// #define LEARNING_ABOUT_TREE
+
 #include "UserInterface.h"
 #include <iostream>
 #include <iomanip>
@@ -376,15 +378,45 @@ bool UserInterface::generateTree()
 			}
 			std::cout << std::endl << "FINISHED BOTTOMMOST FILL TREE" << std::endl;
 			std::cout<< std::endl << "A bottommost routing Tree is generated!" << std::endl;
+
+			/**********************/
+#if defined(LEARNING_ABOUT_TREE)
+			unsigned totalNodes = 0;
+			for(unsigned int i = 0; i<routingDAG->getNumLayers(); i++)
+			{
+				Node *layerChecker = routingDAG->findNode(i,0);
+				std::cout << "Node " << i << ",0 has in degree: " << layerChecker->getInDegree() << std::endl;			
+				Edge *inEdge = layerChecker->getInEdge(0);
+				unsigned int j = 0;
+				while(layerChecker != NULL)
+				{
+					layerChecker = routingDAG->findNode(i,j);
+					if(layerChecker == NULL)
+					{
+						continue;
+					}
+					std::cout << "Node " << i << ", " << j << " thinks it is at ";
+					std::cout << layerChecker->getLayer() << ", " << layerChecker->getLayerIndex() << std::endl;
+					j++;
+				}
+				std::cout << "Layer " << i << " has " << j << " total nodes" << std::endl;
+				totalNodes +=j;
+			}
+			std::cout << "The observed total, " << totalNodes << ", should equal " << routingDAG->getNumNodes() << std::endl;
+#endif
+			/**********************/
+
 			return true;
 		}	// an error message will pop up if failed to generate the DAG
 		else 
 		{ 
 			std::cout << "Failed to generate the DAG."; 
 		}
-	}
-	// else, then the weather data and demand profile have to be read in first
-	else std::cerr << "\nPlease read in or generate the demand profile and weather data first."<<std::endl;
+	}	
+	else // the weather data and demand profile have to be read in first
+		{
+			std::cerr << "\nPlease read in or generate the demand profile and weather data first."<<std::endl;
+		}
 	return false;
 }
 

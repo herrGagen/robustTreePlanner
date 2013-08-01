@@ -71,6 +71,7 @@ private:
 	// the threshold that we consider a thick edge or disk to be clear of weather
 	double nodeEdgeThreshold;				
 public:
+	const std::vector<double> &getDemandRNPs() const{ return demandRNPs; }
 	double getDeviationThreshold() const{ return deviationThreshold; }
 	double getNodeEdgeThreshold() const { return nodeEdgeThreshold; }
 	double getCenterLati() const { return centerLati; }
@@ -80,7 +81,7 @@ public:
 	RoutingDAG *getRoutingDAG() const { return routingDAG; }
 	const std::vector<WeatherData> &getWeatherDataSets() const {return weatherDataSets;}
 	std::string getOutputFileName() const { return outputFileName; }
-        const std::vector<double> &getOperFlex() const { return inputs.getOperFlex(); }
+    const std::vector<double> &getOperFlex() const { return inputs.getOperFlex(); }
 	/********************************/
 	// control variables
 private:

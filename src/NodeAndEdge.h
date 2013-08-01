@@ -67,6 +67,7 @@ public:
 	Node* getOutNode(unsigned int index);
 	Edge* getInEdge(unsigned int index);
 	Edge* getOutEdge(unsigned int index);
+	unsigned int getNumInNeighbors() { return inNodes.size(); }
 	double getX();
 	double getY();
 	double getZ();

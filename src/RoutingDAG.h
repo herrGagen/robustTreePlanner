@@ -80,16 +80,16 @@ private:
 	bool generateLayerStartingIndexVector();
 	int  findFeasiblePreviousEntryNode(unsigned int entryIndex);
 	
-	// functions for locating a node by its index or layer/layerIndex
-	int getNodePointerIndex(Node* temp) const;
-	Node* findNode(int layer, int layerIndex) const;
-
 public:
 	unsigned int getNumNodes() const;
 	Node* getNodePointer(int n) const;
 	unsigned int getNumEdges() const;
 	Edge* getEdgePointer(int n) const;
 
+	// functions for locating a node by its index or layer/layerIndex
+	int getNodePointerIndex(Node* temp) const;
+	Node* findNode(int layer, int layerIndex) const;
+	unsigned int getNumLayers(){ return layerUsedIndex.size(); }
 private:
 	// functions when tautening the tree branches
 	void updateLayerUsedIndexVector(unsigned int entryIndex);

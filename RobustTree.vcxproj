@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DemandProfile.h" />
+    <ClInclude Include="src\DynProgTreeGenerator.h" />
     <ClInclude Include="src\InputFileReader.h" />
     <ClInclude Include="src\NodeAndEdge.h" />
     <ClInclude Include="src\Quadrant.h" />
@@ -22,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\DemandProfile.cpp" />
+    <ClCompile Include="src\DynProgTreeGenerator.cpp" />
     <ClCompile Include="src\InputFileReader.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\NodeAndEdge.cpp" />
