@@ -19,12 +19,17 @@ private:
 	double lonPerPixel;
 public:
 	TreeVerifier(const UserInterface &UI);
-
+        
 public: // verifier functions
-	void appendReportToFiles(std::string invalidName, std::string validName);
+	void appendReportToFiles(std::string invalidName, 
+                                 std::string validName);
 	unsigned int countInvalidNodes() const;
 	unsigned int countInvalidEdges() const;
+        double computeTotalTreeLength() const;
+        double computeFlexiblySafeTreeLength( double r ) const;
+        void outputTreeLengthStats() const;
 private:
+        double computeEdgeLength( Edge *edge ) const;
 	bool doesNodeAvoidDangerousWeatherInEnsemble( Node *node, unsigned int ensembleIndex) const;
 	bool doesEdgeAvoidDangerousWeatherInEnsemble( Edge *Edge, unsigned int ensembleIndex) const;
 

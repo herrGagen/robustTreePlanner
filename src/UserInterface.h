@@ -56,13 +56,20 @@ private:
 private:
 	InputFileReader inputs;
 	std::string outputFileName;
-	Quadrant* quadrant;							// the quadrant in the routing context
-	std::vector<WeatherData> weatherDataSets;	// a set of weather data files
-	DemandProfile* demandProfile;				// demand profile information
-	RoutingDAG* routingDAG;						// key component, the routing DAG structure
-	std::vector<double> demandRNPs;				// the std::vector storing RNP values for each entry node
-	double deviationThreshold;					// the threshold that a weather cell is considered hazardous
-	double nodeEdgeThreshold;					// the threshold that we consider a thick edge or disk to be clear of weather
+        // the quadrant in the routing context
+	Quadrant* quadrant;				
+	// a set of weather data files
+	std::vector<WeatherData> weatherDataSets;
+        // demand profile information
+	DemandProfile* demandProfile;
+        // key component, the routing DAG structure
+	RoutingDAG* routingDAG;	
+        // the std::vector storing RNP values for each entry node
+	std::vector<double> demandRNPs;
+	// the threshold that a weather cell is considered hazardous
+	double deviationThreshold;				
+	// the threshold that we consider a thick edge or disk to be clear of weather
+	double nodeEdgeThreshold;				
 public:
 	double getDeviationThreshold() const{ return deviationThreshold; }
 	double getNodeEdgeThreshold() const { return nodeEdgeThreshold; }
@@ -71,22 +78,33 @@ public:
 	double getLatiPerPixel() const { return latiPerPixel; }
 	double getLongPerPixel() const { return longPerPixel; }
 	RoutingDAG *getRoutingDAG() const { return routingDAG; }
-	const std::vector<WeatherData> &getWeatherDataSets() const { return weatherDataSets; }
+	const std::vector<WeatherData> &getWeatherDataSets() const {return weatherDataSets;}
 	std::string getOutputFileName() const { return outputFileName; }
-	/****************************************************************************************************************************/
+        const std::vector<double> &getOperFlex() const { return inputs.getOperFlex(); }
+	/********************************/
 	// control variables
 private:
-	int ctrl_QuadGenerated;					// mark if a quadrant was generated already
-	int ctrl_WeatherReadIn;					// mark if a weather data file is already read in
-	int ctrl_DemandReadIn;					// if the demand was read in already
-	int ctrl_RoutingDAGGenerated;			// if a routingDAG is generated
-	int ctrl_OperFlexGenerated;				// if the operational flxibility pairs are generated for an edge or a node
-	/****************************************************************************************************************************/
-	// variables related to coordinate system conversion between OPENGL(used in the windows version for displaying) and lati/long
+        // mark if a quadrant was generated already
+	int ctrl_QuadGenerated;
+        // mark if a weather data file is already read in
+	int ctrl_WeatherReadIn;		
+        // if the demand was read in already
+	int ctrl_DemandReadIn;
+        // if a routingDAG is generated
+	int ctrl_RoutingDAGGenerated;	
+        // if the operational flxibility pairs are generated for an edge or a node
+	int ctrl_OperFlexGenerated;	
+	/******************************/
+	// variables related to coordinate system conversion between 
+        // OPENGL(used in the windows version for displaying) and lat/lon
 private: 
-	double centerLati,centerLong;			// the lati/long value of the center point (0, 0)
-	double latiPerPixel, longPerPixel;		// lati/long that a single pixel represents
-	std::string startTime, endTime;				// the time range of simulation
+        // the lati/long value of the center point (0, 0)
+	double centerLati,centerLong;	
+	// lati/long that a single pixel represents
+	double latiPerPixel, longPerPixel;	
+        // the time range of simulation
+	std::string startTime;
+        std::string endTime;		
 };
 
 #endif

@@ -1,5 +1,6 @@
 CC=g++
-CFLAGS=-O3
+CFLAGS=-O3 -pg
+LINKFLAGS=-pg
 
 SOURCES=DemandProfile.cpp \
 	NodeAndEdge.cpp \
@@ -8,14 +9,15 @@ SOURCES=DemandProfile.cpp \
 	main.cpp \
 	Quadrant.cpp \
 	UserInterface.cpp \
-	InputFileReader.cpp
+	InputFileReader.cpp \
+	TreeVerifier.cpp	
 
 OBJECTS=$(subst .cpp,.o,$(SOURCES) )
 
 all: rtp
 
 rtp: ${OBJECTS}
-	${CC} $^  -o $@	
+	${CC} ${LINKFLAGS} $^  -o $@	
 
 clean:
 	rm -rf *.o rtp *.bak *~

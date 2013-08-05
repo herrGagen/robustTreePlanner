@@ -262,7 +262,7 @@ bool Quadrant::generateEntryAndFixNodes(const std::vector<double> &rnps, double 
 				FIX_NODE);
 
 			// if not feasible
-			if(tempNode1->isAnyWeatherCloserThanRadiusR(maxrnp, wDataSets, effectiveThres, routingThres))
+			if(tempNode1->isDangerousWeatherCloserThanRadiusR(maxrnp, wDataSets, effectiveThres, routingThres))
 			{
 				delete tempNode1;
 				currentAngleRight -= PI / 18; // test the next point on the inner arc ( 5 degrees out)
@@ -286,7 +286,7 @@ bool Quadrant::generateEntryAndFixNodes(const std::vector<double> &rnps, double 
 		if(currentAngleLeft<=endingAngle)
 		{
 			Node* tempNode2 = new Node(centerX+iRadius*cos(angle+currentAngleLeft), centerY+iRadius*sin(angle+currentAngleLeft), iHeight, FIX_NODE);
-			if(tempNode2->isAnyWeatherCloserThanRadiusR(maxrnp, wDataSets, effectiveThres, routingThres))		// intersect with the weather
+			if(tempNode2->isDangerousWeatherCloserThanRadiusR(maxrnp, wDataSets, effectiveThres, routingThres))		// intersect with the weather
 			{
 				delete tempNode2;
 				currentAngleLeft+=PI/18; // MAGIC NUMBER

@@ -330,8 +330,8 @@ double TreeVerifier::shortestDistWeatherToEdge( Edge *edge, double weatherLat, d
 	double leftLat = lat1;
 	double leftLon = lon1;
 	double leftDer = haversineDeriv(leftLat, leftLon, 
-									deltaLat, deltaLon, 
-									weatherLat, weatherLon);
+                                        deltaLat, deltaLon, 
+                                        weatherLat, weatherLon);
 	double rightLat;
 	double rightLon;
 	double rightDer;
@@ -442,3 +442,108 @@ double TreeVerifier::yToLon( double y ) const
 {
 	return centerLon + y*lonPerPixel;
 }
+
+/**
+   \brief Prints some stats about tree lengths
+ */
+void TreeVerifier::outputTreeLengthStats() const
+{
+
+  double totalLength = computeTotalTreeLength();
+  std::cout << "Total length of tree edges: ";
+  std::cout << totalLength << std::endl;
+
+  // For each radius in our operational flexibility set,
+  // compare length of its safe edges to length of entire
+  // tree
+  std::vector<double> radii = ui.getOperFlex();
+  std::cout << "Length of edges safe at increased radius\n";
+  std::cout << "Radius\t Length\t Length/TotalLength\n";
+  for(std::vector<double>::iterator rIter = radii.begin();
+      rIter != radii.end();
+      ++rIter)
+    {
+      double thisLength = computeFlexiblySafeTreeLength( *rIter );
+      std::cout << *rIter << '\t';
+      std::cout << thisLength << '\t';
+      std::cout << thisLength/totalLength << std::endl;
+    }
+}
+
+/**
+   \brief Returns total great circle length of tree in nm
+ */
+double TreeVerifier::computeTotalTreeLength() const
+{
+
+  double totalLength = 0;
+  const RoutingDAG &dag = *(ui.getRoutingDAG() );
+  for(unsigned int i = 0; i< dag.getNumEdges(); i++)
+    {
+      Edge *thisEdge = dag.getEdgePointer(i);
+      // If this edge isn't in the tree, who cares if it impacts weather?
+      if(!thisEdge->isTreeEdge() )
+        {
+          continue;
+        }
+      double thisLength = computeEdgeLength(thisEdge);
+      totalLength += thisLength;
+    }
+
+  return totalLength;
+
+}
+
+/**
+   \brief Returns great circle length of edge in nm
+
+   \param edge The edge whose length were measuring
+ */
+double TreeVerifier::computeEdgeLength( Edge *edge) const
+{
+
+  double lat1 = xToLat( edge->getX1() );	
+  double lon1 = yToLon( edge->getY1() );	
+  double lat2 = xToLat( edge->getX2() );	
+  double lon2 = yToLon( edge->getY2() );	
+
+  return haversineDistance(lat1, lon1, lat2, lon2);
+
+}
+
+/**
+   \brief Sums flexibly safe edges
+
+   An edge is flexibly safe if it is clear at radius r
+
+   \param r Operational flexibility radius at which we require safety
+
+   \retval Total great circle distance of safe edges (in nm)
+ */
+double TreeVerifier::computeFlexiblySafeTreeLength( double r ) const
+{
+
+	double totalLength = 0;
+	const RoutingDAG &dag = *(ui.getRoutingDAG() );
+	for(unsigned int i = 0; i< dag.getNumEdges(); i++)
+	{
+		Edge *thisEdge = dag.getEdgePointer(i);
+		// If this edge isn't in the tree, who cares if it impacts weather?
+		if(!thisEdge->isTreeEdge() )
+		{
+			continue;
+		}
+		double thisLength = computeEdgeLength(thisEdge);
+		bool thisEdgeIsUnsafe = thisEdge->isDangerousWeatherWithinLaneWidthW(r, 
+			ui.getWeatherDataSets(), 
+			ui.getDeviationThreshold(),
+			ui.getNodeEdgeThreshold() );
+		if( thisEdgeIsUnsafe == false ) 
+		{
+			totalLength += thisLength;
+		}
+	}
+
+  return totalLength;
+}
+
