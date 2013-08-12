@@ -27,5 +27,11 @@ int main(int argc, char* argv[])
 	checker.appendReportToFiles("InvalidTrees.txt","ValidTrees.txt");
     checker.outputTreeLengthStats();
 	DynProgTreeGenerator dp(userInterface);
+	dp.writeBestTreeToDAG(userInterface);
+	TreeVerifier dpChecker(userInterface);
+	dpChecker.appendReportToFiles("dpInvalidTrees.txt","dpValidTrees.txt");
+    dpChecker.outputTreeLengthStats();
+	userInterface.setOutputFileName( userInterface.getOutputFileName() + ".dp.xml" );
+	userInterface.saveTreeInformation();
 	return 0;
 }

@@ -9,6 +9,7 @@ set MAX_SEED=%2
 set xmlName=blank
 
 mkdir out%MIN_SEED%-%MAX_SEED%
+mkdir out%MIN_SEED%-%MAX_SEED%
 
 FOR /L %%n IN (%MIN_NUMEL%,100,%MAX_NUMEL%) DO @(
   FOR /L %%s IN (%MIN_SEED%,1,%MAX_SEED%) DO @(

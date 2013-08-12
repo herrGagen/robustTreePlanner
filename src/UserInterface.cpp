@@ -20,6 +20,11 @@
 #  include "RoutingDAG.h"
 #endif
 
+#if defined(SUPPRESS_OUTPUT)
+#define cout ostream(0).flush()
+#endif
+
+
 /* Have to update this if we ever allow more than 4 as a parameter for demand_drop
 There is also a 4 that needs to be changed down below, in the declaration of an array called temp_demands[4]
 There is a ruby file (combination.rb) to generate this line */  
@@ -117,8 +122,10 @@ void UserInterface::ProgramBegins(std::string inputFile)
 	std::cout << "Current angle: " << quadrant->getAngle() << std::endl;
 	std::cout << "Generating tree." << std::endl;
 	generateTree();
+
 	std::cout << "Tautening tree." << std::endl;
 	tautenTree();
+
 	std::cout << "\nDoing operational Flexibility stuff." << std::endl;
 	inputOperationalFlexibility();
 	std::cout << "\nSaving tree information." << std::endl;
@@ -776,7 +783,9 @@ bool UserInterface::readDemandProfile()
 	return false;														// the file is NOT read in successfully
 }
 
-// after generating the tree, export the tree information into an .xml ascii file
+/**
+	\brief after generating the tree, export the tree information into an .xml ascii file
+*/
 void UserInterface::saveTreeInformation()
 {
 	if(ctrl_RoutingDAGGenerated == ROUTINGDAG_NOT_GENERATED || routingDAG->getStatus()==TREE_NOT_GENERATED)										

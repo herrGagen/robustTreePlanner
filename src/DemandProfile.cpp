@@ -7,6 +7,10 @@
 #include <cstdlib>
 #include <typeinfo>
 
+#if defined(SUPPRESS_OUTPUT)
+#define cout ostream(0).flush()
+#endif
+
 DemandProfile::DemandProfile()
 {
   numDemands = 0;

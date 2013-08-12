@@ -4,6 +4,8 @@
 #include "UserInterface.h"
 #include <vector>
 
+class DynProgTreeGeneratorTester;
+
 /**
 	\brief Creates a robust routing tree using dynamic programming
 
@@ -31,20 +33,27 @@ class DynProgTreeGenerator
 {
 public:	
 	DynProgTreeGenerator(const UserInterface &ui);
+	void writeBestTreeToDAG( UserInterface &UI );
+
+	DynProgTreeGenerator(unsigned int NUMR = 4, unsigned int NUMDEM = 4);
 	double memoizedGetFlowThrough(unsigned int radInd, unsigned int angInd, unsigned int firstDemand, unsigned int numDemands);
-	void generateTree();
+	void fillMemoTable();
+	double getTotalFlow(){ return memoizedGetFlowThrough(numR,0,0,numDem); }
+	void findBestTree();
 protected:
 	double calculateAndStoreFlow(unsigned int radInd, unsigned int angInd, unsigned int firstDemand, unsigned int numDemands);
 	double getStoredFlow(unsigned int radInd, unsigned int angInd, unsigned int firstDemand, unsigned int numDemands) const;
 	bool isFlowMemoized(unsigned int radInd, unsigned int angInd, unsigned int firstDemand, unsigned int numDemands) const;
-	void memoizeFlow(double flow, unsigned int radInd, unsigned int angInd, unsigned int firstDemand, unsigned int numDemands);
+	void memoizeFlow(double flow, const std::vector< unsigned int> &predNeighbors, unsigned int radInd, unsigned int angInd, unsigned int firstDemand, unsigned int numDemands);
 	const std::vector<unsigned int> &getNeighbors(unsigned int radInd, unsigned int angInd) const;
 private:
 	unsigned int getArrayIndex(unsigned int radInd, unsigned int angInd, unsigned int firstDemand, unsigned int numDemands) const;
 	unsigned int radiusAngleIndex(unsigned int radInd, unsigned int angInd) const;
 	unsigned int nChooseTwoIndex( unsigned int firstDemand, unsigned int numDemands) const;
+	std::pair<unsigned int, unsigned int> radAngFromTableIndex( unsigned int tableIndex ) const;
 	void resizeMemoTable(unsigned int newSize);
-private:
+	void readTreeEdges( unsigned int tableIndex );
+private:	
 	/** This value used to test if we have calculated a flow value. */
 	static const int NO_MEMO_ENTRY = -1;
 	/** 
@@ -57,14 +66,17 @@ private:
 
 	Note: For larger graphs, we will move to a sparse data representation 
 */
+	std::vector<std::pair<unsigned int, unsigned int> > treeEdges;
 	std::vector<double> memoTable;
+	std::vector< std::vector< unsigned int> > usedNeighbors;
 	unsigned int numR;   /**< Number of radius indices in layeredDAG */
-	unsigned int numT;  /**< Total number of demand nodes in outer layer */
+	unsigned int numDem;  /**< Total number of demand nodes in outer layer */
 	std::vector<unsigned int> numInLayer;   /**< Number of nodes in each layer */
 	std::vector<unsigned int> cumSumNumInLayer;   /**< cumSum of numInLayer */
-	unsigned int delta;  /**< How many angle neighbors each node has */
 	std::vector< std::vector< unsigned int > > neighborsOf;
 	std::vector<double> demands;
+	friend class DynProgTreeGeneratorTester;
+	friend std::ostream & operator<<(std::ostream &os, const DynProgTreeGenerator& dp);
 };
 
 #endif

@@ -5,6 +5,10 @@
 #include <iostream>
 #include <limits>
 
+#if defined(SUPPRESS_OUTPUT)
+#define cout ostream(0).flush()
+#endif
+
 Quadrant::Quadrant(double cX, double cY, double ang, double iR, double oR, double iH, double oH):
 centerX(cX), centerY(cY)
 {
@@ -348,17 +352,10 @@ void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, const std::vect
 	unsigned int numLayers = 0;
 	double maxrnp = *max_element(rnps.begin(), rnps.end());
 	std::cout << "maxrnp initialized: " << maxrnp << std::endl;
-	for(unsigned int i=0; i<rnps.size(); i++)
-	{
-		if(rnps[i]!=0)
-		{
-			maxrnp = maxrnp > rnps[i] ? rnps[i] : maxrnp;							
-		}
-	}
+	maxrnp = (maxrnp > 0) ? maxrnp : 1;
 	std::cout << "Found maxrnp = " << maxrnp << std::endl;
 	if(liftedoRadius - liftediRadius > maxrnp * 4)	
 	{
-		// James: The previous version iterated numLayers until it reached this value.
 		numLayers = (int)floor( (liftedoRadius - liftediRadius) / (maxrnp*3) );
 	}
 	std::cout << "Found numLayers = " << numLayers << std::endl;
@@ -375,7 +372,6 @@ void Quadrant::generateRoutingDAGInternalNodes(RoutingDAG *rDAG, const std::vect
 
 		double layerLength = quadrantAngularWidth*layerRadius;									// 1/4 circular perimeter
 
-		// James: Again, who sets the value for a parameter by increasing its value until a condition is met?
 		int numNodesLayer = (int) floor( layerLength / (2* maxrnp + 2) );
 		double startingAngle = angle + quadrantAngularWidth / (2 * numNodesLayer);						// why 4? each angle is (PI/2)/numNodesLayer, but the starting and ending one are only half
 		for(int j=0; j<numNodesLayer; j++)

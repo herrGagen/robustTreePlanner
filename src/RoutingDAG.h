@@ -15,8 +15,6 @@
 #define EDGES_GENERATED 1
 #define EDGES_NOT_GENERATED 2
 
-// #define OUTPUT_WEATHER_IN_XML
-
 #define BOTTOM_TREE 1
 #define TAUTENED_TREE 2
 
@@ -43,6 +41,7 @@ public:
 	void setNumLayers(unsigned int n);
 	void setNodesReadInStatus(int status);
 	int  getStatus();
+	void overrideTreeStatus(){ status = TREE_GENERATED; }
 	bool generateEdgeSet();
 	void generateOperFlexPairs(const std::vector<double> &radii, const std::vector<WeatherData> &wDataSets, double effectiveThres);
 public:
@@ -85,6 +84,8 @@ public:
 	Node* getNodePointer(int n) const;
 	unsigned int getNumEdges() const;
 	Edge* getEdgePointer(int n) const;
+
+	Edge* findEdgeBetween(Node *highRadNode, Node* lowRadNode);
 
 	// functions for locating a node by its index or layer/layerIndex
 	int getNodePointerIndex(Node* temp) const;
