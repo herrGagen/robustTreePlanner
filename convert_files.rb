@@ -16,7 +16,7 @@ def parse_time_from_filename(filename)
   DateTime.parse(filename.basename.to_s.gsub(/[^0-9]/, "")).to_time
 end
 
-def main(starting_time, offset_in_minutes, results_string=false, weather_dir=false)
+def main(starting_time, offset_in_minutes, results_string=false, weather_dir=false, concatenate_files=false)
   starting_time       = 0 unless starting_time
   offset_in_minutes   = 0 unless offset_in_minutes
   results_string      = "results_start_" + starting_time.to_s + "_offset_" + offset_in_minutes.to_s unless results_string
@@ -87,29 +87,43 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
   sum = 0
   id = 0
   path.each_child do |file_name|
+
     name_ary = file_name.basename.to_s.split("_")
     extension = name_ary.last.split(".").last if name_ary.last
     if extension == "txt"
       # print file_name
       time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
       if time <= time_upper_bound and time >= time_lower_bound
-        writeable_name = Pathname.new(results) + (id.to_s + ".dat")
-        # print time, "  ", writeable_name, "\n"
-        w = File.new(writeable_name, 'a')
+        member_id = name_ary.last.split(".").first.split("Member").last
+        if concatenate_files
+          writeable_name = Pathname.new(results) + (member_id + ".dat")
+        else
+          writeable_name = Pathname.new(results) + (id.to_s + ".dat")
+        end
+        print writeable_name, "\n"
+        has_header = (File.exists?(writeable_name))
+
         temp = File.new(file_name, 'r')
+        w = File.new(writeable_name, 'a')
+        
+
         e = temp.each_line
 
-        # Need to find the Ensemble member number and  probability to write out
+        # Need to find the Ensemble member number and probability to write out
         4.times { e.next } # Burn through first 4 rows of the ensemble file (we don't need them)
-        line = e.next
-        line.slice!(0, 2)
-        # print "LINE: ", line, "\n"
-        w.write("Ensemble " + line)
-        line = e.next.split.last.to_f / children_in_offset
-        sum += line
 
-        # Made this output with a force to output 9 decimals, since before it would use exponential notation.
-        w.write("Probability " + ("%.9f" % line).to_s + "\r\n")
+        unless has_header
+          line = e.next
+          line.slice!(0, 2)
+          w.write("Ensemble " + line)
+          line = e.next.split.last.to_f
+          line /= children_in_offset unless concatenate_files
+          sum += line
+
+          # Made this output with a force to output 9 decimals, since before it would use exponential notation.
+          w.write("Probability " + ("%.9f" % line).to_s + "\r\n")
+        end
+        
 
         line = e.next
         while line.split.first == "#"
@@ -159,6 +173,7 @@ if __FILE__ == $0
     quadrant_size       = false
     lane_width 	        = false
     max_fix_nodes       = false
+    concatenate_files   = false
 
     ARGV.each do |arg|
       # The following lines need ``== true`` because they are being used
@@ -166,7 +181,7 @@ if __FILE__ == $0
       s = arg if s == true
       o = arg if o == true
       dshift = arg if dshift == true #just boolean 0 or 1, whether or not we want to use demand shifting
-      ddrop = arg if ddrop == true # same as demand shifting, 0 or 1 to indicate whether or not we do it
+      ddrop = arg if ddrop == true # This should be 0 to 4, whether or not we'll drop up to 4 demands.
       angle               = arg if angle                == true
       deviation_threshold = arg if deviation_threshold  == true
       node_edge_threshold = arg if node_edge_threshold  == true
@@ -209,6 +224,8 @@ if __FILE__ == $0
         lane_width = true
       elsif arg == "-fixnodes"
         max_fix_nodes = true
+      elsif arg == "-concat"
+        concatenate_files = true
       end
     end
 
@@ -239,7 +256,7 @@ if __FILE__ == $0
     print "Max Number of Fix Nodes:       ", max_fix_nodes,           "\n" if max_fix_nodes
     print "Operational Flexibility:       ", oper_flex,               "\n" if oper_flex != []
 
-    main(s, o, temp_weather_name, weather_dir)
+    main(s, o, temp_weather_name, weather_dir, concatenate_files)
     create_input(dshift, ddrop, angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, oper_flex)
   end
 end
