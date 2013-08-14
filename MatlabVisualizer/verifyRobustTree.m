@@ -1,4 +1,5 @@
 function numViolatedEdges = verifyRobustTree(fname, thresholdDist, edgeProbThresh)
+% numViolatedEdges = verifyRobustTree(fname, thresholdDist, edgeProbThresh)
 
 fprintf('Number of bad edges in %s is ',fname)
 linearizeXML(fname);
