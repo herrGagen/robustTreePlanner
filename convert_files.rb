@@ -16,7 +16,7 @@ def parse_time_from_filename(filename)
   DateTime.parse(filename.basename.to_s.gsub(/[^0-9]/, "")).to_time
 end
 
-def main(starting_time, offset_in_minutes, results_string=false, weather_dir=false, concatenate_files=false)
+def main(starting_time, offset_in_minutes, results_string=false, weather_dir=false, concatenate_files=false, file_probs=[])
   starting_time       = 0 unless starting_time
   offset_in_minutes   = 0 unless offset_in_minutes
   results_string      = "results_start_" + starting_time.to_s + "_offset_" + offset_in_minutes.to_s unless results_string
@@ -118,6 +118,11 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
           w.write("Ensemble " + line)
           line = e.next.split.last.to_f
           line /= children_in_offset unless concatenate_files
+          # If we inputted desired file probabilities, use those instead of
+          # reading in the probabilities from the files.
+          if file_probs != []
+            line = file_probs[member_id.to_i-1].to_f
+          end
           sum += line
 
           # Made this output with a force to output 9 decimals, since before it would use exponential notation.
@@ -234,11 +239,26 @@ if __FILE__ == $0
     ARGV.each do |arg|
       if arg == "-operflex"
         oper_flex_flag = true
+        next
       elsif arg.split("").first == "-"
         oper_flex_flag = false
       end
       if oper_flex_flag and arg.split("").first != "-"
         oper_flex << arg
+      end
+    end
+
+    file_probs = []
+    file_probs_flag = false
+    ARGV.each do |arg|
+      if arg == "-fileprobs"
+        file_probs_flag = true
+        next
+      elsif arg.split("").first == "-"
+        file_probs_flag = false
+      end
+      if file_probs_flag and arg.split("").first != "-"
+        file_probs << arg
       end
     end
 
@@ -255,8 +275,9 @@ if __FILE__ == $0
     print "Lane width:                    ", lane_width,              "\n" if lane_width
     print "Max Number of Fix Nodes:       ", max_fix_nodes,           "\n" if max_fix_nodes
     print "Operational Flexibility:       ", oper_flex,               "\n" if oper_flex != []
+    print "File probabilities:            ", file_probs,              "\n" if file_probs
 
-    main(s, o, temp_weather_name, weather_dir, concatenate_files)
+    main(s, o, temp_weather_name, weather_dir, concatenate_files, file_probs)
     create_input(dshift, ddrop, angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, oper_flex)
   end
 end
