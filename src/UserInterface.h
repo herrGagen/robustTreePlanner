@@ -35,6 +35,8 @@ public:
 public:
 	void reset();							// reset the status to a brand new routing instance
 	void ProgramBegins(std::string inputFile);					// the project starts excuting from this function
+	void saveTreeInformation();				// after generating the tree, save the information into an .xml file
+	void inputOperationalFlexibility();		// ask user to input parameters related to operational flexity
 private:
 	void resetHelper();
 	/****************************************************************************************************************************/
@@ -43,8 +45,6 @@ private:
 	bool editQuadrant();					// ask for user input and edit the quadrant information
 	bool readWeatherData();					// read in from weather data files 
 	bool readDemandProfile();				// read in the demand profile information
-	void saveTreeInformation();				// after generating the tree, save the information into an .xml file
-	void inputOperationalFlexibility();		// ask user to input parameters related to operational flexity
 	bool inputDemand();						// ask the user to input demand information
 	void printQuadrantAndDemandInfo();		// use standard output to print the quadrant information on the screen
 	bool inputDemandValid(std::string &input, int numDemands);		// tell if the user input demand is valid or not
@@ -71,6 +71,7 @@ private:
 	// the threshold that we consider a thick edge or disk to be clear of weather
 	double nodeEdgeThreshold;				
 public:
+	const std::vector<double> &getDemandRNPs() const{ return demandRNPs; }
 	double getDeviationThreshold() const{ return deviationThreshold; }
 	double getNodeEdgeThreshold() const { return nodeEdgeThreshold; }
 	double getCenterLati() const { return centerLati; }
@@ -80,7 +81,8 @@ public:
 	RoutingDAG *getRoutingDAG() const { return routingDAG; }
 	const std::vector<WeatherData> &getWeatherDataSets() const {return weatherDataSets;}
 	std::string getOutputFileName() const { return outputFileName; }
-        const std::vector<double> &getOperFlex() const { return inputs.getOperFlex(); }
+	void setOutputFileName( std::string newName) { outputFileName = newName; }
+    const std::vector<double> &getOperFlex() const { return inputs.getOperFlex(); }
 	/********************************/
 	// control variables
 private:

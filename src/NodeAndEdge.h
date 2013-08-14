@@ -59,14 +59,15 @@ public:
 public:
 	void insertInNodeEdge(Node* node, Edge* edge);
 	void insertOutNodeEdge(Node* node, Edge* edge);
-        // number of coming in edges
+    // number of incoming edges
 	unsigned int getInSize();
-        // number of going out edges
+    // number of outoging edges
 	unsigned int getOutSize();
 	Node* getInNode(unsigned int index);
 	Node* getOutNode(unsigned int index);
 	Edge* getInEdge(unsigned int index);
 	Edge* getOutEdge(unsigned int index);
+	unsigned int getNumInNeighbors() { return inNodes.size(); }
 	double getX();
 	double getY();
 	double getZ();
