@@ -1,3 +1,5 @@
+// #define LEARNING_ABOUT_TREE
+
 #include "UserInterface.h"
 #include <iostream>
 #include <iomanip>
@@ -17,6 +19,11 @@
 #if !defined(DO_NOT_CONVERT_LAT_LON_TO_PIXELS)
 #  include "RoutingDAG.h"
 #endif
+
+#if defined(SUPPRESS_OUTPUT)
+#define cout ostream(0).flush()
+#endif
+
 
 /* Have to update this if we ever allow more than 4 as a parameter for demand_drop
 There is also a 4 that needs to be changed down below, in the declaration of an array called temp_demands[4]
@@ -115,8 +122,10 @@ void UserInterface::ProgramBegins(std::string inputFile)
 	std::cout << "Current angle: " << quadrant->getAngle() << std::endl;
 	std::cout << "Generating tree." << std::endl;
 	generateTree();
+
 	std::cout << "Tautening tree." << std::endl;
 	tautenTree();
+
 	std::cout << "\nDoing operational Flexibility stuff." << std::endl;
 	inputOperationalFlexibility();
 	std::cout << "\nSaving tree information." << std::endl;
@@ -376,15 +385,45 @@ bool UserInterface::generateTree()
 			}
 			std::cout << std::endl << "FINISHED BOTTOMMOST FILL TREE" << std::endl;
 			std::cout<< std::endl << "A bottommost routing Tree is generated!" << std::endl;
+
+			/**********************/
+#if defined(LEARNING_ABOUT_TREE)
+			unsigned totalNodes = 0;
+			for(unsigned int i = 0; i<routingDAG->getNumLayers(); i++)
+			{
+				Node *layerChecker = routingDAG->findNode(i,0);
+				std::cout << "Node " << i << ",0 has in degree: " << layerChecker->getInDegree() << std::endl;			
+				Edge *inEdge = layerChecker->getInEdge(0);
+				unsigned int j = 0;
+				while(layerChecker != NULL)
+				{
+					layerChecker = routingDAG->findNode(i,j);
+					if(layerChecker == NULL)
+					{
+						continue;
+					}
+					std::cout << "Node " << i << ", " << j << " thinks it is at ";
+					std::cout << layerChecker->getLayer() << ", " << layerChecker->getLayerIndex() << std::endl;
+					j++;
+				}
+				std::cout << "Layer " << i << " has " << j << " total nodes" << std::endl;
+				totalNodes +=j;
+			}
+			std::cout << "The observed total, " << totalNodes << ", should equal " << routingDAG->getNumNodes() << std::endl;
+#endif
+			/**********************/
+
 			return true;
 		}	// an error message will pop up if failed to generate the DAG
 		else 
 		{ 
 			std::cout << "Failed to generate the DAG."; 
 		}
-	}
-	// else, then the weather data and demand profile have to be read in first
-	else std::cerr << "\nPlease read in or generate the demand profile and weather data first."<<std::endl;
+	}	
+	else // the weather data and demand profile have to be read in first
+		{
+			std::cerr << "\nPlease read in or generate the demand profile and weather data first."<<std::endl;
+		}
 	return false;
 }
 
@@ -744,7 +783,9 @@ bool UserInterface::readDemandProfile()
 	return false;														// the file is NOT read in successfully
 }
 
-// after generating the tree, export the tree information into an .xml ascii file
+/**
+	\brief after generating the tree, export the tree information into an .xml ascii file
+*/
 void UserInterface::saveTreeInformation()
 {
 	if(ctrl_RoutingDAGGenerated == ROUTINGDAG_NOT_GENERATED || routingDAG->getStatus()==TREE_NOT_GENERATED)										

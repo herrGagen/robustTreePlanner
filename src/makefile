@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-O3 -pg
+CFLAGS=-O3 -pg -DOUTPUT_WEATHER_IN_XML -DDP -DDP_USES_ONE_NEIGHBOR_LAYER -DSUPPRESS_OUTPUT
 LINKFLAGS=-pg
 
 SOURCES=DemandProfile.cpp \
@@ -10,14 +10,16 @@ SOURCES=DemandProfile.cpp \
 	Quadrant.cpp \
 	UserInterface.cpp \
 	InputFileReader.cpp \
-	TreeVerifier.cpp	
+	TreeVerifier.cpp \
+	DynProgTreeGenerator.cpp
 
 OBJECTS=$(subst .cpp,.o,$(SOURCES) )
 
 all: rtp
 
 rtp: ${OBJECTS}
-	${CC} ${LINKFLAGS} $^  -o $@	
+	${CC} ${LINKFLAGS} $^  -o $@
+
 
 clean:
 	rm -rf *.o rtp *.bak *~

@@ -7,6 +7,10 @@
 #include "math.h"
 #include <string>
 
+#if defined(SUPPRESS_OUTPUT)
+#define cout ostream(0).flush()
+#endif
+
 RoutingDAG::RoutingDAG()
 {
   // vectors are empty at the beginning
@@ -182,7 +186,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
   if(status==TREE_NOT_GENERATED)
     {
       std::cerr << "\nPlease generate the tree first before outputting the tree information!" << std::endl;
-      return false;
+	  return false;
     }
   std::string XMLFileName("out.xml");
   std::ofstream os;
@@ -191,8 +195,6 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
       std::string tempFileName;
       tempFileName = outputName.c_str();
       std::cout << outputName.c_str() << std::endl;
-      // std::cout << "\nPlease provide a name for the output file:\n";
-      // std::getline(cin,tempFileName);
       if( tempFileName.length() > 0 )
         {
           size_t xmlLocation;
@@ -444,18 +446,29 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
       os << "\n\t<Branches>";
       for(unsigned int i=0; i<entries.size(); i++)
         {
-          if(entries[i]->getDrawingRNP()==0)					// make sure that the branch has actual demand
-            continue;
+			// make sure that the branch has actual demand
+          if(entries[i]->getDrawingRNP()==0)					
+          {
+				continue;
+		  }
           Node* temp = entries[i];
           os << "\n\t\t<Branch index=\"" << 100+i << "\" rnp_equipage=\"" << temp->getDrawingRNP()*NMILESPERPIXEL << "\">";
           while(temp->getNodeType()!=FIX_NODE)
             {
               Edge* tempEdge = temp->getOutEdge(temp->getTreeOutEdgeIndex());
               // the original index of the edge in the original edge std::vector
-              int edgeOriginalIndex = find(edges.begin(), edges.end(), tempEdge)-edges.begin();
-              int printingIndex = find(indexToTreeEdgeIndexVec.begin(), indexToTreeEdgeIndexVec.end(), edgeOriginalIndex)-indexToTreeEdgeIndexVec.begin()+1;
+              int edgeOriginalIndex = std::find(edges.begin(), edges.end(), tempEdge)-edges.begin();
+              int printingIndex = std::find(indexToTreeEdgeIndexVec.begin(), indexToTreeEdgeIndexVec.end(), edgeOriginalIndex)-indexToTreeEdgeIndexVec.begin()+1;
               os << "\n\t\t\t<Branch_arc index=\"1" << printingIndex << "\"/>";
-              temp = temp->getOutNode(temp->getTreeOutEdgeIndex());
+			  if( temp->getOutNode(temp->getTreeOutEdgeIndex()) != 0 )
+			  {
+				temp = temp->getOutNode(temp->getTreeOutEdgeIndex());
+			  }
+			  else
+			  {
+				  std::cerr << "Should not reach here.";
+			  }
+
             }
           os << "\n\t\t</Branch>";
         }
@@ -504,6 +517,31 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
   return false;
 }
 
+/**
+	\brief Finds edge (highRadNode, lowRadNode)
+*/
+Edge* RoutingDAG::findEdgeBetween(Node *highRadNode, Node* lowRadNode)
+{
+	for(unsigned int i = 0; i<lowRadNode->getInSize(); i++)
+	{
+		Node *testNode = lowRadNode->getInNode(i);
+		if(testNode == highRadNode)
+		{
+			return lowRadNode->getInEdge(i);
+		}
+	}
+	for(unsigned int i = 0; i<lowRadNode->getOutSize(); i++)
+	{
+		Node *testNode = lowRadNode->getOutNode(i);
+		if(testNode == highRadNode)
+		{
+			return lowRadNode->getOutEdge(i);
+		}
+	}
+
+	return 0;
+}
+
 // find a node based on its layer and layerIndex, return NULL means no matching node is found
 Node* RoutingDAG::findNode(int layer, int layerIndex) const
 {
@@ -547,12 +585,19 @@ bool RoutingDAG::generateEdgeSet()
   // is with in PI/3 degrees of the centerAngle, the order of the edges are from rightmost to leftmost, from furthest to nearest, except for the nodes that have
   // edges going to fixed nodes, then the order would be from leftmost to rightmost
   if(!generateLayerStartingIndexVector())					// generate the layer starting position std::vector first
+  {
     return false;
+  }
   // iterate for each layer, deal with the fixed node layer and the second to the last layer separately later because the last layer only has edges going to fixed nodes
   // but the order where we fill in fixed nodes is opposite
   for(unsigned int i=0; i<numLayers-2; i++)					
     {
-      int startingLayer = (i+5>numLayers-2)? (numLayers-2) : (i+5);      //   Joe: the "5" was "3" but should be parameter LL
+#if defined(DP) && defined(DP_USES_ONE_NEIGHBOR_LAYER)
+		unsigned int numNeighborLayers = 1;
+#else
+		unsigned int numNeighborLayers = 5;
+#endif
+      int startingLayer = (i+numNeighborLayers>numLayers-2)? (numLayers-2) : (i+numNeighborLayers);      //   Joe: the "5" was "3" but should be parameter LL
       int endingLayer = i+1;							// connect to points that lie in the range [startingLayer, endingLayer]
       // loop thru all the nodes int the current layer
       for(int j = layerStartingIndex[i]; j<layerStartingIndex[i+1]; j++)		
@@ -586,15 +631,21 @@ bool RoutingDAG::generateEdgeSet()
             {
               for(int l = startingLayer; l>=endingLayer; l--)
                 {
-                  if(l==endingLayer && (k==2 || k==-2))									// the next layer has only 3 nodes
+					// the next layer has only 3 nodes
+                  if(l==endingLayer && (k==2 || k==-2))									
+				  {
                     continue;
+				  }
                   int tempIndex = shortestDistanceNodeIndex[l-endingLayer]+k;				// we are interested in this node at this step
-                  if(tempIndex>=layerStartingIndex[l+1] || tempIndex<layerStartingIndex[l])		// a node in the next layer or previous layer, then not feasible
+				  // a node in the next layer or previous layer, then not feasible
+				  if(tempIndex>=layerStartingIndex[l+1] || tempIndex<layerStartingIndex[l])		
+				  {
                     continue;
-                  Node* tempNode = getNodePointer(tempIndex);									// this node will form one of the edges with the current node
+				  }
+                  Node* tempNode = getNodePointer(tempIndex);		// this node will form one of the edges with the current node
                   Edge* tempEdge = new Edge(current, tempNode);
-                  current->insertOutNodeEdge(tempNode, tempEdge);							// insert the node and edge into the neighbor std::vector of the current Node
-                  tempNode->insertInNodeEdge(current, tempEdge);							// the other node points back to the current node, too
+                  current->insertOutNodeEdge(tempNode, tempEdge);	// insert the node and edge into the neighbor std::vector of the current Node
+                  tempNode->insertInNodeEdge(current, tempEdge);	// the other node points back to the current node, too
                   edges.push_back(tempEdge);
                 }
             }

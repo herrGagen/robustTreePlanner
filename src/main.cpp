@@ -2,8 +2,11 @@
 
 #include "UserInterface.h"
 #include "TreeVerifier.h"
+#include "DynProgTreeGenerator.h"
+
 int main(int argc, char* argv[])
-{
+{	
+
   std::string inputFile = "inputs.txt";
   if (argc > 1)
   {
@@ -22,6 +25,13 @@ int main(int argc, char* argv[])
 	userInterface.ProgramBegins(inputFile);
 	TreeVerifier checker(userInterface);
 	checker.appendReportToFiles("InvalidTrees.txt","ValidTrees.txt");
-        checker.outputTreeLengthStats();
+    checker.outputTreeLengthStats();
+	DynProgTreeGenerator dp(userInterface);
+	dp.writeBestTreeToDAG(userInterface);
+	TreeVerifier dpChecker(userInterface);
+	dpChecker.appendReportToFiles("dpInvalidTrees.txt","dpValidTrees.txt");
+    dpChecker.outputTreeLengthStats();
+	userInterface.setOutputFileName( userInterface.getOutputFileName() + ".dp.xml" );
+	userInterface.saveTreeInformation();
 	return 0;
 }
