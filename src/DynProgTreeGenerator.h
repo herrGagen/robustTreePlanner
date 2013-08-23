@@ -38,7 +38,7 @@ public:
 	DynProgTreeGenerator(unsigned int NUMR = 4, unsigned int NUMDEM = 4);
 	double memoizedGetFlowThrough(unsigned int radInd, unsigned int angInd, unsigned int firstDemand, unsigned int numDemands);
 	void fillMemoTable();
-	double getTotalFlow(){ return memoizedGetFlowThrough(numR,0,0,numDem); }
+	double getTotalFlow(){ fillMemoTable(); return memoizedGetFlowThrough(numR,0,0,numDem); }
 	void findBestTree();
 protected:
 	double calculateAndStoreFlow(unsigned int radInd, unsigned int angInd, unsigned int firstDemand, unsigned int numDemands);

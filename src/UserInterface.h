@@ -34,7 +34,8 @@ public:
 	// general purpose functions
 public:
 	void reset();							// reset the status to a brand new routing instance
-	void ProgramBegins(std::string inputFile);					// the project starts excuting from this function
+	bool ProgramBegins(std::string inputFile);					// the project starts excuting from this function
+	void makeRTPTreeAndFinish();
 	void saveTreeInformation();				// after generating the tree, save the information into an .xml file
 	void inputOperationalFlexibility();		// ask user to input parameters related to operational flexity
 private:
@@ -50,6 +51,7 @@ private:
 	bool inputDemandValid(std::string &input, int numDemands);		// tell if the user input demand is valid or not
 	/****************************************************************************************************************************/
 	// tree generating related functions
+	bool makeDAG();					// generate searchDAG
 	bool generateTree();					// generate a bottommost robust tree
 	bool tautenTree();						// tauten the generated bottommost tree
 	/****************************************************************************************************************************/

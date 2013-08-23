@@ -21,17 +21,26 @@ int main(int argc, char* argv[])
     }
   }
   
-	UserInterface userInterface;
-	userInterface.ProgramBegins(inputFile);
-	TreeVerifier checker(userInterface);
-	checker.appendReportToFiles("InvalidTrees.txt","ValidTrees.txt");
-    checker.outputTreeLengthStats();
-	DynProgTreeGenerator dp(userInterface);
-	dp.writeBestTreeToDAG(userInterface);
-	TreeVerifier dpChecker(userInterface);
-	dpChecker.appendReportToFiles("dpInvalidTrees.txt","dpValidTrees.txt");
-    dpChecker.outputTreeLengthStats();
-	userInterface.setOutputFileName( userInterface.getOutputFileName() + ".dp.xml" );
-	userInterface.saveTreeInformation();
+	UserInterface RTP;
+	if(RTP.ProgramBegins(inputFile) )
+	{
+		RTP.makeRTPTreeAndFinish();
+		TreeVerifier checker(RTP);
+		checker.appendReportToFiles("InvalidTrees.txt","ValidTrees.txt");
+	    checker.outputTreeLengthStats();
+	}
+
+	UserInterface dpDagMaker;
+	if( dpDagMaker.ProgramBegins(inputFile) )
+	{
+		DynProgTreeGenerator dp(dpDagMaker);
+		dp.writeBestTreeToDAG(dpDagMaker);
+		TreeVerifier dpChecker(dpDagMaker);
+		dpChecker.appendReportToFiles("dpInvalidTrees.txt","dpValidTrees.txt");
+		dpChecker.outputTreeLengthStats();
+		dpDagMaker.setOutputFileName( dpDagMaker.getOutputFileName() + ".dp.xml" );
+		dpDagMaker.saveTreeInformation();
+	}
+
 	return 0;
 }

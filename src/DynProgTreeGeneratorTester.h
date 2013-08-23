@@ -29,7 +29,7 @@ public:
 class DynProgTreeGeneratorTester_TXT : public ::testing::Test, public DynProgTreeGeneratorTester
 {
 public:
-	DynProgTreeGeneratorTester_TXT(): DynProgTreeGeneratorTester("TestInput.txt"){}
+	DynProgTreeGeneratorTester_TXT(): DynProgTreeGeneratorTester("six.txt"){}
 };
 
 

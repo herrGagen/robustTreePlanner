@@ -243,7 +243,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
       // for each node in the tree, it will have an index value used for outputing
       std::vector<int>	indexToGetNodePointerIndexVec;
       // record all the tree nodes one by one starting from 1
-      int treeNodeIndex = 0;							
+      int treeNodeIndex = 0;	
       for(unsigned int i=0; i<entries.size()+nodes.size()+fixes.size(); i++)
         {
           Node* temp = getNodePointer(i);
@@ -456,6 +456,10 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
           while(temp->getNodeType()!=FIX_NODE)
             {
               Edge* tempEdge = temp->getOutEdge(temp->getTreeOutEdgeIndex());
+			  if(tempEdge == 0)
+			  {
+				  break;
+			  }
               // the original index of the edge in the original edge std::vector
               int edgeOriginalIndex = std::find(edges.begin(), edges.end(), tempEdge)-edges.begin();
               int printingIndex = std::find(indexToTreeEdgeIndexVec.begin(), indexToTreeEdgeIndexVec.end(), edgeOriginalIndex)-indexToTreeEdgeIndexVec.begin()+1;
@@ -481,7 +485,7 @@ bool RoutingDAG::outputTreeInformation(double centerLati, double centerLong, dou
        *********************/
       os << "\t<Weather>" << std::endl;
       for( std::vector<WeatherData>::const_iterator wIter = wDataSets.begin();
-           wIter != wDataSets.end();
+           wIter != wDataSets.end() && treeNodeIndex > 0;
            wIter++)
         {
           for(unsigned int i = 0; i<wIter->size(); i++)
@@ -1853,6 +1857,10 @@ void RoutingDAG::generateOperFlexPairs(const std::vector<double> &radii,
           Edge* tempEdge = tempNode->getOutEdge(tempNode->getTreeOutEdgeIndex());
           // we are going to recompute operational flexity pairs, before doing so, clear the vectors
 
+		  if(tempEdge == 0)
+		  {
+			  break;
+		  }
           // clear the edge's operational felxity related vectors
           tempEdge->reset();
           // clear the node's operational felxity related vectors		

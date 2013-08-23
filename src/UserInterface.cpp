@@ -89,7 +89,7 @@ void UserInterface::resetHelper()
 // RTPrototype Functions
 
 // The project starts excuting here, called by the main function
-void UserInterface::ProgramBegins(std::string inputFile)
+bool UserInterface::ProgramBegins(std::string inputFile)
 {
 
 	inputs = InputFileReader(inputFile);
@@ -108,18 +108,24 @@ void UserInterface::ProgramBegins(std::string inputFile)
 	if(!readDemandProfile()) // at the start, read in demand profile
 	{
 		std::cout << "\nFailed to read in the demand profile, double check the demand path listed." << std::endl;
-		return;
+		return false;
 	}
 	std::cout << "Demand profile successfully read in." << std::endl;
 	if(!readWeatherData())
 	{
 		std::cout << "\nFailed to successfully read in the weather data, double check the weather directories." << std::endl;
-		return;
+		return false;
 	}
 	std::cout << "\nWeather files are succesfully read in!" << std::endl;
 	(*quadrant).setAngle( inputs.getQuadrantAngle() );
 	(*quadrant).setAngularWidth( inputs.getQuadrantAngle() );
 	std::cout << "Current angle: " << quadrant->getAngle() << std::endl;
+
+	return makeDAG();
+}
+
+void UserInterface::makeRTPTreeAndFinish()
+{
 	std::cout << "Generating tree." << std::endl;
 	generateTree();
 
@@ -167,8 +173,12 @@ void UserInterface::printQuadrantAndDemandInfo()
 /** 
 \brief Generates a tree
 */
-bool UserInterface::generateTree()
+bool UserInterface::makeDAG()
 {
+	double quadrantAngularWidth;
+	double lane_width;
+	int maxFixNodes;
+
 	// only when the quadrant is generated and weather data is read in can we generate a tree
 	if(ctrl_QuadGenerated == QUADRANT_GENERATED && ctrl_WeatherReadIn == WEATHER_READ_IN && ctrl_DemandReadIn == DEMAND_READ_IN)
 	{
@@ -187,10 +197,10 @@ bool UserInterface::generateTree()
 		routingDAG->reset();											// a brand new routing instance
 		std::cout << std::endl << "Finished resetting edges." << std::endl;
 
-		double quadrantAngularWidth = inputs.getAngularWidth();
-		// Note: if this is negative, we will use lane widths from 
+		quadrantAngularWidth = inputs.getAngularWidth();
+		lane_width = inputs.getLaneWidth();
+		// Note: if lane width is negative, we will use lane widths from 
 		// demand files.
-		double lane_width = inputs.getLaneWidth();
 		if (lane_width > 0) 
 		{
 			for (unsigned int i = 0; i < demandRNPs.size(); i++) 
@@ -213,218 +223,222 @@ bool UserInterface::generateTree()
 		std::cout << std::endl;
 
 		std::cout << "Max fixed nodes: " << inputs.getNumFixedNodes() << std::endl;
-		int maxFixNodes = inputs.getNumFixedNodes(); // a negative parameter is used sometimes to indicate no limit
+		maxFixNodes = inputs.getNumFixedNodes(); // a negative parameter is used sometimes to indicate no limit
 		std::cout << "START GENERATING DAG" << std::endl;
+	}
+	else // the weather data and demand profile have to be read in first
+	{
+		std::cerr << "\nPlease read in or generate the demand profile and weather data first." << std::endl;
+		return false;
+	}
 
-		unsigned int demand_shift = inputs.getDemandShift();
-		unsigned int demand_drop  = inputs.getDemandDrop();
-
-		if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherDataSets, routingDAG, quadrantAngularWidth, maxFixNodes))
+	if(quadrant->generateDAG(demandRNPs, demandRNPs.size(), deviationThreshold, nodeEdgeThreshold, weatherDataSets, routingDAG, quadrantAngularWidth, maxFixNodes))
+	{
+		std::cout << "FINISHED DAG" << std::endl;
+		std::cout << std::endl << "Generating edge set..." << std::endl;
+		routingDAG->generateEdgeSet();								// generate the edges in the searching DAG
+		std::cout << std::endl << "Edges (Routing DAG) generated." << std::endl;
+		ctrl_RoutingDAGGenerated = ROUTINGDAG_GENERATED;
+		std::cout << std::endl << "Generating Tree..." << std::endl;
+		// generate the tree here
+		// =======
+		std::cout << "START GENERATING TREE" << std::endl << "Demand RNPs: ";
+		for (unsigned int i = 0; i < demandRNPs.size(); i++) 
 		{
-			std::cout << "FINISHED DAG" << std::endl;
-			std::cout << std::endl << "Generating edge set..." << std::endl;
-			routingDAG->generateEdgeSet();								// generate the edges in the searching DAG
-			std::cout << std::endl << "Edges (Routing DAG) generated." << std::endl;
-			ctrl_RoutingDAGGenerated = ROUTINGDAG_GENERATED;
-			std::cout << std::endl << "Generating Tree..." << std::endl;
-			// generate the tree here
-			// =======
-			std::cout << "START GENERATING TREE" << std::endl << "Demand RNPs: ";
-			for (unsigned int i = 0; i < demandRNPs.size(); i++) 
+			std::cout << demandRNPs[i] << "  ";
+		}
+		std::cout << std::endl;
+	}
+	else 
+	{ 
+		std::cout << "Failed to generate the DAG."; 
+		return false;
+	}
+	return true;
+}
+	bool UserInterface::generateTree()
+	{
+
+	unsigned int demand_shift = inputs.getDemandShift();
+	unsigned int demand_drop  = inputs.getDemandDrop();
+
+	if(!routingDAG->generateTree(weatherDataSets, demandRNPs, deviationThreshold, nodeEdgeThreshold))
+	{
+		// Will added some code 04/2013 to add a demand shifting scheme to hopefully reduce tree generation failure
+		bool demand_shift_success = false;
+		if (demand_shift == 1) 
+		{
+			std::cout << std::endl << "Beginning demand shifting." << std::endl;
+			std::cout << "Variables: demand_shift " << demand_shift << "; demand drop " << demand_drop << "; demand_shift_success " << demand_shift_success << std::endl;
+			/* BEWARE: POTENTIAL BUG (due to Will not being certain what Shang's code does)
+			It is possible that you can only attempt to generate a tree once before needing to redo everything.
+			If this is the case, we're in trouble.
+
+			It shouldn't be an issue, there is a 'resetTree()' method called at the beginning of the definition of 
+			generateTree(), but it is a possible concern.
+			*/
+
+			/* We will try two techniques to make the tree more robust:
+			(1) We will try shifting the demand up one or down one, and then generating the tree. If that fails, we will try
+			(2) Deleting one demand node at a time, and then try generating the tree.
+
+			The next while loop is part (1)*/
+			for (unsigned int demand_shift_index = 0; 
+				demand_shift_index < demandRNPs.size() && !demand_shift_success;
+				demand_shift_index++) 
 			{
-				std::cout << demandRNPs[i] << "  ";
-			}
-			std::cout << std::endl;
 
-			if(!routingDAG->generateTree(weatherDataSets, demandRNPs, deviationThreshold, nodeEdgeThreshold))
-			{
-				// Will added some code 04/2013 to add a demand shifting scheme to hopefully reduce tree generation failure
-				bool demand_shift_success = false;
-				if (demand_shift == 1) 
+				if (demand_shift_index > 0 && demandRNPs[demand_shift_index - 1] == 0 && !demand_shift_success) 
 				{
-					std::cout << std::endl << "Beginning demand shifting." << std::endl;
-					std::cout << "Variables: demand_shift " << demand_shift << "; demand drop " << demand_drop << "; demand_shift_success " << demand_shift_success << std::endl;
-					/* BEWARE: POTENTIAL BUG (due to Will not being certain what Shang's code does)
-					It is possible that you can only attempt to generate a tree once before needing to redo everything.
-					If this is the case, we're in trouble.
+					// Swap the values of demandRNPs at the current index and the one below
+					demandRNPs[demand_shift_index - 1] = demandRNPs[demand_shift_index];
+					demandRNPs[demand_shift_index] = 0;
 
-					It shouldn't be an issue, there is a 'resetTree()' method called at the beginning of the definition of 
-					generateTree(), but it is a possible concern.
-					*/
-
-					/* We will try two techniques to make the tree more robust:
-					(1) We will try shifting the demand up one or down one, and then generating the tree. If that fails, we will try
-					(2) Deleting one demand node at a time, and then try generating the tree.
-
-					The next while loop is part (1)*/
-					for (unsigned int demand_shift_index = 0; 
-						demand_shift_index < demandRNPs.size() && !demand_shift_success;
-						demand_shift_index++) 
+					// If the tree is generated successfully, exit this block gracefully
+					if (routingDAG->generateTree(weatherDataSets, demandRNPs, deviationThreshold, nodeEdgeThreshold)) 
 					{
-
-						if (demand_shift_index > 0 && demandRNPs[demand_shift_index - 1] == 0 && !demand_shift_success) 
-						{
-							// Swap the values of demandRNPs at the current index and the one below
-							demandRNPs[demand_shift_index - 1] = demandRNPs[demand_shift_index];
-							demandRNPs[demand_shift_index] = 0;
-
-							// If the tree is generated successfully, exit this block gracefully
-							if (routingDAG->generateTree(weatherDataSets, demandRNPs, deviationThreshold, nodeEdgeThreshold)) 
-							{
-								demand_shift_success = true;
-								std::cout << std::endl << "A downward swap generated a tree on the following index: " << demand_shift_index << std::endl;
-							}
-
-							// Swap them back
-							demandRNPs[demand_shift_index] = demandRNPs[demand_shift_index - 1];
-							demandRNPs[demand_shift_index - 1] = 0;
-
-						}
-						if (demand_shift_index + 1 < demandRNPs.size() && demandRNPs[demand_shift_index + 1] == 0 && !demand_shift_success) 
-						{
-							// Swap the values of demandRNPs at the current index and the one above
-							demandRNPs[demand_shift_index + 1] = demandRNPs[demand_shift_index];
-							demandRNPs[demand_shift_index] = 0;
-
-							// If the tree is generated successfully, exit this block gracefully
-							if (routingDAG->generateTree(weatherDataSets, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
-								demand_shift_success = true;
-								std::cout << std::endl << "An upward swap generated a tree on the following index: " << demand_shift_index << std::endl;
-							}
-
-							// Swap them back
-							demandRNPs[demand_shift_index] = demandRNPs[demand_shift_index + 1];
-							demandRNPs[demand_shift_index + 1] = 0;
-						}
+						demand_shift_success = true;
+						std::cout << std::endl << "A downward swap generated a tree on the following index: " << demand_shift_index << std::endl;
 					}
+
+					// Swap them back
+					demandRNPs[demand_shift_index] = demandRNPs[demand_shift_index - 1];
+					demandRNPs[demand_shift_index - 1] = 0;
+
 				}
-				if (demand_drop >= 1 && !demand_shift_success) 
+				if (demand_shift_index + 1 < demandRNPs.size() && demandRNPs[demand_shift_index + 1] == 0 && !demand_shift_success) 
 				{
-					/* Begin phase (2) of the demand shifting, aka demand_drop */
-					std::cout << std::endl <<  "Demand shifting unsuccessful, beginning demand dropping." << std::endl;
+					// Swap the values of demandRNPs at the current index and the one above
+					demandRNPs[demand_shift_index + 1] = demandRNPs[demand_shift_index];
+					demandRNPs[demand_shift_index] = 0;
 
-					std::vector<double> temp_demands(4); // This 4 needs to be changed if combinations is ever changed -- HARDCODED
-					// the below 255 is the length of ``combinations`` -- HARDCODED
-					for (unsigned int k = 0, comb_i = 0; 
-						k < demand_drop && comb_i < 255 && !demand_shift_success;
-						comb_i++ ) 
-					{
-						for (int j = 0; j < 4; ++j) 
-						{
-							temp_demands[j] = 0;
-						}
-
-						// std::cout << std::endl;
-						for (int j = 0; j < 4; ++j) 
-						{
-							if(combinations[comb_i][j] <   (int) 0 ||
-								combinations[comb_i][j] >= (int)demandRNPs.size())
-							{
-								continue;
-							}
-							if (demandRNPs[combinations[comb_i][j]] > 0) 
-							{
-								temp_demands[j] = demandRNPs[ combinations[comb_i][j] ] ;
-								demandRNPs[combinations[comb_i][j]] = 0;
-							}
-							// HARDCODED VALUE
-							if (j == 3) 
-							{
-								if (routingDAG->generateTree(weatherDataSets, demandRNPs, deviationThreshold, nodeEdgeThreshold)) 
-								{
-									demand_shift_success = true;
-									std::cout << std::endl << "A demand drop generated a tree on the following indices: ";
-									for(unsigned int i = 0; i <= k; i++) 
-									{
-										std::cout << combinations[comb_i][i] << " ";
-									}
-									std::cout << std::endl;
-
-									std::cout << std::endl << "Demand RNPs after the drop:" << std::endl;
-									for(unsigned int i = 0; i < demandRNPs.size(); i++) 
-									{
-										std::cout << demandRNPs[i] << " ";
-									}
-									std::cout << std::endl;
-								}
-								else 
-								{
-									for (int jj = 0; jj < 4; ++jj) 
-									{
-										demandRNPs[combinations[comb_i][jj]] = temp_demands[jj];
-										if (demandRNPs[combinations[comb_i][jj]] < 0.00000001) 
-										{
-											demandRNPs[combinations[comb_i][jj]] = 0;
-										}
-									}
-								}
-							}
-						}
-						// Find the new k value, which is the last positive number in the array -- HARDCODED
-						for (int j = 0; j < 4; ++j) 
-						{
-							if (combinations[comb_i][j] < 0) 
-							{
-								k = j - 1;
-								break;
-							}
-							if (j == 3)
-							{ // j would go on to being 4, but can't because of the loop condition
-								k = 3; 
-							}
-
-						}
+					// If the tree is generated successfully, exit this block gracefully
+					if (routingDAG->generateTree(weatherDataSets, demandRNPs, deviationThreshold, nodeEdgeThreshold)) {
+						demand_shift_success = true;
+						std::cout << std::endl << "An upward swap generated a tree on the following index: " << demand_shift_index << std::endl;
 					}
-				}
-				if (!demand_shift_success) 
-				{
-					std::cerr << "\nThere is no merge tree!" << std::endl;
-					exit(0);
-					return false;
+
+					// Swap them back
+					demandRNPs[demand_shift_index] = demandRNPs[demand_shift_index + 1];
+					demandRNPs[demand_shift_index + 1] = 0;
 				}
 			}
-			std::cout << std::endl << "FINISHED BOTTOMMOST FILL TREE" << std::endl;
-			std::cout<< std::endl << "A bottommost routing Tree is generated!" << std::endl;
+		}
+		if (demand_drop >= 1 && !demand_shift_success) 
+		{
+			/* Begin phase (2) of the demand shifting, aka demand_drop */
+			std::cout << std::endl <<  "Demand shifting unsuccessful, beginning demand dropping." << std::endl;
 
-			/**********************/
-#if defined(LEARNING_ABOUT_TREE)
-			unsigned totalNodes = 0;
-			for(unsigned int i = 0; i<routingDAG->getNumLayers(); i++)
+			std::vector<double> temp_demands(4); // This 4 needs to be changed if combinations is ever changed -- HARDCODED
+			// the below 255 is the length of ``combinations`` -- HARDCODED
+			for (unsigned int k = 0, comb_i = 0; 
+				k < demand_drop && comb_i < 255 && !demand_shift_success;
+				comb_i++ ) 
 			{
-				Node *layerChecker = routingDAG->findNode(i,0);
-				std::cout << "Node " << i << ",0 has in degree: " << layerChecker->getInDegree() << std::endl;			
-				Edge *inEdge = layerChecker->getInEdge(0);
-				unsigned int j = 0;
-				while(layerChecker != NULL)
+				for (int j = 0; j < 4; ++j) 
 				{
-					layerChecker = routingDAG->findNode(i,j);
-					if(layerChecker == NULL)
+					temp_demands[j] = 0;
+				}
+
+				// std::cout << std::endl;
+				for (int j = 0; j < 4; ++j) 
+				{
+					if(combinations[comb_i][j] <   (int) 0 ||
+						combinations[comb_i][j] >= (int)demandRNPs.size())
 					{
 						continue;
 					}
-					std::cout << "Node " << i << ", " << j << " thinks it is at ";
-					std::cout << layerChecker->getLayer() << ", " << layerChecker->getLayerIndex() << std::endl;
-					j++;
-				}
-				std::cout << "Layer " << i << " has " << j << " total nodes" << std::endl;
-				totalNodes +=j;
-			}
-			std::cout << "The observed total, " << totalNodes << ", should equal " << routingDAG->getNumNodes() << std::endl;
-#endif
-			/**********************/
+					if (demandRNPs[combinations[comb_i][j]] > 0) 
+					{
+						temp_demands[j] = demandRNPs[ combinations[comb_i][j] ] ;
+						demandRNPs[combinations[comb_i][j]] = 0;
+					}
+					// HARDCODED VALUE
+					if (j == 3) 
+					{
+						if (routingDAG->generateTree(weatherDataSets, demandRNPs, deviationThreshold, nodeEdgeThreshold)) 
+						{
+							demand_shift_success = true;
+							std::cout << std::endl << "A demand drop generated a tree on the following indices: ";
+							for(unsigned int i = 0; i <= k; i++) 
+							{
+								std::cout << combinations[comb_i][i] << " ";
+							}
+							std::cout << std::endl;
 
-			return true;
-		}	// an error message will pop up if failed to generate the DAG
-		else 
-		{ 
-			std::cout << "Failed to generate the DAG."; 
+							std::cout << std::endl << "Demand RNPs after the drop:" << std::endl;
+							for(unsigned int i = 0; i < demandRNPs.size(); i++) 
+							{
+								std::cout << demandRNPs[i] << " ";
+							}
+							std::cout << std::endl;
+						}
+						else 
+						{
+							for (int jj = 0; jj < 4; ++jj) 
+							{
+								demandRNPs[combinations[comb_i][jj]] = temp_demands[jj];
+								if (demandRNPs[combinations[comb_i][jj]] < 0.00000001) 
+								{
+									demandRNPs[combinations[comb_i][jj]] = 0;
+								}
+							}
+						}
+					}
+				}
+				// Find the new k value, which is the last positive number in the array -- HARDCODED
+				for (int j = 0; j < 4; ++j) 
+				{
+					if (combinations[comb_i][j] < 0) 
+					{
+						k = j - 1;
+						break;
+					}
+					if (j == 3)
+					{ // j would go on to being 4, but can't because of the loop condition
+						k = 3; 
+					}
+
+				}
+			}
 		}
-	}	
-	else // the weather data and demand profile have to be read in first
+		if (!demand_shift_success) 
 		{
-			std::cerr << "\nPlease read in or generate the demand profile and weather data first."<<std::endl;
+			std::cerr << "\nThere is no merge tree!" << std::endl;
+			return false;
 		}
-	return false;
+	}
+	std::cout << std::endl << "FINISHED BOTTOMMOST FILL TREE" << std::endl;
+	std::cout<< std::endl << "A bottommost routing Tree is generated!" << std::endl;
+
+	/**********************/
+#if defined(LEARNING_ABOUT_TREE)
+	unsigned totalNodes = 0;
+	for(unsigned int i = 0; i<routingDAG->getNumLayers(); i++)
+	{
+		Node *layerChecker = routingDAG->findNode(i,0);
+		std::cout << "Node " << i << ",0 has in degree: " << layerChecker->getInDegree() << std::endl;			
+		Edge *inEdge = layerChecker->getInEdge(0);
+		unsigned int j = 0;
+		while(layerChecker != NULL)
+		{
+			layerChecker = routingDAG->findNode(i,j);
+			if(layerChecker == NULL)
+			{
+				continue;
+			}
+			std::cout << "Node " << i << ", " << j << " thinks it is at ";
+			std::cout << layerChecker->getLayer() << ", " << layerChecker->getLayerIndex() << std::endl;
+			j++;
+		}
+		std::cout << "Layer " << i << " has " << j << " total nodes" << std::endl;
+		totalNodes +=j;
+	}
+	std::cout << "The observed total, " << totalNodes << ", should equal " << routingDAG->getNumNodes() << std::endl;
+#endif
+	/**********************/
+
+	return true;
 }
 
 // after the tree is ready, tauten the tree to make it look better
