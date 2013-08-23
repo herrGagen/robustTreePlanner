@@ -680,7 +680,16 @@ bool UserInterface::readWeatherData()
 	/***********************************************************************************************************************************/
 
 	double weatherCellWidth = inputs.getCellWidth();
-	for(int i=0; i<totalNumWeatherFiles; i++)
+  unsigned int numWeatherMembers = WeatherData::readNumberOfEnsembleMembers( weatherFileDirectories[0] );
+  weatherDataSets.resize(numWeatherMembers);
+  for(std::vector<WeatherData>::iterator wIter = weatherDataSets.begin();
+    wIter != weatherDataSets.end();
+    ++wIter)
+  {
+    wIter->reset();
+  }
+
+  for(int i=0; i<totalNumWeatherFiles; i++)
 	{
 		std::cout << "Parsing weather file: " << weatherFileDirectories[i] << std::endl;
 		ifstream is;
@@ -689,7 +698,8 @@ bool UserInterface::readWeatherData()
 		{
 			is.close();
 			std::string currentFile = weatherFileDirectories[i];
-			WeatherData tempWeather;
+      unsigned int thisWeatherIndex = WeatherData::readEnsembleMemberIndex( weatherFileDirectories[i] );
+			WeatherData &tempWeather = weatherDataSets[thisWeatherIndex];
 			if(!tempWeather.readInFileData(currentFile, 
 				rangeMinLati-1, 
 				rangeMinLong-1, 
@@ -703,7 +713,6 @@ bool UserInterface::readWeatherData()
 			// convert the weather cells to screen OPENGL coordinate system 
 			tempWeather.convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
 
-			weatherDataSets.push_back(tempWeather);		// push the newly read in weather data into the storing std::vector
 			minAlt = min(minAlt, (double)tempWeather.getMinAlt());
 			maxAlt = std::max(maxAlt, (double)tempWeather.getMaxAlt());
 		}

@@ -51,6 +51,9 @@ private:
 	double cellHeight;				// these 2 variables could be revised to std::vectors for each weather cell
 private:
 	double probability;				// the probability that the CURRENT weather data object is going to happen
+public:
+  static unsigned int readEnsembleMemberIndex( std::string fileName );
+  static unsigned int readNumberOfEnsembleMembers( std::string fileName );
 };
 
 #endif
