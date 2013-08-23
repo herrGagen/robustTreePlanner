@@ -31,10 +31,10 @@ void WeatherData::reset()		//reset the weather data
 	numPoints = 0;
 	minAlt = maxAlt = 0;				
 	minProbDev = maxProbDev =0;	
-	xCoors.clear();
-	yCoors.clear();
-	altitudes.clear();
-	probDeviation.clear();
+	xCoors.resize(0);
+	yCoors.resize(0);
+	altitudes.resize(0);
+	probDeviation.resize(0);
 	cellWidth = 0;
 	cellHeight = 0;
 	probability = 0;
@@ -71,7 +71,7 @@ unsigned int WeatherData::readEnsembleMemberIndex( std::string fileName )
     {
       unsigned beginNumber = thisLine.find_first_of("-.0123456789",found);
       unsigned endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
-      endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
+      endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length();
       std::string tempString = thisLine.substr(beginNumber, endNumber);
       memberIndex = (unsigned int) ::atoi( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() );
       break; // leave the for loop once target has been found
@@ -98,7 +98,7 @@ And want the second number.
 \param fileName Weather input file (for details, see readInFileData)
 \retval The number of weather ensemble members
 */  
-static unsigned int readNumberOfEnsembleMembers( std::string fileName )
+unsigned int WeatherData::readNumberOfEnsembleMembers( std::string fileName )
 {
 
   unsigned int numMembers;
@@ -120,7 +120,7 @@ static unsigned int readNumberOfEnsembleMembers( std::string fileName )
       unsigned beginNumber = thisLine.find_first_of("-.0123456789", afterSlash );
       // that's not actually a number
       unsigned endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
-      endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
+      endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length();
       std::string tempString = thisLine.substr(beginNumber, endNumber);
       numMembers = (unsigned int) ::atoi( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() );
       break; // leave the for loop once target has been found
@@ -160,7 +160,7 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 		{
 			unsigned beginNumber = thisLine.find_first_of("-.0123456789",found);
 			unsigned endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
-			endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
+			endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length();
 			std::string tempString = thisLine.substr(beginNumber, endNumber);
 			probability = (double) ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() );
 			break; // leave the for loop once probability has been found.
@@ -184,9 +184,9 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 		double values[4]; // Storage for tempX, tempY, tempAltitude, tempProbability		
 		size_t beginNumber = thisLine.find_first_of("-.0123456789",0);
 		// Just a double check to ensure we aren't feeding the parser garbage lines.
-		if(beginNumber == std::string::npos)
+		if(beginNumber > 2 )
 		{
-			break;
+			continue;
 		}
 		size_t endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
 
@@ -226,7 +226,9 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 bool WeatherData::handleInputData()
 {
 	if(xCoors.empty())
+  {
 		return false;
+  }
 	// The total number of weather cells
 	numPoints = xCoors.size();
 	maxAlt = minAlt = (int)altitudes[0];
@@ -248,10 +250,18 @@ bool WeatherData::handleInputData()
 		{
 			xCoors[i]-=360;
 		}
+    if(xCoors[i] < -180)
+    {
+      xCoors[i] += 360;
+    }
 		if(yCoors[i]>180)
 		{
 			yCoors[i]-=360;
 		}
+    if(yCoors[i] < -180)
+    {
+      yCoors[i] += 360;
+    }
 		if(altitudes[i]<minAlt)
 		{
 			minAlt = (int) altitudes[i];

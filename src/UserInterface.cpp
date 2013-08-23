@@ -89,7 +89,7 @@ void UserInterface::resetHelper()
 // RTPrototype Functions
 
 // The project starts excuting here, called by the main function
-void UserInterface::ProgramBegins(std::string inputFile)
+bool UserInterface::ProgramBegins(std::string inputFile)
 {
 
 	inputs = InputFileReader(inputFile);
@@ -108,13 +108,13 @@ void UserInterface::ProgramBegins(std::string inputFile)
 	if(!readDemandProfile()) // at the start, read in demand profile
 	{
 		std::cout << "\nFailed to read in the demand profile, double check the demand path listed." << std::endl;
-		return;
+		return false;
 	}
 	std::cout << "Demand profile successfully read in." << std::endl;
 	if(!readWeatherData())
 	{
 		std::cout << "\nFailed to successfully read in the weather data, double check the weather directories." << std::endl;
-		return;
+		return false;
 	}
 	std::cout << "\nWeather files are succesfully read in!" << std::endl;
 	(*quadrant).setAngle( inputs.getQuadrantAngle() );
@@ -131,7 +131,7 @@ void UserInterface::ProgramBegins(std::string inputFile)
 	std::cout << "\nSaving tree information." << std::endl;
 
 	saveTreeInformation();
-
+  return true;
 }
 
 // print the information of the quadrant and the demand rnps for each entry node
@@ -709,12 +709,6 @@ bool UserInterface::readWeatherData()
 				std::cout << "\nWeather not read in successfully..."<<std::endl;
 				return false;
 			}
-
-			// convert the weather cells to screen OPENGL coordinate system 
-			tempWeather.convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
-
-			minAlt = min(minAlt, (double)tempWeather.getMinAlt());
-			maxAlt = std::max(maxAlt, (double)tempWeather.getMaxAlt());
 		}
 		else
 		{
@@ -722,6 +716,18 @@ bool UserInterface::readWeatherData()
 			return false;
 		}
 	} // loop over all weather files
+
+
+  for(std::vector<WeatherData>::iterator wIter = weatherDataSets.begin();
+    wIter != weatherDataSets.end();
+    ++wIter)
+  {
+    wIter->convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
+
+			minAlt = std::min(minAlt, (double)wIter->getMinAlt());
+			maxAlt = std::max(maxAlt, (double)wIter->getMaxAlt());
+  }
+
 	// weather files are read in, do some tests to make sure that the files are valid
 	double totalProbabilityOfWeatherFiles = 0;
 	for(unsigned int i=0; i<weatherDataSets.size(); i++)
@@ -732,23 +738,32 @@ bool UserInterface::readWeatherData()
 	// the total probability of the weather files is not 1
 	if(std::abs(totalProbabilityOfWeatherFiles-1.0) > 0.1)			
 	{
-		std::cerr <<  "\nThe total probability of the weather data files is not 1."<<std::endl;
+		std::cout <<  "\nWarning: The total probability of the weather data files is not 1."<<std::endl;
 		std::cout << "Current Probability: " << totalProbabilityOfWeatherFiles << std::endl;
-		weatherDataSets.clear();
-		ctrl_WeatherReadIn = WEATHER_NOT_READ_IN;		// the weather is not read in yet
-		return false;
+    if(std::abs(totalProbabilityOfWeatherFiles ) < .0001 )
+    {
+      std::cerr << "No probability in weather files, exiting." << std::endl;
+      ctrl_WeatherReadIn = WEATHER_NOT_READ_IN;
+      return false;
+    }
+    for(std::vector<WeatherData>::iterator wIter = weatherDataSets.begin();
+      wIter != weatherDataSets.end();
+      ++wIter)
+    {
+      double currentProb = wIter->getProbability();
+      wIter->setProbability(currentProb/totalProbabilityOfWeatherFiles);
+    }
+	
 	}
-	else
-	{
-		ctrl_WeatherReadIn = WEATHER_READ_IN;
-		// when demand or weather data is changed, the routingDAG must be regenerated based on the new demand/weather data
-		if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)
-		{
-			ctrl_RoutingDAGGenerated = ROUTINGDAG_NOT_GENERATED;
-		}
-		quadrant->setiHeight(minAlt);					// if read in successfully, then set the quadrant's altitude information
+
+  ctrl_WeatherReadIn = WEATHER_READ_IN;
+  // when demand or weather data is changed, the routingDAG must be regenerated based on the new demand/weather data
+  if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)
+  {
+    ctrl_RoutingDAGGenerated = ROUTINGDAG_NOT_GENERATED;
+  }
+  quadrant->setiHeight(minAlt);					// if read in successfully, then set the quadrant's altitude information
 		quadrant->setoHeight(maxAlt);
-	}
 	return true;
 }
 

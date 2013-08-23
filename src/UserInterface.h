@@ -34,7 +34,7 @@ public:
 	// general purpose functions
 public:
 	void reset();							// reset the status to a brand new routing instance
-	void ProgramBegins(std::string inputFile);					// the project starts excuting from this function
+	bool ProgramBegins(std::string inputFile);					// the project starts excuting from this function
 	void saveTreeInformation();				// after generating the tree, save the information into an .xml file
 	void inputOperationalFlexibility();		// ask user to input parameters related to operational flexity
 private:
