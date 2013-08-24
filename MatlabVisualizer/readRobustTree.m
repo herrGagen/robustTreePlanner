@@ -35,8 +35,16 @@ for m = 1:length(branch)
     text(crdC(1,2),crdC(1,1),num2str(m))
 end
 
+markers = {'p', 'd', 'v', '<', 's', '>', '^', 'o', 'h', '+', '*', '.', 'x'};
 if(~isempty(weather) )
-    scatter(weather.lon,weather.lat,5,weather.ensembleId,'filled');
-    colorbar('SouthOutside')
+    allEnsembles = unique(weather.ensembleId);
+    scaledProb = sqrt(weather.ensembleProb).^2;
+    scaledProb = .1 + 24.9*(scaledProb - min(scaledProb))./(max(scaledProb) - min(scaledProb) );
+    for ensemble = allEnsembles
+        inds = weather.ensembleId == ensemble;
+        scatter(weather.lon(inds),weather.lat(inds),scaledProb(inds),'r',markers{ensemble+1},'filled');
+        scatter(weather.lon(inds),weather.lat(inds),scaledProb(inds),'r',markers{ensemble+1});        
+        hold on;
+    end
 end
 fprintf('... Done\n')
