@@ -2,7 +2,7 @@ require 'fileutils'
 require 'pathname'
 require 'date'
 
-def create_input(dshift, ddrop, a, dthresh, nethresh, oname, temp_weather_name, c_input_file, weather_cell_width, awidth, lw, number_of_fix_nodes,  oper_flex)
+def create_input(dshift, ddrop, a, dthresh, nethresh, oname, temp_weather_name, c_input_file, weather_cell_width, awidth, lw, number_of_fix_nodes,  oper_flex, file_names)
   demand_shift = dshift ? dshift : 1
   demand_drop = ddrop ? ddrop : 1
   angle               = a                   ? a                   : 0.0
@@ -29,9 +29,12 @@ def create_input(dshift, ddrop, a, dthresh, nethresh, oname, temp_weather_name, 
   input = File.new(input_file_path, 'w')
   
   input.write("Data/demand.nom\n")
-  input.write(weather_path.children.length.to_s + "\n")
-  weather_path.each_child do |child|
-    input.write((child.dirname.dirname.basename + child.dirname.basename + child.basename).to_s + "\n")
+  input.write(file_names.length.to_s + "\n")
+#   weather_path.each_child do |child|
+#     input.write((child.dirname.dirname.basename + child.dirname.basename + child.basename).to_s + "\n")
+#   end
+  file_names.each do |child|
+    input.write(child + "\n")
   end
   input.write(cell_width.to_s + "\n")
   input.write(angle.to_s + "\n")
