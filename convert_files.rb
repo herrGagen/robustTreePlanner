@@ -86,6 +86,8 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
   # Third pass writes files to a format readable by the C code
   sum = 0
   id = 0
+
+  file_names = []
   path.each_child do |file_name|
 
     name_ary = file_name.basename.to_s.split("_")
@@ -95,66 +97,18 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
       time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
       if time <= time_upper_bound and time >= time_lower_bound
         member_id = name_ary.last.split(".").first.split("Member").last
-        if concatenate_files
-          writeable_name = Pathname.new(results) + (member_id + ".dat")
-        else
-          writeable_name = Pathname.new(results) + (id.to_s + ".dat")
-        end
-        print writeable_name, "\n"
-        has_header = (File.exists?(writeable_name))
 
-        temp = File.new(file_name, 'r')
-        w = File.new(writeable_name, 'a')
         
+        # HERE WE SHOULD DELETE THE OUTPUT STUFF
+        # AND ADD IN STUFF TO FIGURE OUT WHICH FILES TO OUTPUT
+        file_names << file_name.to_s
+        # NOW DELETE THE OUTPUT STUFF
 
-        e = temp.each_line
-
-        # Need to find the Ensemble member number and probability to write out
-        4.times { e.next } # Burn through first 4 rows of the ensemble file (we don't need them)
-
-        unless has_header
-          line = e.next
-          line.slice!(0, 2)
-          w.write("Ensemble " + line)
-          line = e.next.split.last.to_f
-          line /= children_in_offset unless concatenate_files
-          # If we inputted desired file probabilities, use those instead of
-          # reading in the probabilities from the files.
-          if file_probs != []
-            line = file_probs[member_id.to_i-1].to_f
-          end
-          sum += line
-
-          # Made this output with a force to output 9 decimals, since before it would use exponential notation.
-          w.write("Probability " + ("%.9f" % line).to_s + "\r\n")
-        end
-        
-
-        line = e.next
-        while line.split.first == "#"
-          line = e.next
-        end
-        unless w.closed? or temp.closed?
-          begin
-            loop do
-              w.write(line) if line.split(",").last.to_f >= 0.7
-              # print line.split(","), "\n"
-              line = e.next
-            end
-          rescue StopIteration
-            break
-          ensure
-            w.close unless w.closed?
-            temp.close unless temp.closed?
-          end
-
-          id += 1
-        end
       end
     end
   end  
 
-  puts "Total Probability (should be close to 1): " + sum.to_s
+  return file_names
 end
 
 if __FILE__ == $0
@@ -277,7 +231,7 @@ if __FILE__ == $0
     print "Operational Flexibility:       ", oper_flex,               "\n" if oper_flex != []
     print "File probabilities:            ", file_probs,              "\n" if file_probs
 
-    main(s, o, temp_weather_name, weather_dir, concatenate_files, file_probs)
-    create_input(dshift, ddrop, angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, oper_flex)
+    file_names = main(s, o, temp_weather_name, weather_dir, concatenate_files, file_probs)
+    create_input(dshift, ddrop, angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, oper_flex, file_names)
   end
 end
