@@ -139,7 +139,7 @@ unsigned int WeatherData::readNumberOfEnsembleMembers( std::string fileName )
 // the content of the weather data file is stored in the char array buffer
 // this function analyses the data and store the data members into their vectors
 // the range of a box is given so that anything that is not in this range will NOT be stored in the vectors (weather trimming)
-bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, double rangeMinLong, double rangeMaxLati, double rangeMaxLong)
+bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, double rangeMinLong, double rangeMaxLati, double rangeMaxLong, double deviationThreshold)
 {
 	const char *fname = fileName.c_str();
 	std::ifstream dataStream(fname, std::ifstream::in );
@@ -209,7 +209,8 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 		if(values[0]>rangeMinLati && 
 			values[0]<rangeMaxLati && 
 			values[1]>rangeMinLong && 
-			values[1]<rangeMaxLong)
+			values[1]<rangeMaxLong &&
+      values[3] >= deviationThreshold)
 		{
 			xCoors.push_back(values[0]);	
 			yCoors.push_back(values[1]);

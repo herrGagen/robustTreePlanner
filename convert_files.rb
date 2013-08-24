@@ -20,7 +20,7 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
   starting_time       = 0 unless starting_time
   offset_in_minutes   = 0 unless offset_in_minutes
   results_string      = "results_start_" + starting_time.to_s + "_offset_" + offset_in_minutes.to_s unless results_string
-  results             = Pathname.new(Dir.pwd) + "Data" + results_string
+  results             = Dir.pwd + "Data" + results_string
   puts results
 
   weather_dir         = "CWAMEnsembles" unless weather_dir

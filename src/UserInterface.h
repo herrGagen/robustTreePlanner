@@ -5,6 +5,10 @@
 #include <string>
 #include "InputFileReader.h"
 
+#if defined(SUPPRESS_OUTPUT)
+#define cout ostream(0).flush()
+#endif
+
 #define QUADRANT_NOT_GENERATED 0			// define if the quadrant is generated or not
 #define QUADRANT_GENERATED 1
 
@@ -107,6 +111,11 @@ private:
         // the time range of simulation
 	std::string startTime;
         std::string endTime;		
+
+  /******* Functions to help us only use relevant weather points *************/
+  static std::pair<double, double> latLonOfPointAlongLineWithBearing(double lat, double lon, double dist, double bearing);
+  void calculateBoundingBox(double &minLat, double &minLon, double &maxLat, double &maxLon) const;
+
 };
 
 #endif

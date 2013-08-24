@@ -116,12 +116,28 @@ bool UserInterface::ProgramBegins(std::string inputFile)
 		std::cout << "\nFailed to successfully read in the weather data, double check the weather directories." << std::endl;
 		return false;
 	}
+
+  bool isThereWeather = false;
+  for(std::vector<WeatherData>::iterator wIter = weatherDataSets.begin();
+    wIter != weatherDataSets.end();
+    ++wIter)
+  {
+    isThereWeather |= wIter->size() > 0;
+  }
+  if(isThereWeather == false)
+  {
+     std::cerr << "There is no weather in the current quadrant." << std::endl;
+     return false;
+  }
 	std::cout << "\nWeather files are succesfully read in!" << std::endl;
+
 	(*quadrant).setAngle( inputs.getQuadrantAngle() );
 	(*quadrant).setAngularWidth( inputs.getQuadrantAngle() );
 	std::cout << "Current angle: " << quadrant->getAngle() << std::endl;
 	std::cout << "Generating tree." << std::endl;
 	generateTree();
+
+
 
 	std::cout << "Tautening tree." << std::endl;
 	tautenTree();
@@ -673,7 +689,7 @@ bool UserInterface::readWeatherData()
 	double rangeMaxLong;
 	// get the range of the weather data by knowing the range of the demand profile, so those unrelated weather
 	// data cells are trimed (not read into the memory of the storing std::vector at all)
-	demandProfile->getRange(&rangeMinLati, &rangeMinLong, &rangeMaxLati, &rangeMaxLong);
+	calculateBoundingBox(rangeMinLati, rangeMinLong, rangeMaxLati, rangeMaxLong);
 	double minAlt = 10000;
 	double maxAlt = 0;			// get the min and std::max altitude of all weather files in order to set the quadrant
 	std::cout << "\nReading weather data files now, please wait..." << std::endl;
@@ -704,7 +720,8 @@ bool UserInterface::readWeatherData()
 				rangeMinLati-1, 
 				rangeMinLong-1, 
 				rangeMaxLati+1, 
-				rangeMaxLong+1 ) )
+				rangeMaxLong+1,
+        inputs.getDeviationThreshold() ) )
 			{
 				std::cout << "\nWeather not read in successfully..."<<std::endl;
 				return false;
@@ -828,3 +845,75 @@ void UserInterface::saveTreeInformation()
 	std::cout<< "\nTree Information successfully written to file.\n";
 }
 
+/**
+  \brief Calculates lat',lon' for a point distance dist away from (lat,lon) on bearing bearing.
+
+  \param lat1 Latitude of starting point.
+  \param lon1 Longitude of starting point.
+  \param dist Distance our new point will be from starting point.
+  \param bearing Bearing of the travel distance between points.
+
+  \retval Returns <lat', lon'> the latitude and longitude of the point 
+*/
+std::pair<double, double> UserInterface::latLonOfPointAlongLineWithBearing(double lat1, double lon1, double dist, double bearing)
+{
+    const double rEarth = 3443.89849;
+    double d = dist/rEarth;
+    double lat = asin(sin(lat1)*cos(d)+cos(lat1)*sin(d)*cos(bearing));
+    double dlon= atan2(sin(bearing)*sin(d)*cos(lat1),cos(d)-sin(lat1)*sin(lat));
+    double lon= std::fmod(lon1-dlon + PI,2*PI) -PI;
+
+    return std::pair<double,double>(lat,lon);
+}
+
+/**
+  \brief Calculated bounding box of the weather quadrant we are using
+
+  YES this should be encapsulated in Quadrant, but that class is all in 
+  bullshit x,y screen coordinates.  
+
+  It could even be in demand profile, but THAT class has no knowledge of the
+  angle of the current quadrant we are using.  
+
+  So yeah, UserInterface takes another one for the team.
+*/
+void UserInterface::calculateBoundingBox(double &minLat, double &minLon, double &maxLat, double &maxLon) const
+{
+
+  minLat = maxLat = centerLati;
+  minLon = maxLon = centerLong;
+
+  // Our approach is simple: set min/max to the center of the quadrant.
+  // Then we travel around clockwise from the starting angle of the quadrant
+  // to the final angle of the quadrant, and check all n*pi/2 angles in between
+  //
+  // By check, we mean compare the lat/lon of a point at this bearing
+  // and a distance of radius to the current min/max 
+  std::vector<double> bearings;
+  double startingAngle = inputs.getQuadrantAngle();
+  double finalAngle = startingAngle + inputs.getAngularWidth();
+
+  double radius = quadrant->getoRadius();
+
+  bearings.push_back(startingAngle);
+  for(double angle = startingAngle-fmod(startingAngle,PI/2) + PI/2; 
+    angle < finalAngle - fmod(finalAngle,PI/2);
+    angle += PI/2)
+  {
+    bearings.push_back(angle);
+  }
+  bearings.push_back(finalAngle);
+
+  for(std::vector<double>::iterator angleIter = bearings.begin();
+    angleIter != bearings.end();
+    ++angleIter)
+  {
+    std::pair<double,double> latLon = latLonOfPointAlongLineWithBearing(centerLati, centerLong, radius, *angleIter);
+    minLat = minLat < latLon.first  ? minLat : latLon.first;
+    minLon = minLon < latLon.second ? minLon : latLon.second;
+    maxLat = maxLat > latLon.first  ? maxLat : latLon.first;
+    maxLon = maxLon > latLon.second ? maxLon : latLon.second;
+  }
+
+  return;
+}

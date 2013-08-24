@@ -23,8 +23,11 @@ class WeatherData
 public:
 	WeatherData(void);
 	~WeatherData(void);
-	bool readInFileData(std::string fileName, double rangeMinLati, double rangeMinLong, double rangeMaxLati, double rangeMaxLong);
+	bool readInFileData(std::string fileName, double rangeMinLati, double rangeMinLong, double rangeMaxLati, double rangeMaxLong, double deviationThreshold);
 	void reset();
+  /**
+    \brief Returns true iff there are no weather cells in this object
+  */
 	double getMaxDevThres() const;
 	double getMinDevThres() const;
 	unsigned int size() const;

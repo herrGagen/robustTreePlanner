@@ -1,5 +1,5 @@
 #include "Quadrant.h"
-#include "math.h"
+#include <math.h>
 #include <vector>
 #include <algorithm>
 #include <iostream>

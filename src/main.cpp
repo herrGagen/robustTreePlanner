@@ -20,12 +20,22 @@ int main(int argc, char* argv[])
       }
     }
   }
-  
-	UserInterface userInterface;
-	userInterface.ProgramBegins(inputFile);
+
+  UserInterface userInterface;
+	if( userInterface.ProgramBegins(inputFile) == false )
+  {
+    std::ofstream emptyFile;
+    emptyFile.open( userInterface.getOutputFileName() + ".xml");
+    emptyFile << "" << std::endl;
+    emptyFile.close();
+    emptyFile.open( userInterface.getOutputFileName() + ".dp.xml");
+    emptyFile << "" << std::endl;
+    emptyFile.close();
+    return -1;
+  }
 	TreeVerifier checker(userInterface);
 	checker.appendReportToFiles("InvalidTrees.txt","ValidTrees.txt");
-    checker.outputTreeLengthStats();
+  checker.outputTreeLengthStats();
 	DynProgTreeGenerator dp(userInterface);
 	dp.writeBestTreeToDAG(userInterface);
 	TreeVerifier dpChecker(userInterface);

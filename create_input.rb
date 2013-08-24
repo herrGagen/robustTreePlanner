@@ -21,6 +21,7 @@ def create_input(dshift, ddrop, a, dthresh, nethresh, oname, temp_weather_name, 
   weather_path = nil
   dp_children = data_path.children
   creation_times = dp_children.map { |e| File.ctime(e).to_i }
+  
   weather_path = temp_weather_name ? data_path + temp_weather_name : data_path.children[creation_times.index(creation_times.max)]
   print "Temp weather dir: ", weather_path # This may be redundant, but it indicates which one it selected
                                            # If there is no option set, it should use the most recently created folder
@@ -30,9 +31,6 @@ def create_input(dshift, ddrop, a, dthresh, nethresh, oname, temp_weather_name, 
   
   input.write("Data/demand.nom\n")
   input.write(file_names.length.to_s + "\n")
-#   weather_path.each_child do |child|
-#     input.write((child.dirname.dirname.basename + child.dirname.basename + child.basename).to_s + "\n")
-#   end
   file_names.each do |child|
     input.write(child + "\n")
   end
