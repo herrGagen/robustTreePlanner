@@ -31,22 +31,116 @@ void WeatherData::reset()		//reset the weather data
 	numPoints = 0;
 	minAlt = maxAlt = 0;				
 	minProbDev = maxProbDev =0;	
-	xCoors.clear();
-	yCoors.clear();
-	altitudes.clear();
-	probDeviation.clear();
+	xCoors.resize(0);
+	yCoors.resize(0);
+	altitudes.resize(0);
+	probDeviation.resize(0);
 	cellWidth = 0;
 	cellHeight = 0;
 	probability = 0;
 }
 
+/**
+  \brief Locates the ensemble index for a weather file (located in the header)
+
+  We seek a line that looks like:
+  # Member: 1/6
+
+  And want the first number.
+
+  \param fileName Weather input file (for details, see readInFileData)
+  \retval The zero offset index for this member (i.e. what the file says -1)
+  */  
+unsigned int WeatherData::readEnsembleMemberIndex( std::string fileName )
+{
+
+  unsigned int memberIndex;
+  const char *fname = fileName.c_str();
+  std::ifstream dataStream(fname, std::ifstream::in );
+  size_t fileSize = 0;
+  dataStream.seekg(0, std::ios_base::end);
+  fileSize = (size_t)dataStream.tellg();
+  dataStream.seekg(0, std::ios_base::beg);
+
+  std::string thisLine;
+  for(unsigned int i = 0; i<15; i++) // Try and find the "member index" line in the header
+  {
+    std::getline(dataStream, thisLine);
+    size_t found = thisLine.find("Member:");
+    if(found != std::string::npos)
+    {
+      unsigned beginNumber = thisLine.find_first_of("-.0123456789",found);
+      unsigned endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
+      endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length();
+      std::string tempString = thisLine.substr(beginNumber, endNumber);
+      memberIndex = (unsigned int) ::atoi( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() );
+      break; // leave the for loop once target has been found
+    }
+    if(i == 14)
+    {
+      std::cerr << "Weather file " << fileName << " has no ensemble member information" << std::endl;
+      return 0;
+    }
+
+  }
+  dataStream.close();
+  return memberIndex-1;
+}
+
+/**
+\brief Locates the number of ensemble members for a weather file (located in the header)
+
+We seek a line that looks like:
+# Member: 1/6
+
+And want the second number.
+
+\param fileName Weather input file (for details, see readInFileData)
+\retval The number of weather ensemble members
+*/  
+unsigned int WeatherData::readNumberOfEnsembleMembers( std::string fileName )
+{
+
+  unsigned int numMembers;
+  const char *fname = fileName.c_str();
+  std::ifstream dataStream(fname, std::ifstream::in );
+  size_t fileSize = 0;
+  dataStream.seekg(0, std::ios_base::end);
+  fileSize = (size_t)dataStream.tellg();
+  dataStream.seekg(0, std::ios_base::beg);
+
+  std::string thisLine;
+  for(unsigned int i = 0; i<15; i++) // Try and find the "member index" line in the header
+  {
+    std::getline(dataStream, thisLine);
+    size_t found = thisLine.find("Member:");
+    if(found != std::string::npos)
+    {
+      unsigned afterSlash = thisLine.find_first_of("/",found);
+      unsigned beginNumber = thisLine.find_first_of("-.0123456789", afterSlash );
+      // that's not actually a number
+      unsigned endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
+      endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length();
+      std::string tempString = thisLine.substr(beginNumber, endNumber);
+      numMembers = (unsigned int) ::atoi( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() );
+      break; // leave the for loop once target has been found
+    }
+    if(i == 14)
+    {
+      std::cerr << "Weather file " << fileName << " has no ensemble member information" << std::endl;
+      return 0;
+    }
+  }
+  dataStream.close();
+  return numMembers;
+}
+
+
 // the content of the weather data file is stored in the char array buffer
 // this function analyses the data and store the data members into their vectors
 // the range of a box is given so that anything that is not in this range will NOT be stored in the vectors (weather trimming)
-bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, double rangeMinLong, double rangeMaxLati, double rangeMaxLong)
+bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, double rangeMinLong, double rangeMaxLati, double rangeMaxLong, double deviationThreshold)
 {
-	reset();											// first reset the vectors to empty, then read in
-
 	const char *fname = fileName.c_str();
 	std::ifstream dataStream(fname, std::ifstream::in );
 	size_t fileSize = 0;
@@ -58,7 +152,7 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 	// redone with more modern c++ tools than pointers, and strcomp()
 
 	std::string thisLine;
-	for(unsigned int i = 0; i<5; i++) // Try and find the "Probability" line in the first 5 lines of the file.
+	for(unsigned int i = 0; i<15; i++) // Try and find the "Probability" line in the first 5 lines of the file.
 	{
 		std::getline(dataStream, thisLine);
 		size_t found = thisLine.find("Probability");
@@ -66,12 +160,12 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 		{
 			unsigned beginNumber = thisLine.find_first_of("-.0123456789",found);
 			unsigned endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
-			endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length()-1;
+			endNumber = (endNumber < thisLine.length() ) ? endNumber : thisLine.length();
 			std::string tempString = thisLine.substr(beginNumber, endNumber);
 			probability = (double) ::atof( (thisLine.substr(beginNumber, endNumber-beginNumber)).c_str() );
 			break; // leave the for loop once probability has been found.
 		}
-		if(i==4)
+		if(i==14)
 		{
 			std::cerr << "The input file had no probability associated with it." << std::endl;
 			return( handleInputData() );
@@ -90,9 +184,9 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 		double values[4]; // Storage for tempX, tempY, tempAltitude, tempProbability		
 		size_t beginNumber = thisLine.find_first_of("-.0123456789",0);
 		// Just a double check to ensure we aren't feeding the parser garbage lines.
-		if(beginNumber == std::string::npos)
+		if(beginNumber > 2 )
 		{
-			break;
+			continue;
 		}
 		size_t endNumber = thisLine.find_first_not_of("-.0123456789",beginNumber);
 
@@ -115,7 +209,8 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 		if(values[0]>rangeMinLati && 
 			values[0]<rangeMaxLati && 
 			values[1]>rangeMinLong && 
-			values[1]<rangeMaxLong)
+			values[1]<rangeMaxLong &&
+      values[3] >= deviationThreshold)
 		{
 			xCoors.push_back(values[0]);	
 			yCoors.push_back(values[1]);
@@ -132,7 +227,9 @@ bool WeatherData::readInFileData(std::string fileName, double rangeMinLati, doub
 bool WeatherData::handleInputData()
 {
 	if(xCoors.empty())
+  {
 		return false;
+  }
 	// The total number of weather cells
 	numPoints = xCoors.size();
 	maxAlt = minAlt = (int)altitudes[0];
@@ -154,10 +251,18 @@ bool WeatherData::handleInputData()
 		{
 			xCoors[i]-=360;
 		}
+    if(xCoors[i] < -180)
+    {
+      xCoors[i] += 360;
+    }
 		if(yCoors[i]>180)
 		{
 			yCoors[i]-=360;
 		}
+    if(yCoors[i] < -180)
+    {
+      yCoors[i] += 360;
+    }
 		if(altitudes[i]<minAlt)
 		{
 			minAlt = (int) altitudes[i];

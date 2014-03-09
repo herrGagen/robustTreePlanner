@@ -16,11 +16,11 @@ def parse_time_from_filename(filename)
   DateTime.parse(filename.basename.to_s.gsub(/[^0-9]/, "")).to_time
 end
 
-def main(starting_time, offset_in_minutes, results_string=false, weather_dir=false)
+def main(starting_time, offset_in_minutes, results_string=false, weather_dir=false, concatenate_files=false, file_probs=[])
   starting_time       = 0 unless starting_time
   offset_in_minutes   = 0 unless offset_in_minutes
   results_string      = "results_start_" + starting_time.to_s + "_offset_" + offset_in_minutes.to_s unless results_string
-  results             = Pathname.new(Dir.pwd) + "Data" + results_string
+  results             = Dir.pwd + "Data" + results_string
   puts results
 
   weather_dir         = "CWAMEnsembles" unless weather_dir
@@ -86,56 +86,29 @@ def main(starting_time, offset_in_minutes, results_string=false, weather_dir=fal
   # Third pass writes files to a format readable by the C code
   sum = 0
   id = 0
+
+  file_names = []
   path.each_child do |file_name|
+
     name_ary = file_name.basename.to_s.split("_")
     extension = name_ary.last.split(".").last if name_ary.last
     if extension == "txt"
       # print file_name
       time = DateTime.parse(name_ary[2]).to_time # The 3rd part of the string contains the relevant time
       if time <= time_upper_bound and time >= time_lower_bound
-        writeable_name = Pathname.new(results) + (id.to_s + ".dat")
-        # print time, "  ", writeable_name, "\n"
-        w = File.new(writeable_name, 'a')
-        temp = File.new(file_name, 'r')
-        e = temp.each_line
+        member_id = name_ary.last.split(".").first.split("Member").last
 
-        # Need to find the Ensemble member number and  probability to write out
-        4.times { e.next } # Burn through first 4 rows of the ensemble file (we don't need them)
-        line = e.next
-        line.slice!(0, 2)
-        # print "LINE: ", line, "\n"
-        w.write("Ensemble " + line)
-        line = e.next.split.last.to_f / children_in_offset
-        sum += line
+        
+        # HERE WE SHOULD DELETE THE OUTPUT STUFF
+        # AND ADD IN STUFF TO FIGURE OUT WHICH FILES TO OUTPUT
+        file_names << file_name.to_s
+        # NOW DELETE THE OUTPUT STUFF
 
-        # Made this output with a force to output 9 decimals, since before it would use exponential notation.
-        w.write("Probability " + ("%.9f" % line).to_s + "\r\n")
-
-        line = e.next
-        while line.split.first == "#"
-          line = e.next
-        end
-        unless w.closed? or temp.closed?
-          begin
-            loop do
-              w.write(line) if line.split(",").last.to_f >= 0.7
-              # print line.split(","), "\n"
-              line = e.next
-            end
-          rescue StopIteration
-            break
-          ensure
-            w.close unless w.closed?
-            temp.close unless temp.closed?
-          end
-
-          id += 1
-        end
       end
     end
   end  
 
-  puts "Total Probability (should be close to 1): " + sum.to_s
+  return file_names
 end
 
 if __FILE__ == $0
@@ -159,6 +132,7 @@ if __FILE__ == $0
     quadrant_size       = false
     lane_width 	        = false
     max_fix_nodes       = false
+    concatenate_files   = false
 
     ARGV.each do |arg|
       # The following lines need ``== true`` because they are being used
@@ -166,7 +140,7 @@ if __FILE__ == $0
       s = arg if s == true
       o = arg if o == true
       dshift = arg if dshift == true #just boolean 0 or 1, whether or not we want to use demand shifting
-      ddrop = arg if ddrop == true # same as demand shifting, 0 or 1 to indicate whether or not we do it
+      ddrop = arg if ddrop == true # This should be 0 to 4, whether or not we'll drop up to 4 demands.
       angle               = arg if angle                == true
       deviation_threshold = arg if deviation_threshold  == true
       node_edge_threshold = arg if node_edge_threshold  == true
@@ -209,6 +183,8 @@ if __FILE__ == $0
         lane_width = true
       elsif arg == "-fixnodes"
         max_fix_nodes = true
+      elsif arg == "-concat"
+        concatenate_files = true
       end
     end
 
@@ -217,11 +193,26 @@ if __FILE__ == $0
     ARGV.each do |arg|
       if arg == "-operflex"
         oper_flex_flag = true
+        next
       elsif arg.split("").first == "-"
         oper_flex_flag = false
       end
       if oper_flex_flag and arg.split("").first != "-"
         oper_flex << arg
+      end
+    end
+
+    file_probs = []
+    file_probs_flag = false
+    ARGV.each do |arg|
+      if arg == "-fileprobs"
+        file_probs_flag = true
+        next
+      elsif arg.split("").first == "-"
+        file_probs_flag = false
+      end
+      if file_probs_flag and arg.split("").first != "-"
+        file_probs << arg
       end
     end
 
@@ -238,8 +229,9 @@ if __FILE__ == $0
     print "Lane width:                    ", lane_width,              "\n" if lane_width
     print "Max Number of Fix Nodes:       ", max_fix_nodes,           "\n" if max_fix_nodes
     print "Operational Flexibility:       ", oper_flex,               "\n" if oper_flex != []
+    print "File probabilities:            ", file_probs,              "\n" if file_probs
 
-    main(s, o, temp_weather_name, weather_dir)
-    create_input(dshift, ddrop, angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, oper_flex)
+    file_names = main(s, o, temp_weather_name, weather_dir, concatenate_files, file_probs)
+    create_input(dshift, ddrop, angle, deviation_threshold, node_edge_threshold, output_name, temp_weather_name, c_input_file, weather_cell_width, quadrant_size, lane_width, max_fix_nodes, oper_flex, file_names)
   end
 end

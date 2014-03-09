@@ -38,7 +38,7 @@ private:
 	double latiPerPixel; // conversion from latitude to pixel in x direction
 	double longPerPixel; // conversion from longitude to pixel in y direction
 	double altPerPixel;  
-        double minX, minY, maxX, maxY;	// the ranges of the lati/long values
+  double minX, minY, maxX, maxY;	// the ranges of the lati/long values
 	unsigned int numDemands;		// the number of demands that are listed in the input file
 private:
 	bool handleInputData();	 // after reading in, deal with the input

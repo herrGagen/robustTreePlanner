@@ -23,8 +23,11 @@ class WeatherData
 public:
 	WeatherData(void);
 	~WeatherData(void);
-	bool readInFileData(std::string fileName, double rangeMinLati, double rangeMinLong, double rangeMaxLati, double rangeMaxLong);
+	bool readInFileData(std::string fileName, double rangeMinLati, double rangeMinLong, double rangeMaxLati, double rangeMaxLong, double deviationThreshold);
 	void reset();
+  /**
+    \brief Returns true iff there are no weather cells in this object
+  */
 	double getMaxDevThres() const;
 	double getMinDevThres() const;
 	unsigned int size() const;
@@ -51,6 +54,9 @@ private:
 	double cellHeight;				// these 2 variables could be revised to std::vectors for each weather cell
 private:
 	double probability;				// the probability that the CURRENT weather data object is going to happen
+public:
+  static unsigned int readEnsembleMemberIndex( std::string fileName );
+  static unsigned int readNumberOfEnsembleMembers( std::string fileName );
 };
 
 #endif

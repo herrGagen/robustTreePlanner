@@ -36,14 +36,19 @@ for m = 1:length(branch)
 end
 
 markers = {'p', 'd', 'v', '<', 's', '>', '^', 'o', 'h', '+', '*', '.', 'x'};
-if(~isempty(weather) )
+if(~isempty(weather) && ~isempty(weather.lat) )
     allEnsembles = unique(weather.ensembleId);
     scaledProb = sqrt(weather.ensembleProb).^2;
     scaledProb = .1 + 24.9*(scaledProb - min(scaledProb))./(max(scaledProb) - min(scaledProb) );
     for ensemble = allEnsembles
         inds = weather.ensembleId == ensemble;
-        scatter(weather.lon(inds),weather.lat(inds),scaledProb(inds),'r',markers{ensemble+1},'filled');
-        scatter(weather.lon(inds),weather.lat(inds),scaledProb(inds),'r',markers{ensemble+1});        
+        if(ensemble +1 < length(markers) )
+            thisMark = markers{ensemble+1};
+        else
+            thisMark = 'x';
+        end
+        scatter(weather.lon(inds),weather.lat(inds),scaledProb(inds),'r',thisMark,'filled');
+        scatter(weather.lon(inds),weather.lat(inds),scaledProb(inds),'r',thisMark);        
         hold on;
     end
 end

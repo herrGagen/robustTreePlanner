@@ -39,13 +39,15 @@ if(yRight < minY)
 end
 
 function [x der] = findZeroOfDeriv( fun, xMin, xMax )
-% Uses dinary search to find zero of the derivative of the function
+% Uses binary search to find zero of the derivative of the function
 % handle fun being passed in.
 
 SMALL_NUMBER = abs(xMax-xMin)/2^10;
 smallX = .0000001;
 
 yPrimeMax = fun(xMax+smallX) - fun(xMax);
+xTemp = (xMax + xMin)/2;
+yPrimeTemp = fun(xTemp+smallX) - fun(xTemp);
 
 while( abs(xMax - xMin) > SMALL_NUMBER )
            xTemp = (xMax + xMin)/2;

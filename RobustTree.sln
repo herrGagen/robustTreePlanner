@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RobustTree", "RobustTree.vcxproj", "{3ADFD6B6-4090-473F-A2D5-4D2E24B40DBC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tests", "Tests.vcxproj", "{B2DBC3DC-9F9E-496C-993A-8954D717D8A2}"
@@ -8,15 +8,19 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
+		OutputWeatherInXML|Win32 = OutputWeatherInXML|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3ADFD6B6-4090-473F-A2D5-4D2E24B40DBC}.Debug|Win32.ActiveCfg = Debug|Win32
 		{3ADFD6B6-4090-473F-A2D5-4D2E24B40DBC}.Debug|Win32.Build.0 = Debug|Win32
+		{3ADFD6B6-4090-473F-A2D5-4D2E24B40DBC}.OutputWeatherInXML|Win32.ActiveCfg = OutputWeatherInXML|Win32
+		{3ADFD6B6-4090-473F-A2D5-4D2E24B40DBC}.OutputWeatherInXML|Win32.Build.0 = OutputWeatherInXML|Win32
 		{3ADFD6B6-4090-473F-A2D5-4D2E24B40DBC}.Release|Win32.ActiveCfg = Release|Win32
 		{3ADFD6B6-4090-473F-A2D5-4D2E24B40DBC}.Release|Win32.Build.0 = Release|Win32
 		{B2DBC3DC-9F9E-496C-993A-8954D717D8A2}.Debug|Win32.ActiveCfg = Debug|Win32
 		{B2DBC3DC-9F9E-496C-993A-8954D717D8A2}.Debug|Win32.Build.0 = Debug|Win32
+		{B2DBC3DC-9F9E-496C-993A-8954D717D8A2}.OutputWeatherInXML|Win32.ActiveCfg = Release|Win32
 		{B2DBC3DC-9F9E-496C-993A-8954D717D8A2}.Release|Win32.ActiveCfg = Release|Win32
 		{B2DBC3DC-9F9E-496C-993A-8954D717D8A2}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection

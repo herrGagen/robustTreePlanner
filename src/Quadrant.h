@@ -61,6 +61,7 @@ private:
 	void generateRoutingDAGInternalNodes(RoutingDAG* rDAG, const std::vector<double> &rnps, double quadrantAngularWidth);
 	double moveThisAngleBetweenZeroAndTwoPi( double inAngle );
 	/*********************************************************************************************/
+
 };
 
 #endif

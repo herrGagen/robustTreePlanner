@@ -5,6 +5,10 @@
 #include <string>
 #include "InputFileReader.h"
 
+#if defined(SUPPRESS_OUTPUT)
+#define cout ostream(0).flush()
+#endif
+
 #define QUADRANT_NOT_GENERATED 0			// define if the quadrant is generated or not
 #define QUADRANT_GENERATED 1
 
@@ -35,7 +39,6 @@ public:
 public:
 	void reset();							// reset the status to a brand new routing instance
 	bool ProgramBegins(std::string inputFile);					// the project starts excuting from this function
-	void makeRTPTreeAndFinish();
 	void saveTreeInformation();				// after generating the tree, save the information into an .xml file
 	void inputOperationalFlexibility();		// ask user to input parameters related to operational flexity
 private:
@@ -51,7 +54,6 @@ private:
 	bool inputDemandValid(std::string &input, int numDemands);		// tell if the user input demand is valid or not
 	/****************************************************************************************************************************/
 	// tree generating related functions
-	bool makeDAG();					// generate searchDAG
 	bool generateTree();					// generate a bottommost robust tree
 	bool tautenTree();						// tauten the generated bottommost tree
 	/****************************************************************************************************************************/
@@ -109,6 +111,11 @@ private:
         // the time range of simulation
 	std::string startTime;
         std::string endTime;		
+
+  /******* Functions to help us only use relevant weather points *************/
+  static std::pair<double, double> latLonOfPointAlongLineWithBearing(double lat, double lon, double dist, double bearing);
+  void calculateBoundingBox(double &minLat, double &minLon, double &maxLat, double &maxLon) const;
+
 };
 
 #endif

@@ -116,7 +116,21 @@ bool UserInterface::ProgramBegins(std::string inputFile)
 		std::cout << "\nFailed to successfully read in the weather data, double check the weather directories." << std::endl;
 		return false;
 	}
+
+  bool isThereWeather = false;
+  for(std::vector<WeatherData>::iterator wIter = weatherDataSets.begin();
+    wIter != weatherDataSets.end();
+    ++wIter)
+  {
+    isThereWeather |= wIter->size() > 0;
+  }
+  if(isThereWeather == false)
+  {
+     std::cerr << "There is no weather in the current quadrant." << std::endl;
+     return false;
+  }
 	std::cout << "\nWeather files are succesfully read in!" << std::endl;
+
 	(*quadrant).setAngle( inputs.getQuadrantAngle() );
 	(*quadrant).setAngularWidth( inputs.getQuadrantAngle() );
 	std::cout << "Current angle: " << quadrant->getAngle() << std::endl;
@@ -129,6 +143,8 @@ void UserInterface::makeRTPTreeAndFinish()
 	std::cout << "Generating tree." << std::endl;
 	generateTree();
 
+
+
 	std::cout << "Tautening tree." << std::endl;
 	tautenTree();
 
@@ -137,7 +153,7 @@ void UserInterface::makeRTPTreeAndFinish()
 	std::cout << "\nSaving tree information." << std::endl;
 
 	saveTreeInformation();
-
+  return true;
 }
 
 // print the information of the quadrant and the demand rnps for each entry node
@@ -687,14 +703,23 @@ bool UserInterface::readWeatherData()
 	double rangeMaxLong;
 	// get the range of the weather data by knowing the range of the demand profile, so those unrelated weather
 	// data cells are trimed (not read into the memory of the storing std::vector at all)
-	demandProfile->getRange(&rangeMinLati, &rangeMinLong, &rangeMaxLati, &rangeMaxLong);
+	calculateBoundingBox(rangeMinLati, rangeMinLong, rangeMaxLati, rangeMaxLong);
 	double minAlt = 10000;
 	double maxAlt = 0;			// get the min and std::max altitude of all weather files in order to set the quadrant
 	std::cout << "\nReading weather data files now, please wait..." << std::endl;
 	/***********************************************************************************************************************************/
 
 	double weatherCellWidth = inputs.getCellWidth();
-	for(int i=0; i<totalNumWeatherFiles; i++)
+  unsigned int numWeatherMembers = WeatherData::readNumberOfEnsembleMembers( weatherFileDirectories[0] );
+  weatherDataSets.resize(numWeatherMembers);
+  for(std::vector<WeatherData>::iterator wIter = weatherDataSets.begin();
+    wIter != weatherDataSets.end();
+    ++wIter)
+  {
+    wIter->reset();
+  }
+
+  for(int i=0; i<totalNumWeatherFiles; i++)
 	{
 		std::cout << "Parsing weather file: " << weatherFileDirectories[i] << std::endl;
 		ifstream is;
@@ -703,23 +728,18 @@ bool UserInterface::readWeatherData()
 		{
 			is.close();
 			std::string currentFile = weatherFileDirectories[i];
-			WeatherData tempWeather;
+      unsigned int thisWeatherIndex = WeatherData::readEnsembleMemberIndex( weatherFileDirectories[i] );
+			WeatherData &tempWeather = weatherDataSets[thisWeatherIndex];
 			if(!tempWeather.readInFileData(currentFile, 
 				rangeMinLati-1, 
 				rangeMinLong-1, 
 				rangeMaxLati+1, 
-				rangeMaxLong+1 ) )
+				rangeMaxLong+1,
+        inputs.getDeviationThreshold() ) )
 			{
 				std::cout << "\nWeather not read in successfully..."<<std::endl;
 				return false;
 			}
-
-			// convert the weather cells to screen OPENGL coordinate system 
-			tempWeather.convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
-
-			weatherDataSets.push_back(tempWeather);		// push the newly read in weather data into the storing std::vector
-			minAlt = min(minAlt, (double)tempWeather.getMinAlt());
-			maxAlt = std::max(maxAlt, (double)tempWeather.getMaxAlt());
 		}
 		else
 		{
@@ -727,6 +747,18 @@ bool UserInterface::readWeatherData()
 			return false;
 		}
 	} // loop over all weather files
+
+
+  for(std::vector<WeatherData>::iterator wIter = weatherDataSets.begin();
+    wIter != weatherDataSets.end();
+    ++wIter)
+  {
+    wIter->convertLatiLongHeightToXY(centerLati, centerLong, latiPerPixel, longPerPixel, weatherCellWidth);
+
+			minAlt = std::min(minAlt, (double)wIter->getMinAlt());
+			maxAlt = std::max(maxAlt, (double)wIter->getMaxAlt());
+  }
+
 	// weather files are read in, do some tests to make sure that the files are valid
 	double totalProbabilityOfWeatherFiles = 0;
 	for(unsigned int i=0; i<weatherDataSets.size(); i++)
@@ -737,23 +769,32 @@ bool UserInterface::readWeatherData()
 	// the total probability of the weather files is not 1
 	if(std::abs(totalProbabilityOfWeatherFiles-1.0) > 0.1)			
 	{
-		std::cerr <<  "\nThe total probability of the weather data files is not 1."<<std::endl;
+		std::cout <<  "\nWarning: The total probability of the weather data files is not 1."<<std::endl;
 		std::cout << "Current Probability: " << totalProbabilityOfWeatherFiles << std::endl;
-		weatherDataSets.clear();
-		ctrl_WeatherReadIn = WEATHER_NOT_READ_IN;		// the weather is not read in yet
-		return false;
+    if(std::abs(totalProbabilityOfWeatherFiles ) < .0001 )
+    {
+      std::cerr << "No probability in weather files, exiting." << std::endl;
+      ctrl_WeatherReadIn = WEATHER_NOT_READ_IN;
+      return false;
+    }
+    for(std::vector<WeatherData>::iterator wIter = weatherDataSets.begin();
+      wIter != weatherDataSets.end();
+      ++wIter)
+    {
+      double currentProb = wIter->getProbability();
+      wIter->setProbability(currentProb/totalProbabilityOfWeatherFiles);
+    }
+	
 	}
-	else
-	{
-		ctrl_WeatherReadIn = WEATHER_READ_IN;
-		// when demand or weather data is changed, the routingDAG must be regenerated based on the new demand/weather data
-		if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)
-		{
-			ctrl_RoutingDAGGenerated = ROUTINGDAG_NOT_GENERATED;
-		}
-		quadrant->setiHeight(minAlt);					// if read in successfully, then set the quadrant's altitude information
+
+  ctrl_WeatherReadIn = WEATHER_READ_IN;
+  // when demand or weather data is changed, the routingDAG must be regenerated based on the new demand/weather data
+  if(ctrl_RoutingDAGGenerated == ROUTINGDAG_GENERATED)
+  {
+    ctrl_RoutingDAGGenerated = ROUTINGDAG_NOT_GENERATED;
+  }
+  quadrant->setiHeight(minAlt);					// if read in successfully, then set the quadrant's altitude information
 		quadrant->setoHeight(maxAlt);
-	}
 	return true;
 }
 
@@ -818,3 +859,75 @@ void UserInterface::saveTreeInformation()
 	std::cout<< "\nTree Information successfully written to file.\n";
 }
 
+/**
+  \brief Calculates lat',lon' for a point distance dist away from (lat,lon) on bearing bearing.
+
+  \param lat1 Latitude of starting point.
+  \param lon1 Longitude of starting point.
+  \param dist Distance our new point will be from starting point.
+  \param bearing Bearing of the travel distance between points.
+
+  \retval Returns <lat', lon'> the latitude and longitude of the point 
+*/
+std::pair<double, double> UserInterface::latLonOfPointAlongLineWithBearing(double lat1, double lon1, double dist, double bearing)
+{
+    const double rEarth = 3443.89849;
+    double d = dist/rEarth;
+    double lat = asin(sin(lat1)*cos(d)+cos(lat1)*sin(d)*cos(bearing));
+    double dlon= atan2(sin(bearing)*sin(d)*cos(lat1),cos(d)-sin(lat1)*sin(lat));
+    double lon= std::fmod(lon1-dlon + PI,2*PI) -PI;
+
+    return std::pair<double,double>(lat,lon);
+}
+
+/**
+  \brief Calculated bounding box of the weather quadrant we are using
+
+  YES this should be encapsulated in Quadrant, but that class is all in 
+  bullshit x,y screen coordinates.  
+
+  It could even be in demand profile, but THAT class has no knowledge of the
+  angle of the current quadrant we are using.  
+
+  So yeah, UserInterface takes another one for the team.
+*/
+void UserInterface::calculateBoundingBox(double &minLat, double &minLon, double &maxLat, double &maxLon) const
+{
+
+  minLat = maxLat = centerLati;
+  minLon = maxLon = centerLong;
+
+  // Our approach is simple: set min/max to the center of the quadrant.
+  // Then we travel around clockwise from the starting angle of the quadrant
+  // to the final angle of the quadrant, and check all n*pi/2 angles in between
+  //
+  // By check, we mean compare the lat/lon of a point at this bearing
+  // and a distance of radius to the current min/max 
+  std::vector<double> bearings;
+  double startingAngle = inputs.getQuadrantAngle();
+  double finalAngle = startingAngle + inputs.getAngularWidth();
+
+  double radius = quadrant->getoRadius();
+
+  bearings.push_back(startingAngle);
+  for(double angle = startingAngle-fmod(startingAngle,PI/2) + PI/2; 
+    angle < finalAngle - fmod(finalAngle,PI/2);
+    angle += PI/2)
+  {
+    bearings.push_back(angle);
+  }
+  bearings.push_back(finalAngle);
+
+  for(std::vector<double>::iterator angleIter = bearings.begin();
+    angleIter != bearings.end();
+    ++angleIter)
+  {
+    std::pair<double,double> latLon = latLonOfPointAlongLineWithBearing(centerLati, centerLong, radius, *angleIter);
+    minLat = minLat < latLon.first  ? minLat : latLon.first;
+    minLon = minLon < latLon.second ? minLon : latLon.second;
+    maxLat = maxLat > latLon.first  ? maxLat : latLon.first;
+    maxLon = maxLon > latLon.second ? maxLon : latLon.second;
+  }
+
+  return;
+}
