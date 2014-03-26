@@ -46,6 +46,8 @@ private:
 	/****************************************************************************************************************************/
 	// get user/file input or save to files functions
  private:
+	bool makeRTPTreeAndFinish();
+	bool makeDAG();
 	bool editQuadrant();					// ask for user input and edit the quadrant information
 	bool readWeatherData();					// read in from weather data files 
 	bool readDemandProfile();				// read in the demand profile information

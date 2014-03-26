@@ -138,12 +138,10 @@ bool UserInterface::ProgramBegins(std::string inputFile)
 	return makeDAG();
 }
 
-void UserInterface::makeRTPTreeAndFinish()
+bool UserInterface::makeRTPTreeAndFinish()
 {
 	std::cout << "Generating tree." << std::endl;
 	generateTree();
-
-
 
 	std::cout << "Tautening tree." << std::endl;
 	tautenTree();

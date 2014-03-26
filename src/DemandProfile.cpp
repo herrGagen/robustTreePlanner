@@ -6,6 +6,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <typeinfo>
+#include <algorithm>
 
 #if defined(SUPPRESS_OUTPUT)
 #define cout ostream(0).flush()
