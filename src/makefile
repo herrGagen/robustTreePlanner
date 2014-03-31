@@ -25,4 +25,5 @@ clean:
 	rm -rf *.o rtp *.bak *~
 
 %.o: %.cpp makefile
+	emacs -batch $< -l indent.emacs -f emacs-format-function
 	${CC} ${CFLAGS} $< -c
