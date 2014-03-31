@@ -3,9 +3,4 @@
 :: Compile
 MSBuild.exe /p:Configuration=Release RobustTree.sln
 
-:: Convert weather to a format useable by RTP, pass it all the command line parameters
-:: This also calls ``create_input.rb`` to create the "inputs.txt" file
-ruby convert_files.rb %*
-
-:: Run the main program
-.\RobustTree.exe %*
+CALL run.bat %*

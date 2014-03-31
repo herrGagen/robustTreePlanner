@@ -468,6 +468,10 @@ void TreeVerifier::outputTreeLengthStats() const
       std::cout << thisLength << '\t';
       std::cout << thisLength/totalLength << std::endl;
     }
+  unsigned int numTreeEdges = countTreeEdges();
+  unsigned int numTreeNodes = countTreeNodes();
+  std::cout <<   "numTreeEdges: " << numTreeEdges;
+  std::cout << "\tnumTreeNodes: " << numTreeNodes << std::endl;
 }
 
 /**
@@ -547,3 +551,43 @@ double TreeVerifier::computeFlexiblySafeTreeLength( double r ) const
   return totalLength;
 }
 
+/**
+	\brief Returns total number of edges in this tree
+*/
+unsigned int TreeVerifier::countTreeEdges() const
+{
+
+	unsigned int numTreeEdges = 0;
+	const RoutingDAG &dag = *(ui.getRoutingDAG() );
+
+	for(unsigned int i = 0; i< dag.getNumEdges(); i++)
+	{
+		Edge *thisEdge = dag.getEdgePointer(i);
+		// If this edge isn't in the tree, who cares if it impacts weather?
+		if(thisEdge->isTreeEdge() )
+		{
+			numTreeEdges++;
+		}
+	}
+	return numTreeEdges;
+}
+
+/**
+	\brief Returns total number of nodes in this tree
+*/
+unsigned int TreeVerifier::countTreeNodes() const
+{
+	unsigned int numTreeNodes = 0;
+	const RoutingDAG &dag = *(ui.getRoutingDAG() );
+
+	for(unsigned int i = 0; i< dag.getNumNodes(); i++)
+	{
+		Node *thisNode = dag.getNodePointer(i);
+		// If this node isn't in the tree, who cares if it impacts weather?
+		if(thisNode->isTreeNode() )
+		{
+			numTreeNodes++;
+		}
+	}
+	return numTreeNodes;
+}

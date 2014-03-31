@@ -669,7 +669,7 @@ void DynProgTreeGenerator::writeBestTreeToDAG( UserInterface &UI )
 		Node *highRadNode = DAG->findNode(highPair.first, highPair.second );
 		Node *lowRadNode  = DAG->findNode( lowPair.first,  lowPair.second );
 		// The very first edge is the universal sink, something NOT in the DAG.
-		// The DAG returns NUMM when it does not find a node.
+		// The DAG returns NULL when it does not find a node.
 		// Because of this, we skip all references to it in the tree.
 		if( highRadNode == NULL )
 		{

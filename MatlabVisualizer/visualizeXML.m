@@ -1,5 +1,4 @@
 function visualizeXML( inputFileName )
-close all
 
 h = plot_nas(1);
 % parse robust tree

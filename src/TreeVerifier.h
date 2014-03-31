@@ -25,11 +25,13 @@ public: // verifier functions
                                  std::string validName);
 	unsigned int countInvalidNodes() const;
 	unsigned int countInvalidEdges() const;
-        double computeTotalTreeLength() const;
-        double computeFlexiblySafeTreeLength( double r ) const;
-        void outputTreeLengthStats() const;
+	unsigned int countTreeNodes() const;
+	unsigned int countTreeEdges() const;
+    double computeTotalTreeLength() const;
+    double computeFlexiblySafeTreeLength( double r ) const;
+	void outputTreeLengthStats() const;
 private:
-        double computeEdgeLength( Edge *edge ) const;
+    double computeEdgeLength( Edge *edge ) const;
 	bool doesNodeAvoidDangerousWeatherInEnsemble( Node *node, unsigned int ensembleIndex) const;
 	bool doesEdgeAvoidDangerousWeatherInEnsemble( Edge *Edge, unsigned int ensembleIndex) const;
 
