@@ -1,0 +1,3 @@
+[submodule "src/tinyxml"]
+	path = src/tinyxml
+	url = git://git.code.sf.net/p/tinyxml/git
