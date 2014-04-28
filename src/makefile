@@ -14,16 +14,26 @@ SOURCES=DemandProfile.cpp \
 	DynProgTreeGenerator.cpp
 
 OBJECTS=$(subst .cpp,.o,$(SOURCES) )
+INDENTED=$(subst .cpp,.ind,$(SOURCES) )
 
 all: rtp
 
-rtp: ${OBJECTS}
+libtinyxml.a:
+	make -C tinyxml
+	ar -cvq libtinyxml.a tinyxml/tinystr.o  tinyxml/tinyxmlerror.o  tinyxml/tinyxml.o  tinyxml/tinyxmlparser.o	
+
+rtp: ${OBJECTS} libtinyxml.a
 	${CC} ${LINKFLAGS} $^  -o $@
 
+indent: ${INDENTED}
+	echo ${INDENTED}
 
 clean:
 	rm -rf *.o rtp *.bak *~
 
 %.o: %.cpp makefile
-	emacs -batch $< -l indent.emacs -f emacs-format-function
 	${CC} ${CFLAGS} $< -c
+
+%.ind: %.cpp makefile
+	emacs -batch $< -l indent.emacs -f emacs-format-function
+
